@@ -2,7 +2,7 @@
 //  Workout+CoreDataProperties.swift
 //  WorkoutApp
 //
-//  Created by Timmy Nguyen on 1/11/24.
+//  Created by Timmy Nguyen on 1/22/24.
 //
 //
 
@@ -16,8 +16,8 @@ extension Workout {
         return NSFetchRequest<Workout>(entityName: "Workout")
     }
 
-    @NSManaged public var title: String?
     @NSManaged public var createdAt: Date?
+    @NSManaged public var title: String?
     @NSManaged public var exercises: NSOrderedSet?
 
 }
@@ -58,4 +58,43 @@ extension Workout {
 }
 
 extension Workout : Identifiable {
+    
+    func printPrettyString() {
+        print(Array(repeating: "-", count: 60).joined())
+        print(getPrettyString())
+        let exercises = self.exercises?.array as! [Exercise]
+        for (i, exercise) in exercises.enumerated() {
+            print("\(i). \(exercise.getPrettyString())")
+            let sets = exercise.exerciseSets?.array as! [ExerciseSet]
+            for (j, set) in sets.enumerated() {
+                print("\t\(j). \(set.getPrettyString())")
+            }
+        }
+    }
+    
+    func getPrettyString() -> String {
+        return "Workout(title: \(title!), createdAt: \(createdAt))"
+    }
+    
+    class func copy(_ workout: Workout) -> Workout {
+        let workoutCopy = Workout(entity: Workout.entity(), insertInto: nil)
+        workoutCopy.title = workout.title
+        workoutCopy.createdAt = .now
+        
+        for exercise in workout.exercises?.array as! [Exercise] {
+            let exerciseCopy = Exercise(entity: Exercise.entity(), insertInto: nil)
+            exerciseCopy.title = exercise.title
+            exerciseCopy.workout = workoutCopy
+            workoutCopy.addToExercises(exerciseCopy)
+            for set in exercise.exerciseSets?.array as! [ExerciseSet] {
+                let setCopy = ExerciseSet(entity: ExerciseSet.entity(), insertInto: nil)
+                setCopy.isComplete = false
+                setCopy.weight = set.weight
+                setCopy.reps = set.reps
+                setCopy.exercise = exerciseCopy
+                exerciseCopy.addToExerciseSets(setCopy)
+            }
+        }
+        return workoutCopy
+    }
 }

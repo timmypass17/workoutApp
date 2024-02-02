@@ -24,14 +24,13 @@ class WorkoutTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(with workoutPlan: WorkoutPlan) {
-        guard let title = workoutPlan.title,
-              let exercises = workoutPlan.planItems?.array as? [PlanItem]
+    func update(with workout: Workout) {
+        guard let title = workout.title,
+              let exercises = workout.exercises?.array as? [Exercise]
         else { return }
         titleLabel.text = title
         let firstLetter = title.first!.lowercased()
         iconImageView.image = UIImage(systemName: "\(firstLetter).circle.fill")
-//        descriptionLabel.text = exercises[0].title
         descriptionLabel.text = exercises.map { $0.title! }.joined(separator: ", ")
     }
     

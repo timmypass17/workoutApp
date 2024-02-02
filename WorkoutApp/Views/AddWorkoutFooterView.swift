@@ -7,11 +7,11 @@
 
 import UIKit
 
-protocol AddWorkoutFooterViewDelegate: AnyObject {
+protocol AddExerciseFooterViewDelegate: AnyObject {
     func didTapAddExerciseButton(_ sender: UIButton)
 }
 
-class AddWorkoutFooterView: UIView {
+class AddExerciseFooterView: UIView {
     
     private let addExerciseButton: UIButton = {
         let button = UIButton(configuration: .tinted())
@@ -21,20 +21,23 @@ class AddWorkoutFooterView: UIView {
         return button
     }()
     
-    weak var delegate: AddWorkoutFooterViewDelegate?
+    weak var delegate: AddExerciseFooterViewDelegate?
     var title: String!
     
-    init(title: String) {
+    init() {
         super.init(frame: .zero)
-        self.title = title
+        let addAction = UIAction { [self] _ in
+            delegate?.didTapAddExerciseButton(addExerciseButton)
+        }
+        addExerciseButton.addAction(addAction, for: .touchUpInside)
         
         addSubview(addExerciseButton)
         
         NSLayoutConstraint.activate([
             addExerciseButton.topAnchor.constraint(equalTo: topAnchor, constant: 8),
             addExerciseButton.bottomAnchor.constraint(equalTo: bottomAnchor),
-            addExerciseButton.leadingAnchor.constraint(equalTo: leadingAnchor),
-            addExerciseButton.trailingAnchor.constraint(equalTo: trailingAnchor)
+            addExerciseButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            addExerciseButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8)
         ])
     }
     
@@ -44,5 +47,5 @@ class AddWorkoutFooterView: UIView {
 }
 
 #Preview {
-    AddWorkoutFooterView(title: "Add Exercise")
+    AddExerciseFooterView()
 }

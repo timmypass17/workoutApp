@@ -2,7 +2,7 @@
 //  ExerciseSet+CoreDataClass.swift
 //  WorkoutApp
 //
-//  Created by Timmy Nguyen on 1/15/24.
+//  Created by Timmy Nguyen on 1/22/24.
 //
 //
 

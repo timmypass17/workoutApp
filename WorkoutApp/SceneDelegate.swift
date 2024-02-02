@@ -19,7 +19,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let tabBarController = UITabBarController()
 
-        let workoutViewController = WorkoutTableViewController()
+        let workoutService = WorkoutService()
+        let workoutViewController = WorkoutTableViewController(workoutService: workoutService)
         let logViewController = LogTableViewController()
         
 

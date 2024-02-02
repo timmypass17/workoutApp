@@ -11,20 +11,9 @@
         <attribute name="weight" optional="YES" attributeType="String"/>
         <relationship name="exercise" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Exercise" inverseName="exerciseSets" inverseEntity="Exercise"/>
     </entity>
-    <entity name="PlanItem" representedClassName="PlanItem" syncable="YES">
-        <attribute name="reps" optional="YES" attributeType="String"/>
-        <attribute name="sets" optional="YES" attributeType="String"/>
-        <attribute name="title" optional="YES" attributeType="String"/>
-        <attribute name="weight" optional="YES" attributeType="String"/>
-        <relationship name="workoutPlan" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="WorkoutPlan" inverseName="planItems" inverseEntity="WorkoutPlan"/>
-    </entity>
     <entity name="Workout" representedClassName="Workout" syncable="YES">
         <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="title" optional="YES" attributeType="String"/>
         <relationship name="exercises" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Exercise" inverseName="workout" inverseEntity="Exercise"/>
-    </entity>
-    <entity name="WorkoutPlan" representedClassName="WorkoutPlan" syncable="YES">
-        <attribute name="title" optional="YES" attributeType="String"/>
-        <relationship name="planItems" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="PlanItem" inverseName="workoutPlan" inverseEntity="PlanItem"/>
     </entity>
 </model>

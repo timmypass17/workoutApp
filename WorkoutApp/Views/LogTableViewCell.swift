@@ -66,9 +66,7 @@ class LogTableViewCell: UITableViewCell {
         hstack.translatesAutoresizingMaskIntoConstraints = false
         return hstack
     }()
-    
-//    var barView: UIView!
-    
+        
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         accessoryType = .disclosureIndicator
@@ -103,11 +101,13 @@ class LogTableViewCell: UITableViewCell {
     }
     
     func update(with workout: Workout) {
-        guard let exercises = workout.exercises?.array as? [Exercise] else { return }
+        guard let exercises = workout.exercises?.array as? [Exercise],
+              let createdAt = workout.createdAt
+        else { return }
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "EEE"
-        weekdayLabel.text = dateFormatter.string(from: Date())
-        dayLabel.text = "\(Calendar.current.component(.day, from: Date()))"
+        weekdayLabel.text = dateFormatter.string(from: createdAt)
+        dayLabel.text = "\(Calendar.current.component(.day, from: createdAt))"
         workoutLabel.text = workout.title
         exercisesLabel.text = exercises
             .map { 

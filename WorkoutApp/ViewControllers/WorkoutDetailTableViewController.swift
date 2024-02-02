@@ -8,43 +8,39 @@
 import UIKit
 
 protocol WorkoutDetailTableViewControllerDelegate: AnyObject {
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didSaveWorkout workout: Workout)
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didCreateWorkout workout: Workout)
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didFinishWorkout workout: Workout)
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateLog workout: Workout)
 }
 
-
 class WorkoutDetailTableViewController: UITableViewController {
-    var workout: Workout!
+    let workout: Workout
+    let state: State
+    var selectedDate: Date?
+    
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     weak var delegate: WorkoutDetailTableViewControllerDelegate?
     
-    private let finishButton: UIBarButtonItem = {
-        let button = UIBarButtonItem(title: "Finish")
-        return button
-    }()
+    enum State {
+        case createWorkout(String)
+        case startWorkout(Workout)
+        case updateLog(Workout)
+    }
     
-    init(workoutPlan: WorkoutPlan) {
-        //        workout = Workout(entity: Workout.entity(), insertInto: nil)
-        workout = Workout(context: context)
-        workout.title = workoutPlan.title
-        workout.createdAt = .now
-        if let planItems = workoutPlan.planItems?.array as? [PlanItem] {
-            // Add exercises to workout
-            for item in planItems {
-                guard let sets = Int(item.sets ?? "0") else { continue }
-                //                let exercise = Exercise(entity: Exercise.entity(), insertInto: nil)
-                let exercise = Exercise(context: context)
-                exercise.title = item.title
-                // Add sets to exercises
-                for _ in 0..<sets {
-                    //                    let exerciseSet = ExerciseSet(entity: ExerciseSet.entity(), insertInto: nil)
-                    let exerciseSet = ExerciseSet(context: context)
-                    exerciseSet.reps = item.reps
-                    exerciseSet.weight = item.weight
-                    exercise.addToExerciseSets(exerciseSet)
-                }
-                workout.addToExercises(exercise)
-            }
+    init(_ state: State) {
+        self.state = state
+        switch state {
+        case .createWorkout(let workoutName):
+            workout = Workout(entity: Workout.entity(), insertInto: nil)
+            workout.title = workoutName
+            workout.createdAt = nil // templates do not have dates
+        case .startWorkout(let template):
+            workout = Workout.copy(template)
+        case .updateLog(let log):
+            workout = log   // want to modifiy original workout
+            print(context.registeredObjects.count)
         }
+//        print("Count: \(context.registeredObjects.count)")
         super.init(style: .plain)
     }
     
@@ -54,36 +50,18 @@ class WorkoutDetailTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = workout.title
+        navigationItem.title = workout.title
+        navigationController?.navigationBar.prefersLargeTitles = true
         tableView.register(WorkoutDetailTableViewCell.self, forCellReuseIdentifier: WorkoutDetailTableViewCell.reuseIdentifier)
         tableView.register(AddItemTableViewCell.self, forCellReuseIdentifier: AddItemTableViewCell.reuseIdentifier)
-        let finishAction = UIAction { _ in
-            let alert = UIAlertController(title: "Finish Workout?", message: "Your workout lasted x minutes\nFriday, Jan 17, 2023", preferredStyle: .alert)
-            alert.addTextField { textField in
-                textField.placeholder = "Add your notes here..."
-            }
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-            alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [self] _ in
-                // TODO: Save workout
-                do {
-                    try self.context.save()
-                    delegate?.workoutDetailTableViewController(self, didSaveWorkout: workout)
-                    navigationController?.popViewController(animated: true)
-                } catch {
-                    print("Failed to save workout: \(error)")
-                }
-            }))
-            
-            self.present(alert, animated: true, completion: nil)
-        }
         
-        navigationItem.rightBarButtonItem?.primaryAction = finishAction
-        navigationItem.rightBarButtonItem = finishButton
+        setupBarButton()
         
-        //        let footer = AddWorkoutFooterView(title: "Add Exercise")
-        //        footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
-        //        tableView.tableFooterView = footer
+        let footer = AddExerciseFooterView()
+        footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
+        footer.delegate = self
+        tableView.tableFooterView = footer
+        
         updateUI()
     }
     
@@ -144,7 +122,13 @@ class WorkoutDetailTableViewController: UITableViewController {
             exercises[indexPath.section].removeFromExerciseSets(at: indexPath.row)
             tableView.beginUpdates()
             tableView.deleteRows(at: [indexPath], with: .automatic)
-            tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
+            
+            if exercises[indexPath.section].exerciseSets?.count == 0 {
+                workout.removeFromExercises(exercises[indexPath.section])   // if set is empty, then remove exercise from workout
+                tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
+            } else {
+                tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
+            }
             tableView.endUpdates()
             updateUI()
         }
@@ -163,7 +147,7 @@ class WorkoutDetailTableViewController: UITableViewController {
             return exerciseSets.allSatisfy { validInput(exerciseSet: $0) }
         }
 
-        finishButton.isEnabled = shouldEnableFinishButton
+        navigationItem.rightBarButtonItem?.isEnabled = shouldEnableFinishButton
         
         func validInput(exerciseSet: ExerciseSet) -> Bool {
             guard let weight = exerciseSet.weight,
@@ -173,18 +157,104 @@ class WorkoutDetailTableViewController: UITableViewController {
             return exerciseSet.isComplete && weight.isNumeric && reps.isNumeric
         }
     }
+    
+    func setupBarButton() {
+        let addEditButton: UIBarButtonItem
+        let buttonTitle: String
+        let alertTitle: String
+        let message: String
+        switch state {
+        case .createWorkout(_):
+            buttonTitle = "Save"
+            alertTitle = "Create Workout?"
+            message = "desc"
+        case .startWorkout(_):
+            buttonTitle = "Finish"
+            alertTitle = "Finish Workout?"
+            message = "desc"
+        case .updateLog(_):
+            buttonTitle = "Save"
+            alertTitle = "Edit Log?"
+            message = "desc"
+        }
+        let action = UIAction { [self] _ in
+            let alert = UIAlertController(title: alertTitle, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [self] _ in
+                do {
+                    switch state {
+                    case .createWorkout(_):
+                        context.insert(workout)
+                        for exercise in workout.exercises?.array as! [Exercise] {
+                            context.insert(exercise)
+                            for set in exercise.exerciseSets?.array as! [ExerciseSet] {
+                                context.insert(set)
+                            }
+                        }
+                        try context.save()
+                        delegate?.workoutDetailTableViewController(self, didCreateWorkout: workout)
+                    case .startWorkout(_):
+                        context.insert(workout)
+                        for exercise in workout.exercises?.array as! [Exercise] {
+                            context.insert(exercise)
+                            for set in exercise.exerciseSets?.array as! [ExerciseSet] {
+                                context.insert(set)
+                            }
+                        }
+                        try context.save()
+                        delegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
+                    case .updateLog(_):
+                        if let selectedDate {
+                            workout.createdAt = selectedDate
+                        }
+                        try context.save()
+                        delegate?.workoutDetailTableViewController(self, didUpdateLog: workout)
+                    }
+                    navigationController?.popViewController(animated: true)
+                } catch {
+                    print("Failed to save workout: \(error)")
+                }
+            }))
+            
+            self.present(alert, animated: true, completion: nil)
+        }
+        
+        addEditButton = UIBarButtonItem(title: buttonTitle, primaryAction: action)
+        switch state {
+        case .updateLog(_):
+            let calendarAction = UIAction { [self] _ in
+                let date = (selectedDate != nil) ? selectedDate : workout.createdAt!
+                let calendarViewController = CalendarViewController(selectedDate: date!)
+                calendarViewController.delegate = self
+                let navigationController = UINavigationController(rootViewController: calendarViewController)
+                if let sheet = navigationController.sheetPresentationController {
+                    sheet.detents = [.custom(resolver: { context in
+                        return self.view.frame.height * 0.6
+                    })]
+                }
+                self.present(navigationController, animated: true)
+            }
+            let calendarButton = UIBarButtonItem(image: UIImage(systemName: "calendar"), primaryAction: calendarAction)
+            navigationItem.rightBarButtonItems = [addEditButton, calendarButton]
+        default:
+            navigationItem.rightBarButtonItem = addEditButton
+        }
+    }
 }
 
 extension WorkoutDetailTableViewController: AddItemTableViewCellDelegate {
     func didTapAddButton(_ sender: UITableViewCell) {
         guard let indexPath = tableView.indexPath(for: sender) else { return }
         
-        // Add exercise set
-        let exercises = workout.exercises?.array as? [Exercise] ?? []
-        //        let exerciseSet = ExerciseSet(entity: ExerciseSet.entity(), insertInto: nil)
-        let exerciseSet = ExerciseSet(context: context)
-        
-        exercises[indexPath.section].addToExerciseSets(exerciseSet)
+        // Add set
+        let exercises = workout.exercises?.array as! [Exercise]
+        let exercise = exercises[indexPath.section]
+        let set = ExerciseSet(entity: ExerciseSet.entity(), insertInto: nil)
+        set.isComplete = false
+        set.weight = ""
+        set.reps = ""
+        set.exercise = exercise
+        exercise.addToExerciseSets(set)
         
         tableView.insertRows(at: [indexPath], with: .automatic)
         
@@ -194,8 +264,49 @@ extension WorkoutDetailTableViewController: AddItemTableViewCellDelegate {
 
 extension WorkoutDetailTableViewController: WorkoutDetailTableViewCellDelegate {
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didUpdateExerciseSet exerciseSet: ExerciseSet) {
+        workout.printPrettyString()
         updateUI()
     }
+}
+
+extension WorkoutDetailTableViewController: AddExerciseFooterViewDelegate {
+    func didTapAddExerciseButton(_ sender: UIButton) {
+        let exercisesTableViewController = ExercisesTableViewController()
+        exercisesTableViewController.delegate = self
+        self.present(UINavigationController(rootViewController: exercisesTableViewController), animated: true, completion: nil)
+    }
+}
+
+extension WorkoutDetailTableViewController: ExercisesTableViewControllerDelegate {
+    func exercisesTableViewController(_ viewController: ExercisesTableViewController, didSelectExercises exercises: [String]) {
+        // Loop through exercises
+        for item in exercises {
+            let section = workout.exercises?.count ?? 0
+            // Create exercise item
+            let exercise = Exercise(entity: Exercise.entity(), insertInto: nil)
+            exercise.title = item
+            exercise.workout = workout  // need to set parent aswell, workout.addToExercises(exercise) does not do this.
+            workout.addToExercises(exercise)
+            // Create a single exerciseSet item
+            let set = ExerciseSet(entity: ExerciseSet.entity(), insertInto: nil)
+            set.isComplete = false
+            set.weight = ""
+            set.reps = ""
+            set.exercise = exercise
+            exercise.addToExerciseSets(set)
+            
+            // Add section (this also insert's row)
+            tableView.insertSections(IndexSet(integer: section), with: .automatic)
+        }
+    }
+}
+
+extension WorkoutDetailTableViewController: CalendarViewControllerDelegate {
+    func calendarViewController(_ viewController: CalendarViewController, datePickerValueChanged: Date) {
+        print(datePickerValueChanged.formatted())
+        selectedDate = datePickerValueChanged
+    }
+    
 }
 
 extension String {
@@ -205,3 +316,9 @@ extension String {
     }
 }
 
+/**
+ Q1: Why do "let exercise = Exercise(entity: Exercise.entity(), insertInto: nil)"?
+    - Because we do not want to create and add it to core data yet. User may decide not to create exercise.
+    - Doing Exercise(context: context) gets added to context, and doing fetch still include those objects even though we didn't save the object via context.save(). (look at request.includesPendingChanges)
+    - Doing Exercise(context: context) still leaves object in context even after exiting current vm or closing app. To remove model, you have to uninstall app or manually remove object from context
+ */

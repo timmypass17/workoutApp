@@ -9,14 +9,23 @@ import UIKit
 
 class WorkoutTableViewController: UITableViewController {
     
-    var workoutPlans: [WorkoutPlan] = []
+    var workoutPlans: [Workout] = []
     var addButton: UIBarButtonItem!
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let workoutService: WorkoutService
+    
+    init(workoutService: WorkoutService) {
+        self.workoutService = workoutService
+        super.init(style: .plain)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("Workout viewDidLoad()")
-        
+        workoutPlans = workoutService.fetchWorkoutPlans()
         updateView()
     }
     
@@ -37,10 +46,9 @@ class WorkoutTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let workoutPlan = workoutPlans[indexPath.row]
-        let workoutDetailViewController = WorkoutDetailTableViewController(workoutPlan: workoutPlan)
+        let workoutDetailViewController = WorkoutDetailTableViewController(.startWorkout(workoutPlan))
         
         if let logTableViewController = (tabBarController?.viewControllers?[1] as? UINavigationController)?.viewControllers[0] as? LogTableViewController {
-            print("Got log vc")
             workoutDetailViewController.delegate = logTableViewController
         }
         navigationController?.pushViewController(workoutDetailViewController, animated: true)
@@ -52,7 +60,7 @@ class WorkoutTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if (editingStyle == .delete) {
-            deleteWorkoutPlan(workoutPlan: workoutPlans[indexPath.row])
+            deleteWorkout(workout: workoutPlans[indexPath.row])
             workoutPlans.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .automatic)
         }
@@ -63,31 +71,51 @@ class WorkoutTableViewController: UITableViewController {
         tableView.register(WorkoutTableViewCell.self, forCellReuseIdentifier: WorkoutTableViewCell.reuseIdentifier)
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.title = "Workout"
-        workoutPlans = getWorkoutPlans()
+//        workoutPlans = getWorkoutPlans()
         setupAddButton()
     }
     
     func setupAddButton() {
-        let action = UIAction { _ in
-            let addWorkoutTableViewController = AddWorkoutTableViewController()
-            addWorkoutTableViewController.delegate = self
-            self.present(UINavigationController(rootViewController: addWorkoutTableViewController), animated: true, completion: nil)
+        let addWorkoutAction = UIAction { _ in
+            let alert = UIAlertController(title: "Create New Workout", message: "Enter a name below", preferredStyle: .alert)
+            
+            alert.addTextField { textField in
+                textField.placeholder = "Ex. Workout A"
+                let textChangedAction = UIAction { _ in
+                    alert.actions[1].isEnabled = textField.text!.count > 0
+                }
+                textField.addAction(textChangedAction, for: .allEditingEvents)
+            }
+            
+            let createAction = UIAlertAction(title: "Create", style: .default, handler: { [self] _ in
+                guard let title = alert.textFields?[0].text else { return }
+                let workoutDetailTableViewController = WorkoutDetailTableViewController(.createWorkout(title))
+                workoutDetailTableViewController.delegate = self
+                self.navigationController?.pushViewController(workoutDetailTableViewController, animated: true)
+            })
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            alert.addAction(createAction)
+            
+            
+            self.present(alert, animated: true, completion: nil)
         }
-        addButton = UIBarButtonItem(title: "Add Workout", image: UIImage(systemName: "plus"), primaryAction: action)
+        
+        addButton = UIBarButtonItem(title: "Add Workout", image: UIImage(systemName: "plus"), primaryAction: addWorkoutAction)
         navigationItem.rightBarButtonItem = addButton
     }
-    
-    func getWorkoutPlans() -> [WorkoutPlan] {
-        do {
-            return try context.fetch(WorkoutPlan.fetchRequest())
-        } catch {
-            print("Failed to get workout plans: \(error)")
-            return []
-        }
-    }
-    
-    func deleteWorkoutPlan(workoutPlan: WorkoutPlan) {
-        context.delete(workoutPlan)
+//    
+//    func getWorkouts() -> [Workout] {
+//        do {
+//            return try context.fetch(Workout.fetchRequest())
+//        } catch {
+//            print("Failed to get workout plans: \(error)")
+//            return []
+//        }
+//    }
+//    
+    func deleteWorkout(workout: Workout) {
+        context.delete(workout)
         
         do {
             try context.save()
@@ -123,17 +151,23 @@ class WorkoutTableViewController: UITableViewController {
     }
 }
 
-extension WorkoutTableViewController: AddWorkoutTableViewControllerDelegate {
-    
-    func addWorkoutTableViewController(_ viewController: AddWorkoutTableViewController, didSaveWorkoutPlan workoutPlan: WorkoutPlan) {
-        workoutPlans.append(workoutPlan)
+extension WorkoutTableViewController: WorkoutDetailTableViewControllerDelegate {
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didCreateWorkout workout: Workout) {
+        workoutPlans.append(workout)
         tableView.reloadData()
     }
     
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didFinishWorkout workout: Workout) {
+        return
+    }
+    
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateLog workout: Workout) {
+        return
+    }
 }
 
 #Preview {
-    UINavigationController(rootViewController: WorkoutTableViewController())
+    UINavigationController(rootViewController: WorkoutTableViewController(workoutService: WorkoutService()))
 }
 
 extension Notification.Name {

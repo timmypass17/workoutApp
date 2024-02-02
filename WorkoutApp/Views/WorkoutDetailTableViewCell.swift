@@ -59,8 +59,8 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         }
 
         setButton.addAction(exerciseSetChangedAction, for: .primaryActionTriggered)
-        weightTextField.addAction(exerciseSetChangedAction, for: .allEditingEvents)
-        repsTextField.addAction(exerciseSetChangedAction, for: .allEditingEvents)
+        weightTextField.addAction(exerciseSetChangedAction, for: .editingChanged)
+        repsTextField.addAction(exerciseSetChangedAction, for: .editingChanged)
         
 
         let hstack = UIStackView(arrangedSubviews: [setButton, previousLabel, weightTextField, repsTextField])
@@ -98,10 +98,16 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         
         weightTextField.text = weight
         repsTextField.text = exerciseSet.reps
-        previousLabel.text = "-" // use previous weight
         
-        weightTextField.placeholder = exerciseSet.weight // use previous weight
-        repsTextField.placeholder = exerciseSet.reps
+        if let previousSet = exerciseSet.previousSet(for: indexPath.row) {
+            previousLabel.text = previousSet.weight
+            weightTextField.placeholder = previousSet.weight // use previous weight
+            repsTextField.placeholder = previousSet.reps
+        } else {
+            previousLabel.text = "-"
+            weightTextField.placeholder = "135"
+            repsTextField.placeholder = "5"
+        }
         
         setButton.isSelected = exerciseSet.isComplete
     }

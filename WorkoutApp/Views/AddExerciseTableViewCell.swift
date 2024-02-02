@@ -8,7 +8,7 @@
 import UIKit
 
 protocol AddExerciseTableViewCellDelegate: AnyObject {
-    func addExerciseTableViewCell(_ cell: AddExerciseTableViewCell, didUpdatePlanItem planItem: PlanItem)
+//    func addExerciseTableViewCell(_ cell: AddExerciseTableViewCell, didUpdatePlanItem planItem: PlanItem)
 }
 
 class AddExerciseTableViewCell: UITableViewCell {
@@ -31,28 +31,28 @@ class AddExerciseTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(with item: PlanItem) {
-        exerciseTitleTextField.text = item.title
-        setsTextField.text = item.sets
-        repsTextField.text = item.reps
-        weightTextField.text = item.weight
-    }
+//    func update(with item: PlanItem) {
+//        exerciseTitleTextField.text = item.title
+//        setsTextField.text = item.sets
+//        repsTextField.text = item.reps
+//        weightTextField.text = item.weight
+//    }
     
     private func setupView() {
         selectionStyle = .none  // removes highlight when selecting cell
         showsReorderControl = true
         
         let textfieldEditAction = UIAction { [self] _ in
-            let title = exerciseTitleTextField.text ?? ""
-            let sets = setsTextField.text ?? ""
-            let reps = repsTextField.text ?? ""
-            let weight = weightTextField.text ?? ""
-            let item = PlanItem(entity: PlanItem.entity(), insertInto: nil)
-            item.title = title
-            item.sets = sets
-            item.reps = reps
-            item.weight = weight
-            delegate?.addExerciseTableViewCell(self, didUpdatePlanItem: item)
+//            let title = exerciseTitleTextField.text ?? ""
+//            let sets = setsTextField.text ?? ""
+//            let reps = repsTextField.text ?? ""
+//            let weight = weightTextField.text ?? ""
+//            let item = PlanItem(entity: PlanItem.entity(), insertInto: nil)
+//            item.title = title
+//            item.sets = sets
+//            item.reps = reps
+//            item.weight = weight
+//            delegate?.addExerciseTableViewCell(self, didUpdatePlanItem: item)
         }
         
         exerciseTitleTextField = UITextField()

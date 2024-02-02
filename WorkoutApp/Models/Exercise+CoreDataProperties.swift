@@ -2,7 +2,7 @@
 //  Exercise+CoreDataProperties.swift
 //  WorkoutApp
 //
-//  Created by Timmy Nguyen on 1/11/24.
+//  Created by Timmy Nguyen on 1/22/24.
 //
 //
 
@@ -17,8 +17,8 @@ extension Exercise {
     }
 
     @NSManaged public var title: String?
-    @NSManaged public var workout: Workout?
     @NSManaged public var exerciseSets: NSOrderedSet?
+    @NSManaged public var workout: Workout?
 
 }
 
@@ -58,5 +58,8 @@ extension Exercise {
 }
 
 extension Exercise : Identifiable {
+    func getPrettyString() -> String {
+        return "Exercise(title: \(title!))"
+    }
 
 }
