@@ -31,16 +31,15 @@ class WorkoutDetailTableViewController: UITableViewController {
         self.state = state
         switch state {
         case .createWorkout(let workoutName):
-            workout = Workout(entity: Workout.entity(), insertInto: nil)
+            workout = Workout(context: context)
             workout.title = workoutName
             workout.createdAt = nil // templates do not have dates
         case .startWorkout(let template):
             workout = Workout.copy(template)
         case .updateLog(let log):
             workout = log   // want to modifiy original workout
-            print(context.registeredObjects.count)
         }
-//        print("Count: \(context.registeredObjects.count)")
+        print("Count: \(context.registeredObjects.count)")
         super.init(style: .plain)
     }
     
@@ -63,6 +62,11 @@ class WorkoutDetailTableViewController: UITableViewController {
         tableView.tableFooterView = footer
         
         updateUI()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        // Restore object to its last saved state (undo changes not saved)
+        context.rollback()
     }
     
     // MARK: - Table view data source
@@ -184,23 +188,23 @@ class WorkoutDetailTableViewController: UITableViewController {
                 do {
                     switch state {
                     case .createWorkout(_):
-                        context.insert(workout)
-                        for exercise in workout.exercises?.array as! [Exercise] {
-                            context.insert(exercise)
-                            for set in exercise.exerciseSets?.array as! [ExerciseSet] {
-                                context.insert(set)
-                            }
-                        }
+//                        context.insert(workout)
+//                        for exercise in workout.exercises?.array as! [Exercise] {
+//                            context.insert(exercise)
+//                            for set in exercise.exerciseSets?.array as! [ExerciseSet] {
+//                                context.insert(set)
+//                            }
+//                        }
                         try context.save()
                         delegate?.workoutDetailTableViewController(self, didCreateWorkout: workout)
                     case .startWorkout(_):
-                        context.insert(workout)
-                        for exercise in workout.exercises?.array as! [Exercise] {
-                            context.insert(exercise)
-                            for set in exercise.exerciseSets?.array as! [ExerciseSet] {
-                                context.insert(set)
-                            }
-                        }
+//                        context.insert(workout)
+//                        for exercise in workout.exercises?.array as! [Exercise] {
+//                            context.insert(exercise)
+//                            for set in exercise.exerciseSets?.array as! [ExerciseSet] {
+//                                context.insert(set)
+//                            }
+//                        }
                         try context.save()
                         delegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
                     case .updateLog(_):
@@ -210,6 +214,7 @@ class WorkoutDetailTableViewController: UITableViewController {
                         try context.save()
                         delegate?.workoutDetailTableViewController(self, didUpdateLog: workout)
                     }
+                    print("Popview controller")
                     navigationController?.popViewController(animated: true)
                 } catch {
                     print("Failed to save workout: \(error)")
@@ -249,7 +254,7 @@ extension WorkoutDetailTableViewController: AddItemTableViewCellDelegate {
         // Add set
         let exercises = workout.exercises?.array as! [Exercise]
         let exercise = exercises[indexPath.section]
-        let set = ExerciseSet(entity: ExerciseSet.entity(), insertInto: nil)
+        let set = ExerciseSet(context: context)
         set.isComplete = false
         set.weight = ""
         set.reps = ""
@@ -283,12 +288,12 @@ extension WorkoutDetailTableViewController: ExercisesTableViewControllerDelegate
         for item in exercises {
             let section = workout.exercises?.count ?? 0
             // Create exercise item
-            let exercise = Exercise(entity: Exercise.entity(), insertInto: nil)
+            let exercise = Exercise(context: context)
             exercise.title = item
             exercise.workout = workout  // need to set parent aswell, workout.addToExercises(exercise) does not do this.
             workout.addToExercises(exercise)
             // Create a single exerciseSet item
-            let set = ExerciseSet(entity: ExerciseSet.entity(), insertInto: nil)
+            let set = ExerciseSet(context: context)
             set.isComplete = false
             set.weight = ""
             set.reps = ""
@@ -321,4 +326,9 @@ extension String {
     - Because we do not want to create and add it to core data yet. User may decide not to create exercise.
     - Doing Exercise(context: context) gets added to context, and doing fetch still include those objects even though we didn't save the object via context.save(). (look at request.includesPendingChanges)
     - Doing Exercise(context: context) still leaves object in context even after exiting current vm or closing app. To remove model, you have to uninstall app or manually remove object from context
+ 
+    Whenever user modifies core data object...
+    - if context.save(), changes is persisted
+    - if user doesn't save, unsaved changes are still persisted while app is active until user does context.save() or closes app (changes are discarded and not seen after reopening app)
+        - unsaved changes are still temporarily saved in core data (so user still see thoses changes even tho they didn't fully commit to saving)
  */

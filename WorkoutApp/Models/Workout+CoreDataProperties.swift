@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreData
+import UIKit
 
 
 extension Workout {
@@ -77,17 +78,18 @@ extension Workout : Identifiable {
     }
     
     class func copy(_ workout: Workout) -> Workout {
-        let workoutCopy = Workout(entity: Workout.entity(), insertInto: nil)
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let workoutCopy = Workout(context: context)
         workoutCopy.title = workout.title
         workoutCopy.createdAt = .now
         
         for exercise in workout.exercises?.array as! [Exercise] {
-            let exerciseCopy = Exercise(entity: Exercise.entity(), insertInto: nil)
+            let exerciseCopy = Exercise(context: context)
             exerciseCopy.title = exercise.title
             exerciseCopy.workout = workoutCopy
             workoutCopy.addToExercises(exerciseCopy)
             for set in exercise.exerciseSets?.array as! [ExerciseSet] {
-                let setCopy = ExerciseSet(entity: ExerciseSet.entity(), insertInto: nil)
+                let setCopy = ExerciseSet(context: context)
                 setCopy.isComplete = false
                 setCopy.weight = set.weight
                 setCopy.reps = set.reps
