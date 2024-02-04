@@ -16,7 +16,7 @@ protocol WorkoutDetailTableViewControllerDelegate: AnyObject {
 class WorkoutDetailTableViewController: UITableViewController {
     let workout: Workout
     let state: State
-    var selectedDate: Date?
+    var previousExercises: [String: Exercise?] = [:]
     
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     weak var delegate: WorkoutDetailTableViewControllerDelegate?
@@ -39,7 +39,12 @@ class WorkoutDetailTableViewController: UITableViewController {
         case .updateLog(let log):
             workout = log   // want to modifiy original workout
         }
-        print("Count: \(context.registeredObjects.count)")
+        // Load previous exercises
+        let exercises = workout.getExercises()
+        for exercise in exercises {
+            previousExercises[exercise.title!] = exercise.previousExerciseDone
+        }
+        print(previousExercises)
         super.init(style: .plain)
     }
     
@@ -51,8 +56,6 @@ class WorkoutDetailTableViewController: UITableViewController {
         super.viewDidLoad()
         navigationItem.title = workout.title
         navigationController?.navigationBar.prefersLargeTitles = true
-        tableView.register(WorkoutDetailTableViewCell.self, forCellReuseIdentifier: WorkoutDetailTableViewCell.reuseIdentifier)
-        tableView.register(AddItemTableViewCell.self, forCellReuseIdentifier: AddItemTableViewCell.reuseIdentifier)
         
         setupBarButton()
         
@@ -60,6 +63,8 @@ class WorkoutDetailTableViewController: UITableViewController {
         footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
         footer.delegate = self
         tableView.tableFooterView = footer
+        tableView.register(WorkoutDetailTableViewCell.self, forCellReuseIdentifier: WorkoutDetailTableViewCell.reuseIdentifier)
+        tableView.register(AddItemTableViewCell.self, forCellReuseIdentifier: AddItemTableViewCell.reuseIdentifier)
         
         updateUI()
     }
@@ -72,23 +77,18 @@ class WorkoutDetailTableViewController: UITableViewController {
     // MARK: - Table view data source
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        guard let exercises = workout.exercises else { return 0 }
-        return exercises.count
+        return workout.getExercises().count
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let exercises = workout.exercises?.array as? [Exercise],
-              let exerciseSets = exercises[section].exerciseSets?.array as? [ExerciseSet]
-        else { return 0 }
-        return exerciseSets.count + 1 // extra for button
+        return workout.getExercise(at: section).getExerciseSets().count + 1 // extra for button
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let exercises = workout.exercises?.array as? [Exercise]
-        let exerciseSets = exercises?[indexPath.section].exerciseSets?.array as? [ExerciseSet]
-        let size = exerciseSets?.count
+        let exercise = workout.getExercise(at: indexPath.section)
+        let sets = exercise.getExerciseSets()
         
-        if indexPath.row == size {
+        if indexPath.row == sets.count {
             let cell = tableView.dequeueReusableCell(withIdentifier: AddItemTableViewCell.reuseIdentifier, for: indexPath) as! AddItemTableViewCell
             cell.update(title: "Add Set")
             cell.delegate = self
@@ -96,10 +96,9 @@ class WorkoutDetailTableViewController: UITableViewController {
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutDetailTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutDetailTableViewCell
+            let set = sets[indexPath.row]
             cell.delegate = self
-            if let exerciseSet = exerciseSets?[indexPath.row] {
-                cell.update(with: exerciseSet, for: indexPath)
-            }
+            cell.update(with: workout, for: indexPath, previousExercise: previousExercises[exercise.title!]!)
             return cell
         }
     }
@@ -208,9 +207,6 @@ class WorkoutDetailTableViewController: UITableViewController {
                         try context.save()
                         delegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
                     case .updateLog(_):
-                        if let selectedDate {
-                            workout.createdAt = selectedDate
-                        }
                         try context.save()
                         delegate?.workoutDetailTableViewController(self, didUpdateLog: workout)
                     }
@@ -228,9 +224,7 @@ class WorkoutDetailTableViewController: UITableViewController {
         switch state {
         case .updateLog(_):
             let calendarAction = UIAction { [self] _ in
-                let date = (selectedDate != nil) ? selectedDate : workout.createdAt!
-                let calendarViewController = CalendarViewController(selectedDate: date!)
-                calendarViewController.delegate = self
+                let calendarViewController = CalendarViewController(workout: workout)
                 let navigationController = UINavigationController(rootViewController: calendarViewController)
                 if let sheet = navigationController.sheetPresentationController {
                     sheet.detents = [.custom(resolver: { context in
@@ -269,9 +263,15 @@ extension WorkoutDetailTableViewController: AddItemTableViewCellDelegate {
 
 extension WorkoutDetailTableViewController: WorkoutDetailTableViewCellDelegate {
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didUpdateExerciseSet exerciseSet: ExerciseSet) {
-        workout.printPrettyString()
         updateUI()
     }
+    
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapCheckmarkForSet exerciseSet: ExerciseSet) {
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
+        updateUI()
+        tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
+    }
+    
 }
 
 extension WorkoutDetailTableViewController: AddExerciseFooterViewDelegate {
@@ -285,11 +285,11 @@ extension WorkoutDetailTableViewController: AddExerciseFooterViewDelegate {
 extension WorkoutDetailTableViewController: ExercisesTableViewControllerDelegate {
     func exercisesTableViewController(_ viewController: ExercisesTableViewController, didSelectExercises exercises: [String]) {
         // Loop through exercises
-        for item in exercises {
+        for exerciseName in exercises {
             let section = workout.exercises?.count ?? 0
             // Create exercise item
             let exercise = Exercise(context: context)
-            exercise.title = item
+            exercise.title = exerciseName
             exercise.workout = workout  // need to set parent aswell, workout.addToExercises(exercise) does not do this.
             workout.addToExercises(exercise)
             // Create a single exerciseSet item
@@ -300,19 +300,21 @@ extension WorkoutDetailTableViewController: ExercisesTableViewControllerDelegate
             set.exercise = exercise
             exercise.addToExerciseSets(set)
             
+            // Add previous exercise
+            previousExercises[exerciseName] = exercise.previousExerciseDone
             // Add section (this also insert's row)
             tableView.insertSections(IndexSet(integer: section), with: .automatic)
         }
     }
 }
-
-extension WorkoutDetailTableViewController: CalendarViewControllerDelegate {
-    func calendarViewController(_ viewController: CalendarViewController, datePickerValueChanged: Date) {
-        print(datePickerValueChanged.formatted())
-        selectedDate = datePickerValueChanged
-    }
-    
-}
+//
+//extension WorkoutDetailTableViewController: CalendarViewControllerDelegate {
+//    func calendarViewController(_ viewController: CalendarViewController, datePickerValueChanged: Date) {
+//        print(datePickerValueChanged.formatted())
+//        selectedDate = datePickerValueChanged
+//    }
+//    
+//}
 
 extension String {
     var isNumeric: Bool {

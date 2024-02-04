@@ -38,7 +38,6 @@ class WorkoutService {
         do {
             let workoutPlans = try context.fetch(request)
             print("Logged \(workoutPlans.count) workouts")
-            workoutPlans.forEach { $0.printPrettyString() }
             return workoutPlans
         } catch {
             print("Error fetching workout objects: \(error.localizedDescription)")

@@ -9,19 +9,19 @@ import UIKit
 
 protocol WorkoutDetailTableViewCellDelegate: AnyObject {
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didUpdateExerciseSet exerciseSet: ExerciseSet)
+    // Had to separte func because user typing focus disappears when pressing checkmark (Due to reloadsection)
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapCheckmarkForSet exerciseSet: ExerciseSet)
 }
 
 class WorkoutDetailTableViewCell: UITableViewCell {
     static let reuseIdentifier = "WorkoutDetailCell"
 
-    var exerciseSet: ExerciseSet!
+    var workout: Workout!
+    var set: ExerciseSet!
     
     var setButton: UIButton = {
         let button = UIButton()
-        var config = UIImage.SymbolConfiguration(pointSize: 30)
-        config = config.applying(UIImage.SymbolConfiguration(paletteColors: [.systemBlue, .white]))
-        button.setImage(UIImage(systemName: "circle", withConfiguration: config), for: .normal)
-        button.changesSelectionAsPrimaryAction = true
+        button.changesSelectionAsPrimaryAction = true   // make button togglable
         return button
     }()
     
@@ -45,6 +45,14 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         return textField
     }()
     
+    var container: UIStackView = {
+        let hstack = UIStackView()
+        hstack.axis = .horizontal
+        hstack.spacing = 8
+        hstack.translatesAutoresizingMaskIntoConstraints = false
+        return hstack
+    }()
+    
     weak var delegate: WorkoutDetailTableViewCellDelegate?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -52,29 +60,29 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         selectionStyle = .none
         
         let exerciseSetChangedAction = UIAction { [self] _ in
-            exerciseSet.isComplete = setButton.isSelected
-            exerciseSet.weight = weightTextField.text
-            exerciseSet.reps = repsTextField.text
-            delegate?.workoutDetailTableViewCell(self, didUpdateExerciseSet: exerciseSet)
+            set.weight = weightTextField.text
+            set.reps = repsTextField.text
+            delegate?.workoutDetailTableViewCell(self, didUpdateExerciseSet: set)
         }
-
-        setButton.addAction(exerciseSetChangedAction, for: .primaryActionTriggered)
+        let checkmarkToggleAction = UIAction { [self] _ in
+            set.isComplete = setButton.isSelected
+            delegate?.workoutDetailTableViewCell(self, didTapCheckmarkForSet: set)
+        }
+        setButton.addAction(checkmarkToggleAction, for: .primaryActionTriggered)
         weightTextField.addAction(exerciseSetChangedAction, for: .editingChanged)
         repsTextField.addAction(exerciseSetChangedAction, for: .editingChanged)
         
-
-        let hstack = UIStackView(arrangedSubviews: [setButton, previousLabel, weightTextField, repsTextField])
-//        hstack.distribution = .fillProportionally
-        hstack.spacing = 8
-        hstack.translatesAutoresizingMaskIntoConstraints = false
-        
-        contentView.addSubview(hstack)
+        container.addArrangedSubview(setButton)
+        container.addArrangedSubview(previousLabel)
+        container.addArrangedSubview(weightTextField)
+        container.addArrangedSubview(repsTextField)
+        contentView.addSubview(container)
         
         NSLayoutConstraint.activate([
-            hstack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            hstack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-            hstack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            hstack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            container.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            container.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
+            container.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+            container.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
         ])
         
         // Percentage width (to stop textfield from expanding)
@@ -89,27 +97,56 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(with exerciseSet: ExerciseSet, for indexPath: IndexPath) {
-        self.exerciseSet = exerciseSet
-        guard let weight = exerciseSet.weight else { return }
+    func update(with workout: Workout, for indexPath: IndexPath, previousExercise: Exercise?) {
+        self.workout = workout
+        let exercises = workout.getExercise(at: indexPath.section)
+        self.set = exercises.getExerciseSet(at: indexPath.row)
+        guard let weight = set.weight else { return }
+        
+        let indexOfCurrentSet = exercises.getExerciseSets().firstIndex { !$0.isComplete } ?? exercises.getExerciseSets().count
+        let isCurrentSet = indexPath.row == indexOfCurrentSet
+        let isPrevious = indexPath.row == indexOfCurrentSet - 1
+        
+        // Normal
         var config = UIImage.SymbolConfiguration(pointSize: 30)
-        config = config.applying(UIImage.SymbolConfiguration(paletteColors: [.white, .systemBlue]))
-        setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle.fill", withConfiguration: config), for: .selected)
+        setButton.isEnabled = isPrevious || isCurrentSet
+        var colors: [UIColor] = isCurrentSet ? [.white, .systemBlue] : [.white, .white]
+        config = config.applying(UIImage.SymbolConfiguration(paletteColors: colors))
+        setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle", withConfiguration: config), for: .normal)
+
+        // Selected
+        var selectedConfig = UIImage.SymbolConfiguration(pointSize: 30)
+        selectedConfig = selectedConfig.applying(UIImage.SymbolConfiguration(paletteColors: [.white, .systemBlue]))
+        setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle.fill", withConfiguration: selectedConfig), for: .selected)
         
+        // Selected + Disabled
+        var selectedDisabledConfig = UIImage.SymbolConfiguration(pointSize: 30)
+        selectedDisabledConfig = selectedDisabledConfig.applying(UIImage.SymbolConfiguration(paletteColors: [.white, .systemBlue]))
+        setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle.fill", withConfiguration: selectedDisabledConfig), for: [.disabled, .selected])
+
         weightTextField.text = weight
-        repsTextField.text = exerciseSet.reps
+        repsTextField.text = set.reps
         
-        if let previousSet = exerciseSet.previousSet(for: indexPath.row) {
-            previousLabel.text = previousSet.weight
-            weightTextField.placeholder = previousSet.weight // use previous weight
-            repsTextField.placeholder = previousSet.reps
+        if let previousExercise {
+            if indexPath.row < previousExercise.exerciseSets!.count {
+//                print("\(indexPath) has previous exercise")
+                let previousSet = previousExercise.getExerciseSet(at: indexPath.row)
+                previousLabel.text = previousSet.weight
+                weightTextField.placeholder = previousSet.weight // use previous weight
+                repsTextField.placeholder = previousSet.reps
+            } else {
+                // Use latest set in current
+//                print("\(indexPath) use previous weight, no previous for this index")
+            }
         } else {
+            let placeholderWeight = "-1" // 135
+            let placeholderReps = "-1" // 5
             previousLabel.text = "-"
-            weightTextField.placeholder = "135"
-            repsTextField.placeholder = "5"
+            weightTextField.placeholder = placeholderWeight
+            repsTextField.placeholder = placeholderReps
         }
         
-        setButton.isSelected = exerciseSet.isComplete
+        setButton.isSelected = set.isComplete
     }
     
 }

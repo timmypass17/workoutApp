@@ -21,6 +21,13 @@ extension Workout {
     @NSManaged public var title: String?
     @NSManaged public var exercises: NSOrderedSet?
 
+    func getExercises() -> [Exercise] {
+        return exercises?.array as? [Exercise] ?? []
+    }
+    
+    func getExercise(at index: Int) -> Exercise {
+        return getExercises()[index]
+    }
 }
 
 // MARK: Generated accessors for exercises

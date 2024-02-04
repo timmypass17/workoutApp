@@ -31,7 +31,7 @@ extension ExerciseSet : Identifiable {
         let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
         let fetchRequest: NSFetchRequest<ExerciseSet> = ExerciseSet.fetchRequest()
 
-        // Filter workouts by name AND is not a template
+        // Filter set by name AND is not a template
         let predicate = NSPredicate(format: "exercise.title == %@ AND exercise.workout.createdAt != nil", exerciseName)
         fetchRequest.predicate = predicate
 
@@ -46,10 +46,10 @@ extension ExerciseSet : Identifiable {
             let results: [ExerciseSet] = try context.fetch(fetchRequest)
             if let latestSet = results.first {
                 // Handle the latest ExerciseSet with the exercise name "Bench Press"
-                print(latestSet)
+//                print(latestSet)
                 return latestSet
             } else {
-                print("No set found \(exerciseName)")
+//                print("No set found \(exerciseName)")
             }
             
         } catch {

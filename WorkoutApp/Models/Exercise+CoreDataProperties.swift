@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreData
+import UIKit
 
 
 extension Exercise {
@@ -20,6 +21,48 @@ extension Exercise {
     @NSManaged public var exerciseSets: NSOrderedSet?
     @NSManaged public var workout: Workout?
 
+    func getExerciseSets() -> [ExerciseSet] {
+        return exerciseSets?.array as? [ExerciseSet] ?? []
+    }
+    
+    func getExerciseSet(at index: Int) -> ExerciseSet {
+        return getExerciseSets()[index]
+    }
+    
+    var currentSet: ExerciseSet? {
+        // Find current set (starting from right to left)
+        //  0  1  2  3
+        // [1, 1, 1, 0] -> 3
+        // [0, 1, 0, 0] -> 2 (user may unselect previous set i.e. 0)
+        // [0, 0, 0, 0] -> 0
+        let sets = getExerciseSets()
+        for i in stride(from: sets.count - 1, to: 0, by: -1) {
+            if sets[i].isComplete {
+                
+            }
+        }
+        
+        return nil
+    }
+    
+    var previousExerciseDone: Exercise? {
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
+        let predicate = NSPredicate(format: "title == %@", title!)
+        let sortDescriptor = NSSortDescriptor(key: "workout.createdAt", ascending: false)
+        request.predicate = predicate
+        request.sortDescriptors = [sortDescriptor]
+        request.fetchLimit = 1
+        request.includesPendingChanges = false // don't include unsaved changes
+        
+        do {
+            let exercise: Exercise? = try context.fetch(request).first
+            return exercise
+        } catch {
+            print("Error fetching previous exercise: \(error.localizedDescription)")
+        }
+        return nil
+    }
 }
 
 // MARK: Generated accessors for exerciseSets

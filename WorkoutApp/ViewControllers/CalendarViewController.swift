@@ -7,19 +7,12 @@
 
 import UIKit
 
-protocol CalendarViewControllerDelegate: AnyObject {
-    func calendarViewController(_ viewController: CalendarViewController, datePickerValueChanged: Date)
-}
-
 class CalendarViewController: UIViewController {
-    
-    var selectedDate: Date
+    var workout: Workout
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    weak var delegate: CalendarViewControllerDelegate?
     
-    init(selectedDate: Date) {
-        print(selectedDate.formatted())
-        self.selectedDate = selectedDate
+    init(workout: Workout) {
+        self.workout = workout
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -43,15 +36,14 @@ class CalendarViewController: UIViewController {
             self.navigationController?.dismiss(animated: true)
         }
         let doneAction = UIAction { [self] _ in
-            selectedDate = datePicker.date
-            delegate?.calendarViewController(self, datePickerValueChanged: selectedDate)
+            workout.createdAt = datePicker.date
             navigationController?.dismiss(animated: true)
         }
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: cancelAction)
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", primaryAction: doneAction)
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Confirm", primaryAction: doneAction)
 
-        datePicker.date = selectedDate
+        datePicker.date = workout.createdAt!
         view.addSubview(datePicker)
         NSLayoutConstraint.activate([
             datePicker.centerXAnchor.constraint(equalTo: view.centerXAnchor),

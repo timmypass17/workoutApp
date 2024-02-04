@@ -39,13 +39,11 @@ class LogTableViewController: UITableViewController {
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        print("numberOfSections: \(sortedMonthYears.count)")
         return sortedMonthYears.count
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let month = sortedMonthYears[section]
-        print("numberOfRowsInSection \(section): \(pastWorkouts[month]!.count)")
         return pastWorkouts[month]?.count ?? 0
     }
 
