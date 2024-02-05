@@ -35,16 +35,17 @@ class WorkoutDetailTableViewController: UITableViewController {
             workout.title = workoutName
             workout.createdAt = nil // templates do not have dates
         case .startWorkout(let template):
-            workout = Workout.copy(template)
+            workout = Workout.templateCopy(template)
         case .updateLog(let log):
             workout = log   // want to modifiy original workout
         }
+    
         // Load previous exercises
         let exercises = workout.getExercises()
         for exercise in exercises {
             previousExercises[exercise.title!] = exercise.previousExerciseDone
         }
-        print(previousExercises)
+
         super.init(style: .plain)
     }
     
@@ -98,7 +99,7 @@ class WorkoutDetailTableViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutDetailTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutDetailTableViewCell
             let set = sets[indexPath.row]
             cell.delegate = self
-            cell.update(with: workout, for: indexPath, previousExercise: previousExercises[exercise.title!]!)
+            cell.update(with: workout, for: indexPath, previousExercise: previousExercises[exercise.title!]!, state: state)
             return cell
         }
     }
@@ -185,32 +186,15 @@ class WorkoutDetailTableViewController: UITableViewController {
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
             alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [self] _ in
                 do {
+                    try context.save()
                     switch state {
                     case .createWorkout(_):
-//                        context.insert(workout)
-//                        for exercise in workout.exercises?.array as! [Exercise] {
-//                            context.insert(exercise)
-//                            for set in exercise.exerciseSets?.array as! [ExerciseSet] {
-//                                context.insert(set)
-//                            }
-//                        }
-                        try context.save()
                         delegate?.workoutDetailTableViewController(self, didCreateWorkout: workout)
                     case .startWorkout(_):
-//                        context.insert(workout)
-//                        for exercise in workout.exercises?.array as! [Exercise] {
-//                            context.insert(exercise)
-//                            for set in exercise.exerciseSets?.array as! [ExerciseSet] {
-//                                context.insert(set)
-//                            }
-//                        }
-                        try context.save()
                         delegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
                     case .updateLog(_):
-                        try context.save()
                         delegate?.workoutDetailTableViewController(self, didUpdateLog: workout)
                     }
-                    print("Popview controller")
                     navigationController?.popViewController(animated: true)
                 } catch {
                     print("Failed to save workout: \(error)")

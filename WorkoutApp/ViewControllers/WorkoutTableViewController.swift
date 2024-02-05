@@ -104,17 +104,9 @@ class WorkoutTableViewController: UITableViewController {
         addButton = UIBarButtonItem(title: "Add Workout", image: UIImage(systemName: "plus"), primaryAction: addWorkoutAction)
         navigationItem.rightBarButtonItem = addButton
     }
-//    
-//    func getWorkouts() -> [Workout] {
-//        do {
-//            return try context.fetch(Workout.fetchRequest())
-//        } catch {
-//            print("Failed to get workout plans: \(error)")
-//            return []
-//        }
-//    }
-//    
+
     func deleteWorkout(workout: Workout) {
+        // Changed relationship delete rule to "Cascade" (delete Workout A, deletes exercises and sets too)
         context.delete(workout)
         
         do {
@@ -123,18 +115,6 @@ class WorkoutTableViewController: UITableViewController {
             print("Failed to delete workout plan: \(error)")
         }
     }
-    
-    //    func updateWorkoutPlan(workoutPlan: WorkoutPlan, updatedTitle: String, updatedExercises: NSSet) {
-    //        workoutPlan.title = updatedTitle
-    //        workoutPlan.addToExercises(updatedExercises)
-    //
-    //        do {
-    //            try context.save()
-    //        } catch {
-    //            print("Failed to update workout plan: \(error)")
-    //        }
-    //    }
-    
     
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in

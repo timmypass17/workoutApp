@@ -84,7 +84,7 @@ extension Workout : Identifiable {
         return "Workout(title: \(title!), createdAt: \(createdAt))"
     }
     
-    class func copy(_ workout: Workout) -> Workout {
+    class func templateCopy(_ workout: Workout) -> Workout {
         let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
         let workoutCopy = Workout(context: context)
         workoutCopy.title = workout.title
@@ -98,8 +98,8 @@ extension Workout : Identifiable {
             for set in exercise.exerciseSets?.array as! [ExerciseSet] {
                 let setCopy = ExerciseSet(context: context)
                 setCopy.isComplete = false
-                setCopy.weight = set.weight
-                setCopy.reps = set.reps
+                setCopy.weight = ""
+                setCopy.reps = ""
                 setCopy.exercise = exerciseCopy
                 exerciseCopy.addToExerciseSets(setCopy)
             }

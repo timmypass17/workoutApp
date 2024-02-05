@@ -97,7 +97,7 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(with workout: Workout, for indexPath: IndexPath, previousExercise: Exercise?) {
+    func update(with workout: Workout, for indexPath: IndexPath, previousExercise: Exercise?, state: WorkoutDetailTableViewController.State) {
         self.workout = workout
         let exercises = workout.getExercise(at: indexPath.section)
         self.set = exercises.getExerciseSet(at: indexPath.row)
@@ -110,7 +110,7 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         // Normal
         var config = UIImage.SymbolConfiguration(pointSize: 30)
         setButton.isEnabled = isPrevious || isCurrentSet
-        var colors: [UIColor] = isCurrentSet ? [.white, .systemBlue] : [.white, .white]
+        var colors: [UIColor] = isCurrentSet ? [.white, .systemBlue] : [.gray, .gray]
         config = config.applying(UIImage.SymbolConfiguration(paletteColors: colors))
         setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle", withConfiguration: config), for: .normal)
 
@@ -129,14 +129,14 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         
         if let previousExercise {
             if indexPath.row < previousExercise.exerciseSets!.count {
-//                print("\(indexPath) has previous exercise")
+                print("\(indexPath) has previous exercise")
                 let previousSet = previousExercise.getExerciseSet(at: indexPath.row)
                 previousLabel.text = previousSet.weight
                 weightTextField.placeholder = previousSet.weight // use previous weight
                 repsTextField.placeholder = previousSet.reps
             } else {
                 // Use latest set in current
-//                print("\(indexPath) use previous weight, no previous for this index")
+                print("\(indexPath) use previous weight, no previous for this index")
             }
         } else {
             let placeholderWeight = "-1" // 135

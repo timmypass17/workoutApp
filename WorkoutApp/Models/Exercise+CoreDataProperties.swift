@@ -29,22 +29,6 @@ extension Exercise {
         return getExerciseSets()[index]
     }
     
-    var currentSet: ExerciseSet? {
-        // Find current set (starting from right to left)
-        //  0  1  2  3
-        // [1, 1, 1, 0] -> 3
-        // [0, 1, 0, 0] -> 2 (user may unselect previous set i.e. 0)
-        // [0, 0, 0, 0] -> 0
-        let sets = getExerciseSets()
-        for i in stride(from: sets.count - 1, to: 0, by: -1) {
-            if sets[i].isComplete {
-                
-            }
-        }
-        
-        return nil
-    }
-    
     var previousExerciseDone: Exercise? {
         let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
         let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
