@@ -19,11 +19,10 @@ class WorkoutService {
         
         do {
             let workoutPlans = try context.fetch(request)
-            print("Load \(workoutPlans.count) workouts")
-//            workoutPlans.forEach { $0.printPrettyString() }
+            print("Loaded \(workoutPlans.count) workouts")
             return workoutPlans
         } catch {
-            print("Error fetching workout objects: \(error.localizedDescription)")
+            print("Error fetching workouts: \(error.localizedDescription)")
         }
         return []
     }
@@ -37,10 +36,10 @@ class WorkoutService {
         
         do {
             let workoutPlans = try context.fetch(request)
-            print("Logged \(workoutPlans.count) workouts")
+            print("Loaded \(workoutPlans.count) logs")
             return workoutPlans
         } catch {
-            print("Error fetching workout objects: \(error.localizedDescription)")
+            print("Error fetching logs: \(error.localizedDescription)")
         }
         return []
     }

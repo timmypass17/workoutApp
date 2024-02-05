@@ -83,27 +83,27 @@ extension Workout : Identifiable {
     func getPrettyString() -> String {
         return "Workout(title: \(title!), createdAt: \(createdAt))"
     }
-    
-    class func templateCopy(_ workout: Workout) -> Workout {
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-        let workoutCopy = Workout(context: context)
-        workoutCopy.title = workout.title
-        workoutCopy.createdAt = .now
         
-        for exercise in workout.exercises?.array as! [Exercise] {
-            let exerciseCopy = Exercise(context: context)
-            exerciseCopy.title = exercise.title
-            exerciseCopy.workout = workoutCopy
-            workoutCopy.addToExercises(exerciseCopy)
-            for set in exercise.exerciseSets?.array as! [ExerciseSet] {
-                let setCopy = ExerciseSet(context: context)
-                setCopy.isComplete = false
-                setCopy.weight = ""
-                setCopy.reps = ""
-                setCopy.exercise = exerciseCopy
-                exerciseCopy.addToExerciseSets(setCopy)
+    class func copy(template: Workout) -> Workout {
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let workout = Workout(context: context)
+        workout.title = template.title
+        workout.createdAt = .now
+        
+        for exerciseTemplate in template.getExercises() {
+            let exercise = Exercise(context: context)
+            exercise.title = exerciseTemplate.title
+            exercise.workout = workout
+            workout.addToExercises(exercise)
+            for _ in exerciseTemplate.getExerciseSets() {
+                let set = ExerciseSet(context: context)
+                set.isComplete = false
+                set.weight = ""
+                set.reps = ""
+                set.exercise = exercise
+                exercise.addToExerciseSets(set)
             }
         }
-        return workoutCopy
+        return workout
     }
 }

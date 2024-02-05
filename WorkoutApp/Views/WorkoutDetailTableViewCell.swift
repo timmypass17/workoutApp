@@ -11,11 +11,13 @@ protocol WorkoutDetailTableViewCellDelegate: AnyObject {
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didUpdateExerciseSet exerciseSet: ExerciseSet)
     // Had to separte func because user typing focus disappears when pressing checkmark (Due to reloadsection)
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapCheckmarkForSet exerciseSet: ExerciseSet)
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, nextButtonTapped: Bool)
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, previousButtonTapped: Bool)
 }
 
 class WorkoutDetailTableViewCell: UITableViewCell {
     static let reuseIdentifier = "WorkoutDetailCell"
-
+    
     var workout: Workout!
     var set: ExerciseSet!
     
@@ -33,6 +35,7 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     
     var weightTextField: UITextField = {
         let textField = UITextField()
+        textField.keyboardType = .decimalPad
         textField.borderStyle = .roundedRect
         textField.textAlignment = .center
         return textField
@@ -40,9 +43,20 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     
     var repsTextField: UITextField = {
         let textField = UITextField()
+        textField.keyboardType = .decimalPad
         textField.borderStyle = .roundedRect
         textField.textAlignment = .center
         return textField
+    }()
+    
+    var toolbar: UIToolbar = {
+        let bar = UIToolbar()
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+        let leftButton = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), style: .plain, target: self, action: #selector(previousButtonTapped))
+        let rightButton = UIBarButtonItem(image: UIImage(systemName: "chevron.right"), style: .plain, target: self, action: #selector(nextButtonTapped))
+        bar.items = [leftButton, rightButton,.flexibleSpace(), doneButton]
+        bar.sizeToFit()
+        return bar
     }()
     
     var container: UIStackView = {
@@ -53,17 +67,22 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         return hstack
     }()
     
+
     weak var delegate: WorkoutDetailTableViewCellDelegate?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         selectionStyle = .none
         
+        weightTextField.inputAccessoryView = toolbar
+        repsTextField.inputAccessoryView = toolbar
+        
         let exerciseSetChangedAction = UIAction { [self] _ in
             set.weight = weightTextField.text
             set.reps = repsTextField.text
             delegate?.workoutDetailTableViewCell(self, didUpdateExerciseSet: set)
         }
+        
         let checkmarkToggleAction = UIAction { [self] _ in
             set.isComplete = setButton.isSelected
             delegate?.workoutDetailTableViewCell(self, didTapCheckmarkForSet: set)
@@ -99,18 +118,18 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     
     func update(with workout: Workout, for indexPath: IndexPath, previousExercise: Exercise?, state: WorkoutDetailTableViewController.State) {
         self.workout = workout
-        let exercises = workout.getExercise(at: indexPath.section)
-        self.set = exercises.getExerciseSet(at: indexPath.row)
+        let exercise = workout.getExercise(at: indexPath.section)
+        self.set = exercise.getExerciseSet(at: indexPath.row)
         guard let weight = set.weight else { return }
         
-        let indexOfCurrentSet = exercises.getExerciseSets().firstIndex { !$0.isComplete } ?? exercises.getExerciseSets().count
+        let indexOfCurrentSet = exercise.getExerciseSets().firstIndex { !$0.isComplete } ?? exercise.getExerciseSets().count
         let isCurrentSet = indexPath.row == indexOfCurrentSet
         let isPrevious = indexPath.row == indexOfCurrentSet - 1
         
         // Normal
         var config = UIImage.SymbolConfiguration(pointSize: 30)
         setButton.isEnabled = isPrevious || isCurrentSet
-        var colors: [UIColor] = isCurrentSet ? [.white, .systemBlue] : [.gray, .gray]
+        let colors: [UIColor] = isCurrentSet ? [.white, .systemBlue] : [.gray, .gray]
         config = config.applying(UIImage.SymbolConfiguration(paletteColors: colors))
         setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle", withConfiguration: config), for: .normal)
 
@@ -127,28 +146,34 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         weightTextField.text = weight
         repsTextField.text = set.reps
         
-        if let previousExercise {
-            if indexPath.row < previousExercise.exerciseSets!.count {
-                print("\(indexPath) has previous exercise")
-                let previousSet = previousExercise.getExerciseSet(at: indexPath.row)
-                previousLabel.text = previousSet.weight
-                weightTextField.placeholder = previousSet.weight // use previous weight
-                repsTextField.placeholder = previousSet.reps
-            } else {
-                // Use latest set in current
-                print("\(indexPath) use previous weight, no previous for this index")
-            }
+        if let previousExercise, indexPath.row < previousExercise.exerciseSets!.count {
+            // Has previous logged exercise
+            let previousSet = previousExercise.getExerciseSet(at: indexPath.row)
+            previousLabel.text = previousSet.weight
+            weightTextField.placeholder = previousSet.weight
+            repsTextField.placeholder = previousSet.reps
         } else {
-            let placeholderWeight = "-1" // 135
-            let placeholderReps = "-1" // 5
+            // Does not have set
             previousLabel.text = "-"
-            weightTextField.placeholder = placeholderWeight
-            repsTextField.placeholder = placeholderReps
+            weightTextField.placeholder = ""
+            repsTextField.placeholder = ""
         }
         
         setButton.isSelected = set.isComplete
     }
     
+    
+    @objc func doneButtonTapped() {
+        endEditing(true)
+    }
+    
+    @objc func previousButtonTapped() {
+        delegate?.workoutDetailTableViewCell(self, previousButtonTapped: true)
+    }
+    
+    @objc func nextButtonTapped() {
+        delegate?.workoutDetailTableViewCell(self, nextButtonTapped: true)
+    }
 }
 
 #Preview {

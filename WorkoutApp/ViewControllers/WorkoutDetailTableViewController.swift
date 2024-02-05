@@ -35,7 +35,7 @@ class WorkoutDetailTableViewController: UITableViewController {
             workout.title = workoutName
             workout.createdAt = nil // templates do not have dates
         case .startWorkout(let template):
-            workout = Workout.templateCopy(template)
+            workout = Workout.copy(template: template)
         case .updateLog(let log):
             workout = log   // want to modifiy original workout
         }
@@ -97,7 +97,6 @@ class WorkoutDetailTableViewController: UITableViewController {
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutDetailTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutDetailTableViewCell
-            let set = sets[indexPath.row]
             cell.delegate = self
             cell.update(with: workout, for: indexPath, previousExercise: previousExercises[exercise.title!]!, state: state)
             return cell
@@ -136,6 +135,10 @@ class WorkoutDetailTableViewController: UITableViewController {
             tableView.endUpdates()
             updateUI()
         }
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 50
     }
     
     func updateUI() {
@@ -246,6 +249,57 @@ extension WorkoutDetailTableViewController: AddItemTableViewCellDelegate {
 }
 
 extension WorkoutDetailTableViewController: WorkoutDetailTableViewCellDelegate {
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, nextButtonTapped: Bool) {
+        if cell.weightTextField.isFirstResponder {
+            cell.repsTextField.becomeFirstResponder()
+        }
+        else if cell.repsTextField.isFirstResponder {
+            guard let indexPath = tableView.indexPath(for: cell) else { return }
+            // If last textfield, do nothing
+            let exercisesCount = workout.getExercises().count
+            if indexPath.section == exercisesCount - 1 &&
+                indexPath.row == workout.getExercise(at: exercisesCount - 1).getExerciseSets().count - 1 {
+                return
+            }
+            // Go to next row
+            let nextIndexPath: IndexPath
+            if indexPath.row < workout.getExercise(at: indexPath.section).getExerciseSets().count - 1 {
+                nextIndexPath = IndexPath(row: indexPath.row + 1, section: indexPath.section)
+            } else {
+                // Go to next section
+                nextIndexPath = IndexPath(row: 0, section: indexPath.section + 1)
+            }
+            let nextCell = tableView.cellForRow(at: nextIndexPath) as! WorkoutDetailTableViewCell
+            nextCell.weightTextField.becomeFirstResponder()
+        }
+    }
+    
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, previousButtonTapped: Bool) {
+        if cell.repsTextField.isFirstResponder {
+            cell.weightTextField.becomeFirstResponder()
+        }
+        else if cell.weightTextField.isFirstResponder {
+            guard let indexPath = tableView.indexPath(for: cell) else { return }
+            // If first textfield, do nothing
+            let exercisesCount = workout.getExercises().count
+            if indexPath == IndexPath(row: 0, section: 0) {
+                return
+            }
+            // Go to previous row
+            let previousIndexPath: IndexPath
+            if indexPath.row > 0 {
+                previousIndexPath = IndexPath(row: indexPath.row - 1, section: indexPath.section)
+            } else {
+                // Go to previous section
+                previousIndexPath = IndexPath(
+                    row: workout.getExercise(at: indexPath.section - 1).getExerciseSets().count - 1,
+                    section: indexPath.section - 1)
+            }
+            let previousCell = tableView.cellForRow(at: previousIndexPath) as! WorkoutDetailTableViewCell
+            previousCell.repsTextField.becomeFirstResponder()
+        }
+    }
+    
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didUpdateExerciseSet exerciseSet: ExerciseSet) {
         updateUI()
     }

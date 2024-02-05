@@ -71,7 +71,6 @@ class WorkoutTableViewController: UITableViewController {
         tableView.register(WorkoutTableViewCell.self, forCellReuseIdentifier: WorkoutTableViewCell.reuseIdentifier)
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.title = "Workout"
-//        workoutPlans = getWorkoutPlans()
         setupAddButton()
     }
     
@@ -81,6 +80,7 @@ class WorkoutTableViewController: UITableViewController {
             
             alert.addTextField { textField in
                 textField.placeholder = "Ex. Workout A"
+                textField.autocapitalizationType = .sentences
                 let textChangedAction = UIAction { _ in
                     alert.actions[1].isEnabled = textField.text!.count > 0
                 }
