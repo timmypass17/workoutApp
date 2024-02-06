@@ -13,6 +13,7 @@ protocol WorkoutDetailTableViewControllerDelegate: AnyObject {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateLog workout: Workout)
 }
 
+// TODO: Make checkmark not clickable? Feels clunku having to tap checkmark. Make checkmark automatically checked when weight + reps are not empty
 class WorkoutDetailTableViewController: UITableViewController {
     let workout: Workout
     let state: State
@@ -108,7 +109,6 @@ class WorkoutDetailTableViewController: UITableViewController {
         return exercises[section].title
     }
     
-    // Swipe to delete
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         let exercises = workout.exercises?.array as? [Exercise]
         let exerciseSets = exercises?[indexPath.section].exerciseSets?.array as? [ExerciseSet]
@@ -140,6 +140,25 @@ class WorkoutDetailTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 50
     }
+    
+//    override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+//        // Swipe only works for current set
+//        let indexOfCurrentSet = workout.getExercise(at: indexPath.section).getExerciseSets().firstIndex { !$0.isComplete } ?? workout.getExercise(at: indexPath.row).getExerciseSets().count
+//        let isCurrentSet = indexPath.row == indexOfCurrentSet
+//        print("\(indexPath) isCurrentSet: \(isCurrentSet)")
+//        guard isCurrentSet else { return nil }
+//        
+//        let doneAction = UIContextualAction(style: .normal, title: "Done") { action, sourceView, completionHandler in
+//            // Toggle checkmark
+//            self.workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row).isComplete.toggle()
+//            tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
+//            completionHandler(true)
+//        }
+//        doneAction.backgroundColor = .systemBlue
+//        doneAction.image = UIImage(systemName: "checkmark")
+//        let swipeActionConfig = UISwipeActionsConfiguration(actions: [doneAction])
+//        return swipeActionConfig
+//    }
     
     func updateUI() {
         updateFinishButton()
@@ -189,6 +208,7 @@ class WorkoutDetailTableViewController: UITableViewController {
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
             alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [self] _ in
                 do {
+                    workout.printPrettyString()
                     try context.save()
                     switch state {
                     case .createWorkout(_):
@@ -255,6 +275,21 @@ extension WorkoutDetailTableViewController: WorkoutDetailTableViewCellDelegate {
         }
         else if cell.repsTextField.isFirstResponder {
             guard let indexPath = tableView.indexPath(for: cell) else { return }
+            // Toggle checkmark
+            if !cell.set.isComplete {
+                cell.set.isComplete = true
+                // If textfield is empty, use placeholder value
+                if cell.weightTextField.text == "" {
+                    cell.set.weight = cell.weightTextField.placeholder
+                    cell.weightTextField.text = cell.weightTextField.placeholder
+                }
+                if cell.repsTextField.text == "" {
+                    cell.set.reps = cell.repsTextField.placeholder
+                    cell.repsTextField.text = cell.repsTextField.placeholder
+                }
+                tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
+                updateUI()
+            }
             // If last textfield, do nothing
             let exercisesCount = workout.getExercises().count
             if indexPath.section == exercisesCount - 1 &&
@@ -281,7 +316,6 @@ extension WorkoutDetailTableViewController: WorkoutDetailTableViewCellDelegate {
         else if cell.weightTextField.isFirstResponder {
             guard let indexPath = tableView.indexPath(for: cell) else { return }
             // If first textfield, do nothing
-            let exercisesCount = workout.getExercises().count
             if indexPath == IndexPath(row: 0, section: 0) {
                 return
             }
@@ -301,13 +335,14 @@ extension WorkoutDetailTableViewController: WorkoutDetailTableViewCellDelegate {
     }
     
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didUpdateExerciseSet exerciseSet: ExerciseSet) {
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
         updateUI()
     }
     
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapCheckmarkForSet exerciseSet: ExerciseSet) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
-        updateUI()
         tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
+        updateUI()
     }
     
 }
