@@ -38,9 +38,6 @@ class WorkoutDetailTableViewController: UITableViewController {
     
     init(_ state: State) {
         self.state = state
-        // Dont do this...
-//        childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-//        childContext.parent = context
         childContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
         
         switch state {
@@ -203,18 +200,19 @@ class WorkoutDetailTableViewController: UITableViewController {
             alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [self] _ in
                 do {
                     try childContext.save()
-                    try context.save()
+                    try context.save()  // TODO: unncessary? Didnt need to do context.save() when doing logContext.save()
                     
                     switch state {
                     case .createWorkout(_):
                         delegate?.workoutDetailTableViewController(self, didCreateWorkout: workout)
                     case .startWorkout(_):
-                        print("Finished context: \(childContext)")
                         delegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
                     case .updateLog(let log):
                         // Delete old log
-                        context.delete(log)
-                        try context.save()
+                        if let logContext = log.managedObjectContext {
+                            logContext.delete(log)
+                            try logContext.save()
+                        }
                         delegate?.workoutDetailTableViewController(self, didUpdateLog: workout)
                     }
                     navigationController?.popViewController(animated: true)

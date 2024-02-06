@@ -85,10 +85,10 @@ extension Workout : Identifiable {
     }
         
     class func copy(workout: Workout, with context: NSManagedObjectContext) -> Workout {
-        let isTemplate = workout.createdAt == nil
+        let isStartingNewWorkout = workout.createdAt == nil // copying template
         let workoutCopy = Workout(context: context)
         workoutCopy.title = workout.title
-        workoutCopy.createdAt = .now
+        workoutCopy.createdAt = isStartingNewWorkout ? .now : workout.createdAt
         
         for exercise in workout.getExercises() {
             let exerciseCopy = Exercise(context: context)
@@ -98,8 +98,8 @@ extension Workout : Identifiable {
             for set in exercise.getExerciseSets() {
                 let setCopy = ExerciseSet(context: context)
                 setCopy.isComplete = false
-                setCopy.weight = isTemplate ? "" : set.weight
-                setCopy.reps = isTemplate ? "" : set.reps
+                setCopy.weight = isStartingNewWorkout ? "" : set.weight
+                setCopy.reps = isStartingNewWorkout ? "" : set.reps
                 setCopy.exercise = exerciseCopy
                 exerciseCopy.addToExerciseSets(setCopy)
             }
