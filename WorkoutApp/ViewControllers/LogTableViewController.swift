@@ -96,7 +96,10 @@ class LogTableViewController: UITableViewController {
     private func deleteWorkout(forRowAt indexPath: IndexPath) {
         // Remove from core data
         let monthYear = sortedMonthYears[indexPath.section]
-        context.delete(pastWorkouts[monthYear]![indexPath.row])
+        let workoutToDelete = pastWorkouts[monthYear]![indexPath.row]
+        // Object may have been created in detail view (has it's own seperate child context from main context). Use that specific context instead
+        let context = workoutToDelete.managedObjectContext!
+        context.delete(workoutToDelete)
         do {
             try context.save()
         } catch {
@@ -119,6 +122,7 @@ extension LogTableViewController: WorkoutDetailTableViewControllerDelegate {
             pastWorkouts[monthYear] = []
             tableView.insertSections(IndexSet(integer: 0), with: .automatic)
         }
+        
         pastWorkouts[monthYear]!.insert(workout, at: 0)
         
         tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)

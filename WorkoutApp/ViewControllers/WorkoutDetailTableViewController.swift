@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreData
 
 protocol WorkoutDetailTableViewControllerDelegate: AnyObject {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didCreateWorkout workout: Workout)
@@ -13,13 +14,19 @@ protocol WorkoutDetailTableViewControllerDelegate: AnyObject {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateLog workout: Workout)
 }
 
-// TODO: Make checkmark not clickable? Feels clunku having to tap checkmark. Make checkmark automatically checked when weight + reps are not empty
+// TODO: Bug with deleting log, deletes all exercise and sets
+// 1. Finish Workout A
+// 2. Delete Workout A's logged bench press
+// 3. Workout A's bench press is empty and previous is empty
+// Solution: Problably something with deletion rule
 class WorkoutDetailTableViewController: UITableViewController {
     let workout: Workout
     let state: State
     var previousExercises: [String: Exercise?] = [:]
     
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let childContext: NSManagedObjectContext
+    
     weak var delegate: WorkoutDetailTableViewControllerDelegate?
     
     enum State {
@@ -30,23 +37,28 @@ class WorkoutDetailTableViewController: UITableViewController {
     
     init(_ state: State) {
         self.state = state
+        childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        childContext.parent = context
+        
         switch state {
         case .createWorkout(let workoutName):
-            workout = Workout(context: context)
+            workout = Workout(context: childContext)
             workout.title = workoutName
             workout.createdAt = nil // templates do not have dates
         case .startWorkout(let template):
-            workout = Workout.copy(template: template)
+            workout = Workout.copy(workout: template, with: childContext, isTemplate: true)
         case .updateLog(let log):
-            workout = log   // want to modifiy original workout
+            workout = Workout.copy(workout: log, with: childContext)   // make copy of log, then save new log and delete old log
         }
-    
+        workout.printPrettyString()
+        
         // Load previous exercises
+        print("Load previous exercises")
         let exercises = workout.getExercises()
         for exercise in exercises {
             previousExercises[exercise.title!] = exercise.previousExerciseDone
         }
-
+        
         super.init(style: .plain)
     }
     
@@ -71,10 +83,16 @@ class WorkoutDetailTableViewController: UITableViewController {
         updateUI()
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        // Restore object to its last saved state (undo changes not saved)
-        context.rollback()
-    }
+//    override func viewDidDisappear(_ animated: Bool) {
+//        if self.isMovingFromParent {
+//            print("Back button pressed")
+//            print("Rolling back unsaved changes")
+//            // Restore objects to its last saved state (undo changes not saved)
+//            childContext.rollback()
+//        } else {
+//            print("View disappeared (user changed screen)")
+//        }
+//    }
     
     // MARK: - Table view data source
     
@@ -122,6 +140,7 @@ class WorkoutDetailTableViewController: UITableViewController {
         
         if (editingStyle == .delete) {
             // handle delete (by removing the data from your array and updating the tableview)
+            print("Removing set at \(indexPath)")
             exercises[indexPath.section].removeFromExerciseSets(at: indexPath.row)
             tableView.beginUpdates()
             tableView.deleteRows(at: [indexPath], with: .automatic)
@@ -148,12 +167,12 @@ class WorkoutDetailTableViewController: UITableViewController {
     func updateFinishButton() {
         // Check if all set is complete
         guard let exercises = workout.exercises?.array as? [Exercise] else { return }
-
+        
         let shouldEnableFinishButton = exercises.allSatisfy { exercise in
             guard let exerciseSets = exercise.exerciseSets?.array as? [ExerciseSet] else { return false }
             return exerciseSets.allSatisfy { validInput(exerciseSet: $0) }
         }
-
+        
         navigationItem.rightBarButtonItem?.isEnabled = shouldEnableFinishButton
         
         func validInput(exerciseSet: ExerciseSet) -> Bool {
@@ -190,13 +209,20 @@ class WorkoutDetailTableViewController: UITableViewController {
             alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [self] _ in
                 do {
                     workout.printPrettyString()
+                    try childContext.save()
                     try context.save()
+                    
+                    print("Child context: \(childContext)")
+                    print("Parent context: \(context)")
                     switch state {
                     case .createWorkout(_):
                         delegate?.workoutDetailTableViewController(self, didCreateWorkout: workout)
                     case .startWorkout(_):
                         delegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
-                    case .updateLog(_):
+                    case .updateLog(let log):
+                        // Delete old log
+                        context.delete(log)
+                        try context.save()
                         delegate?.workoutDetailTableViewController(self, didUpdateLog: workout)
                     }
                     navigationController?.popViewController(animated: true)
@@ -236,7 +262,7 @@ extension WorkoutDetailTableViewController: AddItemTableViewCellDelegate {
         // Add set
         let exercises = workout.exercises?.array as! [Exercise]
         let exercise = exercises[indexPath.section]
-        let set = ExerciseSet(context: context)
+        let set = ExerciseSet(context: childContext)
         set.isComplete = false
         set.weight = ""
         set.reps = ""
@@ -342,12 +368,12 @@ extension WorkoutDetailTableViewController: ExercisesTableViewControllerDelegate
         for exerciseName in exercises {
             let section = workout.exercises?.count ?? 0
             // Create exercise item
-            let exercise = Exercise(context: context)
+            let exercise = Exercise(context: childContext)
             exercise.title = exerciseName
             exercise.workout = workout  // need to set parent aswell, workout.addToExercises(exercise) does not do this.
             workout.addToExercises(exercise)
             // Create a single exerciseSet item
-            let set = ExerciseSet(context: context)
+            let set = ExerciseSet(context: childContext)
             set.isComplete = false
             set.weight = ""
             set.reps = ""
@@ -367,7 +393,7 @@ extension WorkoutDetailTableViewController: ExercisesTableViewControllerDelegate
 //        print(datePickerValueChanged.formatted())
 //        selectedDate = datePickerValueChanged
 //    }
-//    
+//
 //}
 
 extension String {
@@ -379,12 +405,12 @@ extension String {
 
 /**
  Q1: Why do "let exercise = Exercise(entity: Exercise.entity(), insertInto: nil)"?
-    - Because we do not want to create and add it to core data yet. User may decide not to create exercise.
-    - Doing Exercise(context: context) gets added to context, and doing fetch still include those objects even though we didn't save the object via context.save(). (look at request.includesPendingChanges)
-    - Doing Exercise(context: context) still leaves object in context even after exiting current vm or closing app. To remove model, you have to uninstall app or manually remove object from context
+ - Because we do not want to create and add it to core data yet. User may decide not to create exercise.
+ - Doing Exercise(context: context) gets added to context, and doing fetch still include those objects even though we didn't save the object via context.save(). (look at request.includesPendingChanges)
+ - Doing Exercise(context: context) still leaves object in context even after exiting current vm or closing app. To remove model, you have to uninstall app or manually remove object from context
  
-    Whenever user modifies core data object...
-    - if context.save(), changes is persisted
-    - if user doesn't save, unsaved changes are still persisted while app is active until user does context.save() or closes app (changes are discarded and not seen after reopening app)
-        - unsaved changes are still temporarily saved in core data (so user still see thoses changes even tho they didn't fully commit to saving)
+ Whenever user modifies core data object...
+ - if context.save(), changes is persisted
+ - if user doesn't save, unsaved changes are still persisted while app is active until user does context.save() or closes app (changes are discarded and not seen after reopening app)
+ - unsaved changes are still temporarily saved in core data (so user still see thoses changes even tho they didn't fully commit to saving)
  */

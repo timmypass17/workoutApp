@@ -84,26 +84,25 @@ extension Workout : Identifiable {
         return "Workout(title: \(title!), createdAt: \(createdAt))"
     }
         
-    class func copy(template: Workout) -> Workout {
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-        let workout = Workout(context: context)
-        workout.title = template.title
-        workout.createdAt = .now
+    class func copy(workout: Workout, with context: NSManagedObjectContext, isTemplate: Bool = false) -> Workout {
+        let workoutCopy = Workout(context: context)
+        workoutCopy.title = workout.title
+        workoutCopy.createdAt = .now
         
-        for exerciseTemplate in template.getExercises() {
-            let exercise = Exercise(context: context)
-            exercise.title = exerciseTemplate.title
-            exercise.workout = workout
-            workout.addToExercises(exercise)
-            for _ in exerciseTemplate.getExerciseSets() {
-                let set = ExerciseSet(context: context)
-                set.isComplete = false
-                set.weight = ""
-                set.reps = ""
-                set.exercise = exercise
-                exercise.addToExerciseSets(set)
+        for exercise in workout.getExercises() {
+            let exerciseCopy = Exercise(context: context)
+            exerciseCopy.title = exercise.title
+            exerciseCopy.workout = workoutCopy
+            workoutCopy.addToExercises(exerciseCopy)
+            for set in exercise.getExerciseSets() {
+                let setCopy = ExerciseSet(context: context)
+                setCopy.isComplete = false
+                setCopy.weight = isTemplate ? "" : set.weight
+                setCopy.reps = isTemplate ? "" : set.reps
+                setCopy.exercise = exerciseCopy
+                exerciseCopy.addToExerciseSets(setCopy)
             }
         }
-        return workout
+        return workoutCopy
     }
 }
