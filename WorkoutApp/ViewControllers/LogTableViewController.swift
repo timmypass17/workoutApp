@@ -88,6 +88,7 @@ class LogTableViewController: UITableViewController {
         guard let workouts = pastWorkouts[month] else { return }
         
         let workout = workouts[indexPath.row]
+        print("Selected workout with context: \(workout.managedObjectContext!)")
         let workoutDetailViewController = WorkoutDetailTableViewController(.updateLog(workout))
         workoutDetailViewController.delegate = self
         navigationController?.pushViewController(workoutDetailViewController, animated: true)
@@ -99,6 +100,7 @@ class LogTableViewController: UITableViewController {
         let workoutToDelete = pastWorkouts[monthYear]![indexPath.row]
         // Object may have been created in detail view (has it's own seperate child context from main context). Use that specific context instead
         let context = workoutToDelete.managedObjectContext!
+        print("Deleted workout in context: \(context)")
         context.delete(workoutToDelete)
         do {
             try context.save()

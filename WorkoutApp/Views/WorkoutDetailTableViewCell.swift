@@ -137,12 +137,10 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         self.workout = workout
         let exercise = workout.getExercise(at: indexPath.section)
         self.set = exercise.getExerciseSet(at: indexPath.row)
-        guard let weight = set.weight else { return }
         
+        // Normal
         let indexOfCurrentSet = exercise.getExerciseSets().firstIndex { !$0.isComplete } ?? exercise.getExerciseSets().count
         let isCurrentSet = indexPath.row == indexOfCurrentSet
-
-        // Normal
         var config = UIImage.SymbolConfiguration(pointSize: 30)
         let colors: [UIColor] = isCurrentSet ? [.white, .systemBlue] : [.gray, .gray]
         config = config.applying(UIImage.SymbolConfiguration(paletteColors: colors))
@@ -152,13 +150,8 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         var selectedConfig = UIImage.SymbolConfiguration(pointSize: 30)
         selectedConfig = selectedConfig.applying(UIImage.SymbolConfiguration(paletteColors: [.white, .systemBlue]))
         setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle.fill", withConfiguration: selectedConfig), for: .selected)
-//        
-//        // Selected + Disabled
-//        var selectedDisabledConfig = UIImage.SymbolConfiguration(pointSize: 30)
-//        selectedDisabledConfig = selectedDisabledConfig.applying(UIImage.SymbolConfiguration(paletteColors: [.white, .systemBlue]))
-//        setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle.fill", withConfiguration: selectedDisabledConfig), for: [.disabled, .selected])
 
-        weightTextField.text = weight
+        weightTextField.text = set.weight
         repsTextField.text = set.reps
         
         if let previousExercise, indexPath.row < previousExercise.exerciseSets!.count {

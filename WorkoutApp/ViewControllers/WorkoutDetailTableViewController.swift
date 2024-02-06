@@ -19,6 +19,7 @@ protocol WorkoutDetailTableViewControllerDelegate: AnyObject {
 // 2. Delete Workout A's logged bench press
 // 3. Workout A's bench press is empty and previous is empty
 // Solution: Problably something with deletion rule
+// Child context: Child contexts are useful when you want to make changes in a separate context and then either save those changes or discard them without affecting the main context.
 class WorkoutDetailTableViewController: UITableViewController {
     let workout: Workout
     let state: State
@@ -37,8 +38,10 @@ class WorkoutDetailTableViewController: UITableViewController {
     
     init(_ state: State) {
         self.state = state
-        childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-        childContext.parent = context
+        // Dont do this...
+//        childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+//        childContext.parent = context
+        childContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
         
         switch state {
         case .createWorkout(let workoutName):
@@ -46,10 +49,11 @@ class WorkoutDetailTableViewController: UITableViewController {
             workout.title = workoutName
             workout.createdAt = nil // templates do not have dates
         case .startWorkout(let template):
-            workout = Workout.copy(workout: template, with: childContext, isTemplate: true)
+            workout = Workout.copy(workout: template, with: childContext)
         case .updateLog(let log):
             workout = Workout.copy(workout: log, with: childContext)   // make copy of log, then save new log and delete old log
         }
+        print("Workout Detail Context: \(childContext)")
         workout.printPrettyString()
         
         // Load previous exercises
@@ -57,6 +61,7 @@ class WorkoutDetailTableViewController: UITableViewController {
         let exercises = workout.getExercises()
         for exercise in exercises {
             previousExercises[exercise.title!] = exercise.previousExerciseDone
+            
         }
         
         super.init(style: .plain)
@@ -82,18 +87,7 @@ class WorkoutDetailTableViewController: UITableViewController {
         
         updateUI()
     }
-    
-//    override func viewDidDisappear(_ animated: Bool) {
-//        if self.isMovingFromParent {
-//            print("Back button pressed")
-//            print("Rolling back unsaved changes")
-//            // Restore objects to its last saved state (undo changes not saved)
-//            childContext.rollback()
-//        } else {
-//            print("View disappeared (user changed screen)")
-//        }
-//    }
-    
+
     // MARK: - Table view data source
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -208,16 +202,14 @@ class WorkoutDetailTableViewController: UITableViewController {
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
             alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [self] _ in
                 do {
-                    workout.printPrettyString()
                     try childContext.save()
                     try context.save()
                     
-                    print("Child context: \(childContext)")
-                    print("Parent context: \(context)")
                     switch state {
                     case .createWorkout(_):
                         delegate?.workoutDetailTableViewController(self, didCreateWorkout: workout)
                     case .startWorkout(_):
+                        print("Finished context: \(childContext)")
                         delegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
                     case .updateLog(let log):
                         // Delete old log

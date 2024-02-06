@@ -84,7 +84,8 @@ extension Workout : Identifiable {
         return "Workout(title: \(title!), createdAt: \(createdAt))"
     }
         
-    class func copy(workout: Workout, with context: NSManagedObjectContext, isTemplate: Bool = false) -> Workout {
+    class func copy(workout: Workout, with context: NSManagedObjectContext) -> Workout {
+        let isTemplate = workout.createdAt == nil
         let workoutCopy = Workout(context: context)
         workoutCopy.title = workout.title
         workoutCopy.createdAt = .now
@@ -105,4 +106,5 @@ extension Workout : Identifiable {
         }
         return workoutCopy
     }
+
 }

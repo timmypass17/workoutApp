@@ -17,6 +17,7 @@ class WorkoutTableViewController: UITableViewController {
     init(workoutService: WorkoutService) {
         self.workoutService = workoutService
         super.init(style: .plain)
+        print("Main context: \(context)")
     }
     
     required init?(coder: NSCoder) {
@@ -46,6 +47,7 @@ class WorkoutTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let workoutPlan = workoutPlans[indexPath.row]
+        print("Selected workout with context: \(workoutPlan.managedObjectContext!)")
         let workoutDetailViewController = WorkoutDetailTableViewController(.startWorkout(workoutPlan))
         
         if let logTableViewController = (tabBarController?.viewControllers?[1] as? UINavigationController)?.viewControllers[0] as? LogTableViewController {
