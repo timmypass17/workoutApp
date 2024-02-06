@@ -99,7 +99,7 @@ class WorkoutDetailTableViewController: UITableViewController {
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutDetailTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutDetailTableViewCell
             cell.delegate = self
-            cell.update(with: workout, for: indexPath, previousExercise: previousExercises[exercise.title!]!, state: state)
+            cell.update(with: workout, for: indexPath, previousExercise: previousExercises[exercise.title!]!)
             return cell
         }
     }
@@ -140,25 +140,6 @@ class WorkoutDetailTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 50
     }
-    
-//    override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-//        // Swipe only works for current set
-//        let indexOfCurrentSet = workout.getExercise(at: indexPath.section).getExerciseSets().firstIndex { !$0.isComplete } ?? workout.getExercise(at: indexPath.row).getExerciseSets().count
-//        let isCurrentSet = indexPath.row == indexOfCurrentSet
-//        print("\(indexPath) isCurrentSet: \(isCurrentSet)")
-//        guard isCurrentSet else { return nil }
-//        
-//        let doneAction = UIContextualAction(style: .normal, title: "Done") { action, sourceView, completionHandler in
-//            // Toggle checkmark
-//            self.workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row).isComplete.toggle()
-//            tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
-//            completionHandler(true)
-//        }
-//        doneAction.backgroundColor = .systemBlue
-//        doneAction.image = UIImage(systemName: "checkmark")
-//        let swipeActionConfig = UISwipeActionsConfiguration(actions: [doneAction])
-//        return swipeActionConfig
-//    }
     
     func updateUI() {
         updateFinishButton()

@@ -50,7 +50,7 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     }()
     
     var toolbar: UIToolbar = {
-        let bar = UIToolbar()
+        let bar = UIToolbar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 44))
         let doneButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(doneButtonTapped))
         let leftButton = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), style: .plain, target: self, action: #selector(previousButtonTapped))
         let rightButton = UIBarButtonItem(image: UIImage(systemName: "chevron.right"), style: .plain, target: self, action: #selector(nextButtonTapped))
@@ -133,7 +133,7 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(with workout: Workout, for indexPath: IndexPath, previousExercise: Exercise?, state: WorkoutDetailTableViewController.State) {
+    func update(with workout: Workout, for indexPath: IndexPath, previousExercise: Exercise?) {
         self.workout = workout
         let exercise = workout.getExercise(at: indexPath.section)
         self.set = exercise.getExerciseSet(at: indexPath.row)
