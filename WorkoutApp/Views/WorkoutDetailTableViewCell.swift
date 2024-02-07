@@ -138,6 +138,10 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         let exercise = workout.getExercise(at: indexPath.section)
         self.set = exercise.getExerciseSet(at: indexPath.row)
         
+        setButton.isSelected = set.isComplete
+        weightTextField.text = set.weight
+        repsTextField.text = set.reps
+        
         // Normal
         let indexOfCurrentSet = exercise.getExerciseSets().firstIndex { !$0.isComplete } ?? exercise.getExerciseSets().count
         let isCurrentSet = indexPath.row == indexOfCurrentSet
@@ -151,25 +155,19 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         selectedConfig = selectedConfig.applying(UIImage.SymbolConfiguration(paletteColors: [.white, .systemBlue]))
         setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle.fill", withConfiguration: selectedConfig), for: .selected)
 
-        weightTextField.text = set.weight
-        repsTextField.text = set.reps
-        
-        if let previousExercise, indexPath.row < previousExercise.exerciseSets!.count {
-            // Has previous logged exercise
-            let previousSet = previousExercise.getExerciseSet(at: indexPath.row)
-            previousLabel.text = previousSet.weight
+        if let previousExercise {
+            let setCount = previousExercise.exerciseSets!.count
+            let pos = min(indexPath.row, setCount - 1)  // only use index that are within previousExercise count
+            let previousSet = previousExercise.getExerciseSet(at: pos)
+            previousLabel.text = indexPath.row < setCount ? previousSet.weight : "-"
             weightTextField.placeholder = previousSet.weight
             repsTextField.placeholder = previousSet.reps
         } else {
-            // Does not have set
             previousLabel.text = "-"
-            weightTextField.placeholder = ""
-            repsTextField.placeholder = ""
+            weightTextField.placeholder = "135"
+            repsTextField.placeholder = "5"
         }
-        
-        setButton.isSelected = set.isComplete
     }
-    
     
     @objc func doneButtonTapped() {
         endEditing(true)

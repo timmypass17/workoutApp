@@ -109,13 +109,16 @@ class WorkoutTableViewController: UITableViewController {
 
     func deleteWorkout(workout: Workout) {
         // Changed relationship delete rule to "Cascade" (delete Workout A, deletes exercises and sets too)
-        context.delete(workout)
-        
-        do {
-            try context.save()
-        } catch {
-            print("Failed to delete workout plan: \(error)")
+        // When working with parent child context, there could be different contexts so u need to make sure u are deleting in same context that the object was created with (either child or main context)
+        if let workoutContext = workout.managedObjectContext {
+            workoutContext.delete(workout)
+            do {
+                try workoutContext.save()
+            } catch {
+                print("Failed to delete workout plan: \(error)")
+            }
         }
+        
     }
     
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {

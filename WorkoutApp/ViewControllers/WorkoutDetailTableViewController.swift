@@ -39,7 +39,7 @@ class WorkoutDetailTableViewController: UITableViewController {
     init(_ state: State) {
         self.state = state
         childContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
-        
+
         switch state {
         case .createWorkout(let workoutName):
             workout = Workout(context: childContext)
@@ -50,9 +50,6 @@ class WorkoutDetailTableViewController: UITableViewController {
         case .updateLog(let log):
             workout = Workout.copy(workout: log, with: childContext)   // make copy of log, then save new log and delete old log
         }
-        print("Workout Detail Context: \(childContext)")
-        workout.printPrettyString()
-        
         // Load previous exercises
         print("Load previous exercises")
         let exercises = workout.getExercises()
@@ -200,7 +197,7 @@ class WorkoutDetailTableViewController: UITableViewController {
             alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [self] _ in
                 do {
                     try childContext.save()
-                    try context.save()  // TODO: unncessary? Didnt need to do context.save() when doing logContext.save()
+//                    try context.save()  // TODO: unncessary? Didnt need to do context.save() when doing logContext.save()
                     
                     switch state {
                     case .createWorkout(_):
@@ -250,7 +247,7 @@ extension WorkoutDetailTableViewController: AddItemTableViewCellDelegate {
         guard let indexPath = tableView.indexPath(for: sender) else { return }
         
         // Add set
-        let exercises = workout.exercises?.array as! [Exercise]
+        let exercises = workout.getExercises()
         let exercise = exercises[indexPath.section]
         let set = ExerciseSet(context: childContext)
         set.isComplete = false
