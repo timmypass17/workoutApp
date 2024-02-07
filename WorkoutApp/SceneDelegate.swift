@@ -19,6 +19,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let tabBarController = UITabBarController()
 
+        print("1")
         let workoutService = WorkoutService()
         let workoutViewController = WorkoutTableViewController(workoutService: workoutService)
         let logViewController = LogTableViewController()

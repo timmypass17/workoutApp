@@ -97,7 +97,7 @@ extension Workout : Identifiable {
             workoutCopy.addToExercises(exerciseCopy)
             for set in exercise.getExerciseSets() {
                 let setCopy = ExerciseSet(context: context)
-                setCopy.isComplete = false
+                setCopy.isComplete = isStartingNewWorkout ? false : set.isComplete
                 setCopy.weight = isStartingNewWorkout ? "" : set.weight
                 setCopy.reps = isStartingNewWorkout ? "" : set.reps
                 setCopy.exercise = exerciseCopy
