@@ -31,9 +31,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         logViewController.tabBarItem = UITabBarItem(title: "Log", image: UIImage(systemName: "calendar"), tag: 0)
         progressViewController.tabBarItem = UITabBarItem(title: "Progress", image: UIImage(systemName: "chart.bar.fill"), tag: 0)
 
-        // Preload log view controller (forgot why)
-//        logViewController.loadViewIfNeeded()
-
         window = UIWindow(frame: windowScene.coordinateSpace.bounds)
         window?.windowScene = windowScene
         window?.rootViewController = tabBarController

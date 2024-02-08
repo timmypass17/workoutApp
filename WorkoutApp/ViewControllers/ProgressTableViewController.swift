@@ -18,8 +18,8 @@ class ProgressTableViewController: UITableViewController {
     init(workoutService: WorkoutService) {
         // Load data
         self.data = workoutService.fetchProgressData()
+            .sorted(by: { $0.name < $1.name})
         self.workoutService = workoutService
-        data.forEach { print($0.name, $0.sets.count)}
         super.init(style: .insetGrouped)
     }
     
@@ -28,6 +28,7 @@ class ProgressTableViewController: UITableViewController {
     }
     
     override func viewDidLoad() {
+        print("ProgressTableViewController viewDidLoad()")
         super.viewDidLoad()
         navigationItem.title = "Progress"
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -45,9 +46,9 @@ class ProgressTableViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        print("cellForRowAt: \(indexPath)")
         let cell = tableView.dequeueReusableCell(withIdentifier: ProgressViewCell.reuseIdentifier, for: indexPath)
         let setsInSection = data[indexPath.row]
-        
         cell.contentConfiguration = UIHostingConfiguration {
             ProgressViewCell(data: setsInSection)
         }
@@ -72,6 +73,7 @@ extension ProgressTableViewController: WorkoutDetailTableViewControllerDelegate 
     }
     
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didFinishWorkout workout: Workout) {
+        print("didFinishWorkout")
         var setDict: [String : [ExerciseSet]] = [:]
         let exercises = workout.getExercises()
         for exercise in exercises {
@@ -81,11 +83,20 @@ extension ProgressTableViewController: WorkoutDetailTableViewControllerDelegate 
         // Update progress data
         for (exerciseName, sets) in setDict {
             if let progressData = data.first(where: { $0.name == exerciseName }) {
+                print("Update section: \(exerciseName)")
                 // Update section
                 progressData.sets.append(contentsOf: sets)
             } else {
+                print("Create section: \(exerciseName)")
                 // Create section
                 data.append(ProgressData(name: exerciseName, sets: sets))
+            }
+        }
+        data.sort(by: { $0.name < $1.name})
+        data.forEach { item in
+            print(item.name)
+            item.sets.forEach { set in
+                print(set.weight!)
             }
         }
                 

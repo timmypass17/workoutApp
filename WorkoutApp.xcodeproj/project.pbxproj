@@ -12,6 +12,7 @@
 		323148A62B50CAEA00F598A2 /* WorkoutDetailTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 323148A52B50CAEA00F598A2 /* WorkoutDetailTableViewController.swift */; };
 		323148BC2B50E4FB00F598A2 /* WorkoutDetailTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 323148BB2B50E4FB00F598A2 /* WorkoutDetailTableViewCell.swift */; };
 		323148BE2B51BF1A00F598A2 /* AddItemTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 323148BD2B51BF1A00F598A2 /* AddItemTableViewCell.swift */; };
+		325FC5D52B747E8C0023C02D /* EmptyLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 325FC5D42B747E8C0023C02D /* EmptyLabel.swift */; };
 		327268622B5A10D600FA6D04 /* LogSectionHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 327268612B5A10D600FA6D04 /* LogSectionHeaderView.swift */; };
 		32A2937B2B42073B00122166 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A2937A2B42073B00122166 /* AppDelegate.swift */; };
 		32A2937D2B42073B00122166 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A2937C2B42073B00122166 /* SceneDelegate.swift */; };
@@ -41,6 +42,7 @@
 		323148A52B50CAEA00F598A2 /* WorkoutDetailTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailTableViewController.swift; sourceTree = "<group>"; };
 		323148BB2B50E4FB00F598A2 /* WorkoutDetailTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailTableViewCell.swift; sourceTree = "<group>"; };
 		323148BD2B51BF1A00F598A2 /* AddItemTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddItemTableViewCell.swift; sourceTree = "<group>"; };
+		325FC5D42B747E8C0023C02D /* EmptyLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyLabel.swift; sourceTree = "<group>"; };
 		327268612B5A10D600FA6D04 /* LogSectionHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogSectionHeaderView.swift; sourceTree = "<group>"; };
 		32A293772B42073B00122166 /* WorkoutApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		32A2937A2B42073B00122166 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -147,6 +149,7 @@
 				32B9D74D2B589A440027DE30 /* LogTableViewCell.swift */,
 				327268612B5A10D600FA6D04 /* LogSectionHeaderView.swift */,
 				321F97042B740B5E00AB15B7 /* ProgressViewCell.swift */,
+				325FC5D42B747E8C0023C02D /* EmptyLabel.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -245,6 +248,7 @@
 				32D846262B5F06260046F0D2 /* Exercise+CoreDataProperties.swift in Sources */,
 				327268622B5A10D600FA6D04 /* LogSectionHeaderView.swift in Sources */,
 				32A293852B42073B00122166 /* WorkoutApp.xcdatamodeld in Sources */,
+				325FC5D52B747E8C0023C02D /* EmptyLabel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

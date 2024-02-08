@@ -39,9 +39,15 @@ class LogTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        updateUI()
+    }
+    
+    func updateUI() {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.title = "Log"
         tableView.register(LogTableViewCell.self, forCellReuseIdentifier: LogTableViewCell.reuseIdentifier)
+        tableView.backgroundView = EmptyLabel(text: "Your workout logs will appear here")
+        tableView.backgroundView?.isHidden = pastWorkouts.isEmpty ? false : true
     }
 
     // MARK: - Table view data source
@@ -96,7 +102,6 @@ class LogTableViewController: UITableViewController {
         guard let workouts = pastWorkouts[month] else { return }
         
         let workout = workouts[indexPath.row]
-        print("Selected workout with context: \(workout.managedObjectContext!)")
         let workoutDetailViewController = WorkoutDetailTableViewController(.updateLog(workout))
         workoutDetailViewController.delegate = self
         navigationController?.pushViewController(workoutDetailViewController, animated: true)
@@ -108,7 +113,6 @@ class LogTableViewController: UITableViewController {
         let workoutToDelete = pastWorkouts[monthYear]![indexPath.row]
         // Object may have been created in detail view (has it's own seperate child context from main context). Use that specific context instead
         let context = workoutToDelete.managedObjectContext!
-        print("Deleted workout in context: \(context)")
         context.delete(workoutToDelete)
         do {
             try context.save()
@@ -135,7 +139,7 @@ extension LogTableViewController: WorkoutDetailTableViewControllerDelegate {
         
         pastWorkouts[monthYear]!.insert(workout, at: 0)
         
-        tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
+        tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic) // logTable viewDidLoad() called here
         tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
     }
 

@@ -26,7 +26,7 @@ class WorkoutTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        updateView()
+        updateUI()
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -64,26 +64,53 @@ class WorkoutTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if (editingStyle == .delete) {
-            deleteWorkout(workout: workoutPlans[indexPath.row])
+            // Changed relationship delete rule to "Cascade" (delete Workout A, deletes exercises and sets too)
+            // When working with parent child context, there could be different contexts so u need to make sure u are deleting in same context that the object was created with (either child or main context)
+            let workoutToDelete = workoutPlans[indexPath.row]
+            if let workoutContext = workoutToDelete.managedObjectContext {
+                workoutContext.delete(workoutToDelete)
+                do {
+                    try workoutContext.save()
+                } catch {
+                    print("Failed to delete workout plan: \(error)")
+                }
+            }
             workoutPlans.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .automatic)
+            tableView.backgroundView?.isHidden = workoutPlans.isEmpty ? false : true
         }
     }
     
-    func updateView() {
-        // Register the custom cell class
-        tableView.register(WorkoutTableViewCell.self, forCellReuseIdentifier: WorkoutTableViewCell.reuseIdentifier)
-        navigationController?.navigationBar.prefersLargeTitles = true
+    override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
+            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "arrow.up.square")) { _ in
+                // TODO: Show edit workout view
+            }
+
+            let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                // TODO: delete
+                // self.performDelete(indexPath)
+            }
+            return UIMenu(title: "", children: [editAction, deleteAction])
+        })
+    }
+    
+    func updateUI() {
         navigationItem.title = "Workout"
+        navigationController?.navigationBar.prefersLargeTitles = true
+        tableView.register(WorkoutTableViewCell.self, forCellReuseIdentifier: WorkoutTableViewCell.reuseIdentifier)
+        tableView.backgroundView = EmptyLabel(text: "Tap the '+' button to create your first workout template!")
+        tableView.backgroundView?.isHidden = workoutPlans.isEmpty ? false : true
         setupAddButton()
+        tableView.reloadData()
     }
     
     func setupAddButton() {
         let addWorkoutAction = UIAction { _ in
-            let alert = UIAlertController(title: "Create New Workout", message: "Enter a name below", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Create Workout Template", message: "Enter name below", preferredStyle: .alert)
             
             alert.addTextField { textField in
-                textField.placeholder = "Ex. Workout A"
+                textField.placeholder = "Ex. Push Day"
                 textField.autocapitalizationType = .sentences
                 let textChangedAction = UIAction { _ in
                     alert.actions[1].isEnabled = textField.text!.count > 0
@@ -108,40 +135,12 @@ class WorkoutTableViewController: UITableViewController {
         addButton = UIBarButtonItem(title: "Add Workout", image: UIImage(systemName: "plus"), primaryAction: addWorkoutAction)
         navigationItem.rightBarButtonItem = addButton
     }
-
-    func deleteWorkout(workout: Workout) {
-        // Changed relationship delete rule to "Cascade" (delete Workout A, deletes exercises and sets too)
-        // When working with parent child context, there could be different contexts so u need to make sure u are deleting in same context that the object was created with (either child or main context)
-        if let workoutContext = workout.managedObjectContext {
-            workoutContext.delete(workout)
-            do {
-                try workoutContext.save()
-            } catch {
-                print("Failed to delete workout plan: \(error)")
-            }
-        }
-        
-    }
-    
-    override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
-            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "arrow.up.square")) { _ in
-                // TODO: Show edit workout view
-            }
-
-            let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-                // TODO: delete
-                // self.performDelete(indexPath)
-            }
-            return UIMenu(title: "", children: [editAction, deleteAction])
-        })
-    }
 }
 
 extension WorkoutTableViewController: WorkoutDetailTableViewControllerDelegate {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didCreateWorkout workout: Workout) {
         workoutPlans.append(workout)
-        tableView.reloadData()
+        updateUI()
     }
     
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didFinishWorkout workout: Workout) {
@@ -151,12 +150,4 @@ extension WorkoutTableViewController: WorkoutDetailTableViewControllerDelegate {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateLog workout: Workout) {
         return
     }
-}
-
-#Preview {
-    UINavigationController(rootViewController: WorkoutTableViewController(workoutService: WorkoutService()))
-}
-
-extension Notification.Name {
-    static let workoutPlanUpdated = Notification.Name("WorkoutPlanUpdatedNotification")
 }

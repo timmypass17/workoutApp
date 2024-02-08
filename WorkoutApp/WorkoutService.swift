@@ -44,11 +44,14 @@ class WorkoutService {
         return []
     }
     
+    /// Get exercise data  from Core Data.
+    /// - The sets within each exercise are sorted by date (oldest to recent).
+    /// - Returns: List of exercise progress data
     func fetchProgressData() -> [ProgressData] {
         var data: [String : [ExerciseSet]] = [:]
         let request: NSFetchRequest<ExerciseSet> = ExerciseSet.fetchRequest()
         let predicate = NSPredicate(format: "exercise.workout.createdAt != nil")
-        let sortDescriptor = NSSortDescriptor(key: "exercise.workout.createdAt", ascending: false)
+        let sortDescriptor = NSSortDescriptor(key: "exercise.workout.createdAt", ascending: true)
         request.predicate = predicate
         request.sortDescriptors = [sortDescriptor]
         
@@ -60,11 +63,12 @@ class WorkoutService {
             }
             return data
                 .map { ProgressData(name: $0.key, sets: $0.value) }
-                .sorted(by: { $0.name < $1.name})
         } catch {
             print("Error fetching logs: \(error.localizedDescription)")
         }
         return []
     }
+    
+    
     
 }

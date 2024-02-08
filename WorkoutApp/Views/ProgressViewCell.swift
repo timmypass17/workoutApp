@@ -10,7 +10,7 @@ import Charts
 
 struct ProgressViewCell: View {
     static let reuseIdentifier = "ProgressCell"
-    var data: ProgressData
+    @ObservedObject var data: ProgressData // (automatically recreates views if data changes. not tableView.reloadData()) sorted oldest to recent
     
     var body: some View {
         HStack(alignment: .center) {
@@ -42,16 +42,29 @@ struct ExerciseTitleView: View {
 
 struct HighestWeightView: View {
     var sets: [ExerciseSet]
+    
     var highestWeight: String {
         return sets.max { set, otherSet in
             let weight = Float(set.weight ?? "0") ?? 0.0
             let otherWeight = Float(otherSet.weight ?? "0") ?? 0.0
-            return weight > otherWeight
+            return weight < otherWeight
         }!.weight!
     }
     
     var latestSet: ExerciseSet {
-        return sets.first!
+        // Get latest sets from same date
+        let latestDate = sets.last?.exercise?.workout?.createdAt!
+        var latestSets: [ExerciseSet] = []
+        var i = sets.count - 1;
+        while i >= 0 && sets[i].exercise?.workout?.createdAt! == latestDate {
+            latestSets.append(sets[i])
+            i -= 1
+        }
+        return latestSets.max { set, otherSet in
+            let weight = Float(set.weight ?? "0") ?? 0.0
+            let otherWeight = Float(otherSet.weight ?? "0") ?? 0.0
+            return weight < otherWeight
+        }!
     }
     
     var body: some View {
@@ -80,9 +93,33 @@ struct HighestWeightView: View {
 struct ExerciseChartView: View {
     var sets: [ExerciseSet]
     
+    var latestSet: [ExerciseSet] {
+        // Get best set in each day (for past week)
+        var res: [ExerciseSet] = []
+        var setsByDate: [Date: [ExerciseSet]] = [:]
+        for set in sets {
+            guard let createdAt = set.exercise?.workout?.createdAt else { continue }
+            setsByDate[createdAt, default: []].append(set)
+        }
+        var sortedDates = setsByDate.keys.sorted()
+        for date in sortedDates {
+            if res.count >= 7 {
+                break
+            }
+            guard let bestSet = setsByDate[date]?.max(by: { set, otherSet in
+                guard let weight = Float(set.weight!),
+                      let otherWeight = Float(otherSet.weight!) else { return false }
+                return weight < otherWeight
+            }) else { continue }
+            
+            res.append(bestSet)
+        }
+        return res
+    }
+    
     var body: some View {
         // Show only 7 recent exercises (graph looks funny with 100s of plots)
-        Chart(sets.prefix(7)) { set in
+        Chart(latestSet) { set in
             LineMark(x: .value("Date", set.exercise?.workout?.createdAt ?? Date()),
                      y: .value("Weight", Float(set.weight ?? "0") ?? 0.0))
             .symbol(Circle().strokeBorder(lineWidth: 2))
