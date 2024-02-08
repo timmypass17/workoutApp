@@ -8,6 +8,7 @@
 import UIKit
 import CoreData
 
+// Split this delegate up, some classes don't implment some functionss
 protocol WorkoutDetailTableViewControllerDelegate: AnyObject {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didCreateWorkout workout: Workout)
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didFinishWorkout workout: Workout)
@@ -29,6 +30,7 @@ class WorkoutDetailTableViewController: UITableViewController {
     let childContext: NSManagedObjectContext
     
     weak var delegate: WorkoutDetailTableViewControllerDelegate?
+    weak var progressDelegate: WorkoutDetailTableViewControllerDelegate?
     
     enum State {
         case createWorkout(String)
@@ -204,6 +206,7 @@ class WorkoutDetailTableViewController: UITableViewController {
                         delegate?.workoutDetailTableViewController(self, didCreateWorkout: workout)
                     case .startWorkout(_):
                         delegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
+                        progressDelegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
                     case .updateLog(let log):
                         // Delete old log
                         if let logContext = log.managedObjectContext {

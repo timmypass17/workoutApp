@@ -19,19 +19,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let tabBarController = UITabBarController()
 
-        print("1")
         let workoutService = WorkoutService()
         let workoutViewController = WorkoutTableViewController(workoutService: workoutService)
-        let logViewController = LogTableViewController()
+        let logViewController = LogTableViewController(workoutService: workoutService)
+        let progressViewController = ProgressTableViewController(workoutService: workoutService)
         
 
-        tabBarController.viewControllers = [workoutViewController, logViewController].map { UINavigationController(rootViewController: $0) }
+        tabBarController.viewControllers = [workoutViewController, logViewController, progressViewController].map { UINavigationController(rootViewController: $0) }
         
         workoutViewController.tabBarItem = UITabBarItem(title: "Workout", image: UIImage(systemName: "dumbbell.fill"), tag: 0)
         logViewController.tabBarItem = UITabBarItem(title: "Log", image: UIImage(systemName: "calendar"), tag: 0)
+        progressViewController.tabBarItem = UITabBarItem(title: "Progress", image: UIImage(systemName: "chart.bar.fill"), tag: 0)
 
-        // Preload log view controller
-        logViewController.loadViewIfNeeded()
+        // Preload log view controller (forgot why)
+//        logViewController.loadViewIfNeeded()
 
         window = UIWindow(frame: windowScene.coordinateSpace.bounds)
         window?.windowScene = windowScene

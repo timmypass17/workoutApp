@@ -18,15 +18,11 @@ class LogTableViewController: UITableViewController {
             return false
         }
     }
-    let workoutService = WorkoutService()
+    let workoutService: WorkoutService
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.title = "Log"
-        tableView.register(LogTableViewCell.self, forCellReuseIdentifier: LogTableViewCell.reuseIdentifier)
-        
+    init(workoutService: WorkoutService) {
+        self.workoutService = workoutService
         // Sort workouts by month/year
         let workouts: [Workout] = workoutService.fetchLoggedWorkouts()
         for workout in workouts {
@@ -34,6 +30,18 @@ class LogTableViewController: UITableViewController {
             let monthYear = getMonthYear(from: createdAt)
             pastWorkouts[monthYear, default: []].append(workout)
         }
+        super.init(style: .plain)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.title = "Log"
+        tableView.register(LogTableViewCell.self, forCellReuseIdentifier: LogTableViewCell.reuseIdentifier)
     }
 
     // MARK: - Table view data source
