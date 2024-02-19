@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol LogTableViewControllerDelegate: AnyObject {
+    func logTableViewController(_ viewController: LogTableViewController, didDeleteWorkout workout: Workout)
+}
+
 class LogTableViewController: UITableViewController {
 
     var pastWorkouts: [String: [Workout]] = [:]
@@ -20,7 +24,8 @@ class LogTableViewController: UITableViewController {
     }
     let workoutService: WorkoutService
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-
+    weak var delegate: LogTableViewControllerDelegate?
+    
     init(workoutService: WorkoutService) {
         self.workoutService = workoutService
         // Sort workouts by month/year
@@ -46,7 +51,16 @@ class LogTableViewController: UITableViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.title = "Log"
         tableView.register(LogTableViewCell.self, forCellReuseIdentifier: LogTableViewCell.reuseIdentifier)
-        tableView.backgroundView = EmptyLabel(text: "Your workout logs will appear here")
+        tableView.backgroundView = EmptyLabel(text: "Your workout history will appear here")
+        
+        pastWorkouts.removeAll()
+        let workouts: [Workout] = workoutService.fetchLoggedWorkouts()
+        for workout in workouts {
+            guard let createdAt = workout.createdAt else { continue }
+            let monthYear = getMonthYear(from: createdAt)
+            pastWorkouts[monthYear, default: []].append(workout)
+        }
+        tableView.reloadData()
         tableView.backgroundView?.isHidden = pastWorkouts.isEmpty ? false : true
     }
 
@@ -104,6 +118,9 @@ class LogTableViewController: UITableViewController {
         let workout = workouts[indexPath.row]
         let workoutDetailViewController = WorkoutDetailTableViewController(.updateLog(workout))
         workoutDetailViewController.delegate = self
+        if let progressTableViewController = (tabBarController?.viewControllers?[2] as? UINavigationController)?.viewControllers[0] as? ProgressTableViewController {
+            workoutDetailViewController.progressDelegate = progressTableViewController
+        }
         navigationController?.pushViewController(workoutDetailViewController, animated: true)
     }
     
@@ -116,6 +133,7 @@ class LogTableViewController: UITableViewController {
         context.delete(workoutToDelete)
         do {
             try context.save()
+            delegate?.logTableViewController(self, didDeleteWorkout: workoutToDelete)
         } catch {
             print("Failed to delete workout: \(error)")
         }
@@ -130,31 +148,12 @@ extension LogTableViewController: WorkoutDetailTableViewControllerDelegate {
     }
     
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didFinishWorkout workout: Workout) {
-        guard let createdAt = workout.createdAt else { return }
-        let monthYear = getMonthYear(from: createdAt)
-        if pastWorkouts[monthYear] == nil {
-            pastWorkouts[monthYear] = []
-            tableView.insertSections(IndexSet(integer: 0), with: .automatic)
-        }
-        
-        pastWorkouts[monthYear]!.insert(workout, at: 0)
-        
-        tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic) // logTable viewDidLoad() called here
-        tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
+        updateUI()
     }
 
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateLog workout: Workout) {
         // note: we could've optimize by updating the rows and sections of the workout but i got lazy so i just refetched data
-        pastWorkouts.removeAll()
-        
-        let workouts: [Workout] = workoutService.fetchLoggedWorkouts()
-        for workout in workouts {
-            guard let createdAt = workout.createdAt else { continue }
-            let monthYear = getMonthYear(from: createdAt)
-            pastWorkouts[monthYear, default: []].append(workout)
-        }
-        
-        tableView.reloadData()
+        updateUI()
     }
 }
 

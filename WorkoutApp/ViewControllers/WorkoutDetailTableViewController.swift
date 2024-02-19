@@ -25,7 +25,8 @@ class WorkoutDetailTableViewController: UITableViewController {
     let workout: Workout
     let state: State
     var previousExercises: [String: Exercise?] = [:]
-    
+    var timerButton: TimerBarButton?
+        
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     let childContext: NSManagedObjectContext
     
@@ -38,6 +39,7 @@ class WorkoutDetailTableViewController: UITableViewController {
         case updateLog(Workout)
     }
     
+    // TODO: Maybe use protocol instead of switch statements.
     init(_ state: State) {
         self.state = state
         childContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
@@ -53,11 +55,9 @@ class WorkoutDetailTableViewController: UITableViewController {
             workout = Workout.copy(workout: log, with: childContext)   // make copy of log, then save new log and delete old log
         }
         // Load previous exercises
-        print("Load previous exercises")
         let exercises = workout.getExercises()
         for exercise in exercises {
             previousExercises[exercise.title!] = exercise.previousExerciseDone
-            
         }
         
         super.init(style: .plain)
@@ -78,6 +78,9 @@ class WorkoutDetailTableViewController: UITableViewController {
         footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
         footer.delegate = self
         tableView.tableFooterView = footer
+//        let header = ExerciseHeaderView(title: "")
+//        header.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
+//        tableView.tableHeaderView = header
         tableView.register(WorkoutDetailTableViewCell.self, forCellReuseIdentifier: WorkoutDetailTableViewCell.reuseIdentifier)
         tableView.register(AddItemTableViewCell.self, forCellReuseIdentifier: AddItemTableViewCell.reuseIdentifier)
         
@@ -150,6 +153,10 @@ class WorkoutDetailTableViewController: UITableViewController {
         return 50
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        timerButton?.timer.stopTimer()  // timer runs in thread, leaving view doesn't get rid of timer
+    }
+    
     func updateUI() {
         updateFinishButton()
     }
@@ -199,7 +206,6 @@ class WorkoutDetailTableViewController: UITableViewController {
             alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [self] _ in
                 do {
                     try childContext.save()
-//                    try context.save()  // TODO: unncessary? Didnt need to do context.save() when doing logContext.save()
                     
                     switch state {
                     case .createWorkout(_):
@@ -214,6 +220,7 @@ class WorkoutDetailTableViewController: UITableViewController {
                             try logContext.save()
                         }
                         delegate?.workoutDetailTableViewController(self, didUpdateLog: workout)
+                        progressDelegate?.workoutDetailTableViewController(self, didUpdateLog: workout)
                     }
                     navigationController?.popViewController(animated: true)
                 } catch {
@@ -239,10 +246,21 @@ class WorkoutDetailTableViewController: UITableViewController {
             }
             let calendarButton = UIBarButtonItem(image: UIImage(systemName: "calendar"), primaryAction: calendarAction)
             navigationItem.rightBarButtonItems = [addEditButton, calendarButton]
+        case .startWorkout(_):
+            // Timer
+            timerButton = TimerBarButton()
+            navigationItem.rightBarButtonItems = [addEditButton, timerButton!]
+
         default:
             navigationItem.rightBarButtonItem = addEditButton
         }
     }
+    
+    @objc func timerButtonTapped() {
+        
+    }
+    
+    
 }
 
 extension WorkoutDetailTableViewController: AddItemTableViewCellDelegate {
@@ -377,14 +395,6 @@ extension WorkoutDetailTableViewController: ExercisesTableViewControllerDelegate
         }
     }
 }
-//
-//extension WorkoutDetailTableViewController: CalendarViewControllerDelegate {
-//    func calendarViewController(_ viewController: CalendarViewController, datePickerValueChanged: Date) {
-//        print(datePickerValueChanged.formatted())
-//        selectedDate = datePickerValueChanged
-//    }
-//
-//}
 
 extension String {
     var isNumeric: Bool {

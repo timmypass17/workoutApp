@@ -137,7 +137,6 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         self.workout = workout
         let exercise = workout.getExercise(at: indexPath.section)
         self.set = exercise.getExerciseSet(at: indexPath.row)
-        
         setButton.isSelected = set.isComplete
         weightTextField.text = set.weight
         repsTextField.text = set.reps

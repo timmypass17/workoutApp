@@ -24,6 +24,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let logViewController = LogTableViewController(workoutService: workoutService)
         let progressViewController = ProgressTableViewController(workoutService: workoutService)
         
+        logViewController.delegate = progressViewController
 
         tabBarController.viewControllers = [workoutViewController, logViewController, progressViewController].map { UINavigationController(rootViewController: $0) }
         

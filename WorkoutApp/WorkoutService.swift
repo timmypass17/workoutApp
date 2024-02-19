@@ -63,6 +63,7 @@ class WorkoutService {
             }
             return data
                 .map { ProgressData(name: $0.key, sets: $0.value) }
+                .sorted(by: { $0.name < $1.name})
         } catch {
             print("Error fetching logs: \(error.localizedDescription)")
         }
