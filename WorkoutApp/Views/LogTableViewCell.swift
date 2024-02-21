@@ -38,7 +38,7 @@ class LogTableViewCell: UITableViewCell {
         label.textColor = .secondaryLabel
         label.lineBreakMode = .byTruncatingTail
         // Setting the max number of allowed lines in sub-title to 3
-        label.numberOfLines = 0
+        label.numberOfLines = 3
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()

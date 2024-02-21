@@ -13,32 +13,44 @@ class TimerBarButton: UIBarButtonItem, WorkoutTimerDelegate {
 
     override init() {
         super.init()
-        title = "0:00"
         style = .plain
         target = self
         action = #selector(buttonTapped)
         tintColor = .secondaryLabel
         timer.delegate = self
         timer.startTimer()
+        updateUI()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func updateUI() {
+        let tmv = timeval(tv_sec: Int(timer.elapsedTime), tv_usec: 0)
+        let timeElapsedString = Duration(tmv).formatted(.time(pattern: .minuteSecond))
+        title = timer.isRunning ? timeElapsedString : "Paused"
+    }
+    
     @objc func buttonTapped() {
         if timer.isRunning {
             timer.stopTimer()
-            tintColor = .darkGray
         } else {
             timer.startTimer()
-            tintColor = .secondaryLabel
         }
+        updateUI()
     }
     
     func workoutTimer(_ sender: WorkoutTimer, elapsedTimeDidChange: TimeInterval) {
-        let tmv = timeval(tv_sec: Int(elapsedTimeDidChange), tv_usec: 0)
-        title = Duration(tmv).formatted(.time(pattern: .minuteSecond))  // "2:05"
+        updateUI()
+    }
+    
+    func workoutTimer(_ sender: WorkoutTimer, elapsedTimeDidStart: TimeInterval) {
+        updateUI()
+    }
+    
+    func workoutTimer(_ sender: WorkoutTimer, elapsedTimeDidStop: TimeInterval) {
+        updateUI()
     }
 }
 
@@ -60,15 +72,19 @@ class WorkoutTimer {
         }
         
         RunLoop.current.add(timer!, forMode: .common)
+        delegate?.workoutTimer(self, elapsedTimeDidStart: elapsedTime)
     }
     
     func stopTimer() {
         timer?.invalidate()
+        delegate?.workoutTimer(self, elapsedTimeDidStop: elapsedTime)
     }
 }
 
 protocol WorkoutTimerDelegate: AnyObject {
     func workoutTimer(_ sender: WorkoutTimer, elapsedTimeDidChange: TimeInterval)
+    func workoutTimer(_ sender: WorkoutTimer, elapsedTimeDidStop: TimeInterval)
+    func workoutTimer(_ sender: WorkoutTimer, elapsedTimeDidStart: TimeInterval)
 }
 
 extension UIColor {

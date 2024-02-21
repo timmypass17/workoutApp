@@ -23,15 +23,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let workoutViewController = WorkoutTableViewController(workoutService: workoutService)
         let logViewController = LogTableViewController(workoutService: workoutService)
         let progressViewController = ProgressTableViewController(workoutService: workoutService)
-        
+        let settingsViewController = SettingsTableViewController()
         logViewController.delegate = progressViewController
-
-        tabBarController.viewControllers = [workoutViewController, logViewController, progressViewController].map { UINavigationController(rootViewController: $0) }
         
         workoutViewController.tabBarItem = UITabBarItem(title: "Workout", image: UIImage(systemName: "dumbbell.fill"), tag: 0)
         logViewController.tabBarItem = UITabBarItem(title: "Log", image: UIImage(systemName: "calendar"), tag: 0)
         progressViewController.tabBarItem = UITabBarItem(title: "Progress", image: UIImage(systemName: "chart.bar.fill"), tag: 0)
+        settingsViewController.tabBarItem = UITabBarItem(title: "Settings", image: UIImage(systemName: "gearshape.fill"), tag: 0)
+        
 
+        tabBarController.viewControllers = [workoutViewController, logViewController, progressViewController, settingsViewController].map { UINavigationController(rootViewController: $0) }
+        
         window = UIWindow(frame: windowScene.coordinateSpace.bounds)
         window?.windowScene = windowScene
         window?.rootViewController = tabBarController

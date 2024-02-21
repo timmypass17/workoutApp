@@ -52,10 +52,10 @@ class WorkoutTableViewCell: UITableViewCell {
         contentView.addSubview(hstack)
         
         NSLayoutConstraint.activate([
-            hstack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            hstack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-            hstack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            hstack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            hstack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+            hstack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
+            hstack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            hstack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
         ])
     }
     

@@ -154,7 +154,11 @@ class WorkoutDetailTableViewController: UITableViewController {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        timerButton?.timer.stopTimer()  // timer runs in thread, leaving view doesn't get rid of timer
+        super.viewWillDisappear(animated)
+        // Back button pressed
+        if self.isMovingFromParent {
+            timerButton?.timer.stopTimer()  // timer runs in thread, leaving view doesn't get rid of timer
+        }
     }
     
     func updateUI() {
@@ -185,24 +189,33 @@ class WorkoutDetailTableViewController: UITableViewController {
         let addEditButton: UIBarButtonItem
         let buttonTitle: String
         let alertTitle: String
-        let message: String
         switch state {
         case .createWorkout(_):
             buttonTitle = "Save"
             alertTitle = "Create Workout?"
-            message = "desc"
         case .startWorkout(_):
             buttonTitle = "Finish"
             alertTitle = "Finish Workout?"
-            message = "desc"
         case .updateLog(_):
             buttonTitle = "Save"
             alertTitle = "Edit Log?"
-            message = "desc"
         }
         let action = UIAction { [self] _ in
+            timerButton?.timer.stopTimer()
+            var message = ""
+            if let elapsedTime = timerButton?.timer.elapsedTime {
+                let formatter = DateComponentsFormatter()
+                formatter.unitsStyle = .abbreviated
+                formatter.allowedUnits = [.hour, .minute, .second]
+                let timeString = formatter.string(from: elapsedTime)!
+                message =  "Your workout today at \(Date().formatted(date: .abbreviated, time: .omitted)) lasted \(timeString)"
+            }
+            
             let alert = UIAlertController(title: alertTitle, message: message, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                self.timerButton?.timer.startTimer()
+            })
+            
             alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [self] _ in
                 do {
                     try childContext.save()
