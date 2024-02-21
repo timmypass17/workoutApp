@@ -12,8 +12,19 @@ protocol WeightTableViewControllerDelegate: AnyObject {
 }
 
 enum WeightType: String, CaseIterable, Codable {
-    case lbs = "US/Imperial (lbs)"
-    case kg = "Metric (kg)"
+    case lbs
+    case kg
+    
+    static let valueChangedNotification = NSNotification.Name("weightTypeChangedNotification")
+    
+    var description: String {
+        switch self {
+        case .lbs:
+            return "US/Imperial (lbs)"
+        case .kg:
+            return "Metric (kg)"
+        }
+    }
 }
 
 class WeightTableViewController: UITableViewController {
@@ -41,7 +52,7 @@ class WeightTableViewController: UITableViewController {
         let weightType = WeightType.allCases[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "WeightTypeCell", for: indexPath)
         var config = cell.defaultContentConfiguration()
-        config.text = weightType.rawValue
+        config.text = weightType.description
         cell.contentConfiguration = config
         cell.accessoryType = Settings.shared.weightUnit == weightType ? .checkmark : .none
         return cell
@@ -53,5 +64,6 @@ class WeightTableViewController: UITableViewController {
         delegate?.weightTableViewController(self, didSelectWeightType: weightType)
         tableView.deselectRow(at: indexPath, animated: true)
         tableView.reloadData()
+        NotificationCenter.default.post(name: WeightType.valueChangedNotification, object: nil)
     }
 }

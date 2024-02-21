@@ -10,7 +10,7 @@ import Charts
 
 struct ProgressViewCell: View {
     static let reuseIdentifier = "ProgressCell"
-    @ObservedObject var data: ProgressData // (automatically recreates views if data changes. not tableView.reloadData()) sorted oldest to recent
+    @ObservedObject var data: ProgressData // automatically recreates views if data changes
     
     var body: some View {
         HStack(alignment: .center) {
@@ -41,14 +41,16 @@ struct ExerciseTitleView: View {
 }
 
 struct HighestWeightView: View {
+    // special mark for UserDefaults
+    @AppStorage("weightUnit") var weightUnit: WeightType = Settings.shared.weightUnit
     var sets: [ExerciseSet]
     
     var highestWeight: String {
         return sets.max { set, otherSet in
-            let weight = Float(set.weight ?? "0") ?? 0.0
-            let otherWeight = Float(otherSet.weight ?? "0") ?? 0.0
+            let weight = Float(set.weight) ?? 0.0
+            let otherWeight = Float(otherSet.weight) ?? 0.0
             return weight < otherWeight
-        }!.weight!
+        }!.weightString
     }
     
     var latestSet: ExerciseSet {
@@ -61,15 +63,15 @@ struct HighestWeightView: View {
             i -= 1
         }
         return latestSets.max { set, otherSet in
-            let weight = Float(set.weight ?? "0") ?? 0.0
-            let otherWeight = Float(otherSet.weight ?? "0") ?? 0.0
+            let weight = Float(set.weight) ?? 0.0
+            let otherWeight = Float(otherSet.weight) ?? 0.0
             return weight < otherWeight
         }!
     }
     
     var body: some View {
         VStack(alignment: .leading) {
-            Text("Best: \(highestWeight) lbs")
+            Text("Best: \(highestWeight) \(weightUnit.rawValue)")
                 .font(.subheadline)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 2)
@@ -77,7 +79,7 @@ struct HighestWeightView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 4))
             
             HStack(alignment: .firstTextBaseline) {
-                Text("Latest: \(latestSet.weight!) lbs")
+                Text("Latest: \(latestSet.weight) \(weightUnit.rawValue)")
                     .foregroundColor(.secondary)
                     .font(.caption)
             }
@@ -107,8 +109,8 @@ struct ExerciseChartView: View {
                 break
             }
             guard let bestSet = setsByDate[date]?.max(by: { set, otherSet in
-                guard let weight = Float(set.weight!),
-                      let otherWeight = Float(otherSet.weight!) else { return false }
+                guard let weight = Float(set.weight),
+                      let otherWeight = Float(otherSet.weight) else { return false }
                 return weight < otherWeight
             }) else { continue }
             

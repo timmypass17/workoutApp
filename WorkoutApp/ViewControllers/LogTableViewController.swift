@@ -44,6 +44,10 @@ class LogTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        NotificationCenter.default.addObserver(tableView!,
+            selector: #selector(UITableView.reloadData),
+            name: WeightType.valueChangedNotification, object: nil)
+
         updateUI()
     }
     

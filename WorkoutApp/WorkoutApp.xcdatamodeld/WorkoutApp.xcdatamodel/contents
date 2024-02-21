@@ -8,7 +8,7 @@
     <entity name="ExerciseSet" representedClassName="ExerciseSet" syncable="YES">
         <attribute name="isComplete" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="reps" optional="YES" attributeType="String"/>
-        <attribute name="weight" optional="YES" attributeType="String"/>
+        <attribute name="weight_" optional="YES" attributeType="String"/>
         <relationship name="exercise" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Exercise" inverseName="exerciseSets" inverseEntity="Exercise"/>
     </entity>
     <entity name="Workout" representedClassName="Workout" syncable="YES">

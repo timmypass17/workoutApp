@@ -17,7 +17,7 @@ class SettingsTableViewController: UITableViewController {
     struct Model {
         let image: UIImage?
         let text: String
-        let secondary: String?
+        var secondary: String?
         let backgroundColor: UIColor?
         
         init(image: UIImage, text: String, secondary: String? = nil, backgroundColor: UIColor?) {
@@ -28,9 +28,9 @@ class SettingsTableViewController: UITableViewController {
         }
     }
     
-    let sections = [
+    var sections = [
         Section(title: "General",
-                data: [Model(image: UIImage(systemName: "dumbbell.fill")!, text: "Weight Units", secondary: Settings.shared.weightUnit.rawValue, backgroundColor: .accentColor),
+                data: [Model(image: UIImage(systemName: "dumbbell.fill")!, text: "Weight Units", secondary: Settings.shared.weightUnit.description, backgroundColor: .accentColor),
                        Model(image: UIImage(systemName: "alarm.fill")!, text: "Show Timer", backgroundColor: .accentColor)]),
         Section(title: "Appearance",
                 data: [Model(image: UIImage(systemName: "moon.stars.fill")!, text: "Theme", backgroundColor: .systemIndigo),
@@ -93,8 +93,9 @@ class SettingsTableViewController: UITableViewController {
 
 extension SettingsTableViewController: WeightTableViewControllerDelegate {
     func weightTableViewController(_ viewController: WeightTableViewController, didSelectWeightType weightType: WeightType) {
-        let cell = tableView.cellForRow(at: weightIndexPath) as! SettingsTableViewCell
-        cell.secondaryLabel.text = weightType.rawValue
+        let indexPath = IndexPath(row: 0, section: 0)
+        sections[indexPath.section].data[indexPath.row].secondary = weightType.description
+        tableView.reloadRows(at: [indexPath], with: .automatic)
     }
 }
 
@@ -118,3 +119,15 @@ class RoundedSquareImageView: UIImageView {
         self.layer.borderWidth = 1.0;
     }
 }
+
+/**
+ 2 Ways to to pass messages between objects
+ 1. Delegates (protocol)
+ - used for 1 to 1 communication (phone call)
+ - can communicate between one another
+ 2. Notification
+ - 1 to many communication (radio station, multible people can listen)
+ - Can only broadcast message, can't communication back and forth between listener (unless
+ 
+ Reference: https://stackoverflow.com/questions/5325226/what-is-the-difference-between-delegate-and-notification
+ */

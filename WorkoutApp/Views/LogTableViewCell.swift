@@ -111,18 +111,14 @@ class LogTableViewCell: UITableViewCell {
         workoutLabel.text = workout.title
         exercisesLabel.text = exercises
             .map { 
-                let bestExerciseSet = ($0.exerciseSets?.array as! [ExerciseSet]).max(by: { Float($0.weight!)! < Float($1.weight!)!  })!
+                let bestExerciseSet = ($0.exerciseSets?.array as! [ExerciseSet]).max(by: { Float($0.weight)! < Float($1.weight)!  })!
                 let title = bestExerciseSet.exercise?.title ?? ""
                 let sets = $0.exerciseSets?.count ?? 0
                 let reps = bestExerciseSet.reps ?? ""
-                let weight = bestExerciseSet.weight ?? ""
+                let weight = bestExerciseSet.weightString
                 return "\(sets)x\(reps) \(title) - \(weight) lbs"
             }
-//            .map { "\($0 .sets)x\($0.reps) \($0.name) - \($0.getWeightString(includeUnits: true))" }
             .joined(separator: "\n")
-        
-//        barView.isHidden = !Calendar.current.isDate(workout.startTime!, inSameDayAs: Date())
-//        barView.backgroundColor = Settings.shared.accentColor.color
     }
 }
 

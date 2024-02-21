@@ -70,7 +70,7 @@ struct ProgressHeaderView: View {
     
     var personalRecordWeight: String {
         return filteredData
-            .max { Float($0.weight!) ?? 0.0 < Float($1.weight!) ?? 0.0 }?.weight ?? "-"
+            .max { Float($0.weight) ?? 0.0 < Float($1.weight) ?? 0.0 }?.weight ?? "-"
     }
     
     var dateRangeString: String {
@@ -140,7 +140,7 @@ struct ProgressDetailViewCell: View {
         VStack(spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("\(exercise.weight!) lbs")
+                    Text("\(exercise.weight) lbs")
                         .font(.headline)
                     
                     //"60lbs 3x5 Sep 20, 2023"
@@ -157,8 +157,8 @@ struct ProgressDetailViewCell: View {
                     Text("-")
                         .foregroundColor(.secondary)
                 } else {
-                    let weight = Float(filteredData[i].weight!)!
-                    let previousWeight = Float(filteredData[i + 1].weight!)!
+                    let weight = Float(filteredData[i].weight)!
+                    let previousWeight = Float(filteredData[i + 1].weight)!
                     let difference = weight - previousWeight
                     if difference > 0 {
                         // More weight
@@ -195,7 +195,7 @@ struct ProgressChartView: View {
     var body: some View {
         Chart(filteredData) { exercise in
             LineMark(x: .value("Time", exercise.exercise?.workout?.createdAt ?? Date()),
-                     y: .value("Beats Per Minute", Float(exercise.weight!)!))
+                     y: .value("Beats Per Minute", Float(exercise.weight)!))
             .symbol(Circle().strokeBorder(lineWidth: 2))
             .symbolSize(CGSize(width: 6, height: 6))
         }

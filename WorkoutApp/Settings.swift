@@ -8,7 +8,6 @@
 import Foundation
 
 struct Settings {
-    
     static var shared = Settings()
     private let defaults = UserDefaults.standard
     

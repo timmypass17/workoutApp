@@ -177,10 +177,9 @@ class WorkoutDetailTableViewController: UITableViewController {
         navigationItem.rightBarButtonItem?.isEnabled = shouldEnableFinishButton
         
         func validInput(exerciseSet: ExerciseSet) -> Bool {
-            guard let weight = exerciseSet.weight,
-                  let reps = exerciseSet.reps
+            guard let reps = exerciseSet.reps
             else { return false }
-            
+            let weight = exerciseSet.weight
             return exerciseSet.isComplete && weight.isNumeric && reps.isNumeric
         }
     }
@@ -308,7 +307,7 @@ extension WorkoutDetailTableViewController: WorkoutDetailTableViewCellDelegate {
                 cell.set.isComplete = true
                 // If textfield is empty, use placeholder value
                 if cell.weightTextField.text == "" {
-                    cell.set.weight = cell.weightTextField.placeholder
+                    cell.set.weight = cell.weightTextField.placeholder ?? "0"
                     cell.weightTextField.text = cell.weightTextField.placeholder
                 }
                 if cell.repsTextField.text == "" {

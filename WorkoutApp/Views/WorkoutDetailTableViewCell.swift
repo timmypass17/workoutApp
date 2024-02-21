@@ -82,7 +82,7 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         repsTextField.inputAccessoryView = toolbar
         
         let setTextFieldChangedAction = UIAction { [self] _ in
-            set.weight = weightTextField.text
+            set.weight = weightTextField.text ?? ""
             set.reps = repsTextField.text
             if weightTextField.text == "" || repsTextField.text == "" {
                 set.isComplete = false
@@ -138,7 +138,7 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         let exercise = workout.getExercise(at: indexPath.section)
         self.set = exercise.getExerciseSet(at: indexPath.row)
         setButton.isSelected = set.isComplete
-        weightTextField.text = set.weight
+        weightTextField.text = set.weightString
         repsTextField.text = set.reps
         
         // Normal
@@ -158,14 +158,16 @@ class WorkoutDetailTableViewCell: UITableViewCell {
             let setCount = previousExercise.exerciseSets!.count
             let pos = min(indexPath.row, setCount - 1)  // only use index that are within previousExercise count
             let previousSet = previousExercise.getExerciseSet(at: pos)
-            previousLabel.text = indexPath.row < setCount ? previousSet.weight : "-"
-            weightTextField.placeholder = previousSet.weight
+            previousLabel.text = indexPath.row < setCount ? previousSet.weightString : "-"
+            weightTextField.placeholder = previousSet.weightString
             repsTextField.placeholder = previousSet.reps
         } else {
             previousLabel.text = "-"
             weightTextField.placeholder = "135"
             repsTextField.placeholder = "5"
         }
+        print("weight: \(set.weight)")
+        print("weightString: \(set.weightString)")
     }
     
     @objc func doneButtonTapped() {

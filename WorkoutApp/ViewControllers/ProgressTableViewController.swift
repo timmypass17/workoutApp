@@ -29,10 +29,14 @@ class ProgressTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(updateUI),
+            name: WeightType.valueChangedNotification, object: nil)
+
         updateUI()
     }
     
-    func updateUI() {
+    @objc func updateUI() {
         navigationItem.title = "Progress"
         navigationController?.navigationBar.prefersLargeTitles = true
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: ProgressViewCell.reuseIdentifier)
@@ -76,11 +80,11 @@ class ProgressTableViewController: UITableViewController {
             guard let createdAt = set.exercise?.workout?.createdAt else { continue }
             setsByDate[createdAt, default: []].append(set)
         }
-        var sortedDates = setsByDate.keys.sorted(by: >)  // descending
+        let sortedDates = setsByDate.keys.sorted(by: >)  // descending
         for date in sortedDates {
             guard let bestSet = setsByDate[date]?.max(by: { set, otherSet in
-                guard let weight = Float(set.weight!),
-                      let otherWeight = Float(otherSet.weight!) else { return false }
+                guard let weight = Float(set.weight),
+                      let otherWeight = Float(otherSet.weight) else { return false }
                 return weight < otherWeight
             }) else { continue }
             
