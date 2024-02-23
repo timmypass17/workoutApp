@@ -17,6 +17,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(updateTheme),
+                                               name: UIUserInterfaceStyle.valueChangedNotification,
+                                               object: nil)
+
         let tabBarController = UITabBarController()
 
         let workoutService = WorkoutService()
@@ -35,9 +40,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         tabBarController.viewControllers = [workoutViewController, logViewController, progressViewController, settingsViewController].map { UINavigationController(rootViewController: $0) }
         
         window = UIWindow(frame: windowScene.coordinateSpace.bounds)
+        updateTheme()
         window?.windowScene = windowScene
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
+    }
+    
+    @objc func updateTheme() {
+        window?.overrideUserInterfaceStyle = Settings.shared.theme
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

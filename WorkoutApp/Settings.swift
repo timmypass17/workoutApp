@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 struct Settings {
     static var shared = Settings()
@@ -37,7 +38,7 @@ struct Settings {
     
     var showTimer: Bool {
         get {
-            return unarchiveJSON(key: "showTimer") ?? false
+            return unarchiveJSON(key: "showTimer") ?? true
         }
         set {
             archiveJSON(value: newValue, key: "showTimer")
@@ -45,6 +46,35 @@ struct Settings {
     }
     
     var weightIncrement: Float {
-        return weightUnit == .lbs ? 5 : 2.5
+        let lbs: Float = 5
+        let kg: Float = 2.5
+        return weightUnit == .lbs ? lbs : kg
+    }
+    
+    var theme: UIUserInterfaceStyle {
+        get {
+            return unarchiveJSON(key: "theme") ?? .unspecified
+        }
+        set {
+            archiveJSON(value: newValue, key: "theme")
+        }
+    }
+}
+
+extension UIUserInterfaceStyle: Codable, CaseIterable {
+    public static var allCases: [UIUserInterfaceStyle] = [.unspecified, .light, .dark]
+    static let valueChangedNotification = Notification.Name("Theme.ValueChangedNotification")
+    
+    var description: String {
+        switch self {
+        case .unspecified:
+            return "Automatic"
+        case .light:
+            return "Light"
+        case .dark:
+            return "Dark"
+        @unknown default:
+            return "Automatic"
+        }
     }
 }

@@ -97,20 +97,16 @@ class SettingsTableViewCell: UITableViewCell {
         iconContainer.backgroundColor = model.backgroundColor
         label.text = model.text
         secondaryLabel.text = model.secondary
-        
-        if model.text == "Show Timer" {
-            toggleView.isOn = Settings.shared.showTimer
-            container.addArrangedSubview(toggleView)
-            accessoryType = .none
-        } else {
-            accessoryType = .disclosureIndicator
-        }
-        
-        
+        accessoryType = .disclosureIndicator
     }
     
     @objc func toggleValueChanged(sender: UISwitch) {
         Settings.shared.showTimer = sender.isOn
     }
     
+    func addToggleView() {
+        toggleView.isOn = Settings.shared.showTimer
+        container.addArrangedSubview(toggleView)
+        accessoryType = .none
+    }
 }

@@ -33,7 +33,7 @@ class SettingsTableViewController: UITableViewController {
                 data: [Model(image: UIImage(systemName: "dumbbell.fill")!, text: "Weight Units", secondary: Settings.shared.weightUnit.description, backgroundColor: .accentColor),
                        Model(image: UIImage(systemName: "alarm.fill")!, text: "Show Timer", backgroundColor: .accentColor)]),
         Section(title: "Appearance",
-                data: [Model(image: UIImage(systemName: "moon.stars.fill")!, text: "Theme", backgroundColor: .systemIndigo),
+                data: [Model(image: UIImage(systemName: "moon.stars.fill")!, text: "Theme", secondary: Settings.shared.theme.description, backgroundColor: .systemIndigo),
                        Model(image: UIImage(systemName: "paintpalette.fill")!, text: "Accent Color", backgroundColor: .systemOrange)]),
         Section(title: "Help & Support",
                 data: [Model(image: UIImage(systemName: "mail.fill")!, text: "Contact Us", backgroundColor: .systemGreen),
@@ -42,8 +42,9 @@ class SettingsTableViewController: UITableViewController {
                 data: [Model(image: UIImage(systemName: "hand.raised.fill")!, text: "Privacy Policy", backgroundColor: .systemGray)])
     ]
     
-    let weightIndexPath = IndexPath(row: 0, section: 0)
-    let timerIndexPath = IndexPath(row: 1, section: 0)
+    static let weightIndexPath = IndexPath(row: 0, section: 0)
+    static let timerIndexPath = IndexPath(row: 1, section: 0)
+    static let themeIndexpath = IndexPath(row: 0, section: 1)
         
     init() {
         super.init(style: .grouped)
@@ -75,6 +76,9 @@ class SettingsTableViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "SettingsCell", for: indexPath) as! SettingsTableViewCell
         let model = sections[indexPath.section].data[indexPath.row]
         cell.update(with: model)
+        if indexPath == SettingsTableViewController.timerIndexPath {
+            cell.addToggleView()
+        }
         return cell
     }
 
@@ -83,19 +87,31 @@ class SettingsTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if indexPath == weightIndexPath {
+        if indexPath == SettingsTableViewController.weightIndexPath {
             let weightTableViewController = WeightTableViewController(style: .grouped)
             weightTableViewController.delegate = self
             navigationController?.pushViewController(weightTableViewController, animated: true)
+        } else if indexPath == SettingsTableViewController.themeIndexpath {
+            let themeTableViewController = ThemeTableViewController(style: .grouped)
+            themeTableViewController.delegate = self
+            navigationController?.pushViewController(themeTableViewController, animated: true)
         }
     }
 }
 
 extension SettingsTableViewController: WeightTableViewControllerDelegate {
     func weightTableViewController(_ viewController: WeightTableViewController, didSelectWeightType weightType: WeightType) {
-        let indexPath = IndexPath(row: 0, section: 0)
-        sections[indexPath.section].data[indexPath.row].secondary = weightType.description
-        tableView.reloadRows(at: [indexPath], with: .automatic)
+        let weightIndexPath = SettingsTableViewController.weightIndexPath
+        sections[weightIndexPath.section].data[weightIndexPath.row].secondary = weightType.description
+        tableView.reloadRows(at: [weightIndexPath], with: .automatic)
+    }
+}
+
+extension SettingsTableViewController: ThemeTableViewControllerDelegate {
+    func themeTableViewController(_ controller: ThemeTableViewController, didSelectTheme theme: UIUserInterfaceStyle) {
+        let themeIndexPath = SettingsTableViewController.themeIndexpath
+        sections[themeIndexPath.section].data[themeIndexPath.row].secondary = theme.description
+        tableView.reloadRows(at: [themeIndexPath], with: .automatic)
     }
 }
 
