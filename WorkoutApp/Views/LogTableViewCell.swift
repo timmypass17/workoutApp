@@ -116,7 +116,7 @@ class LogTableViewCell: UITableViewCell {
                 let sets = $0.exerciseSets?.count ?? 0
                 let reps = bestExerciseSet.reps ?? ""
                 let weight = bestExerciseSet.weightString
-                return "\(sets)x\(reps) \(title) - \(weight) lbs"
+                return "\(sets)x\(reps) \(title) - \(weight) \(Settings.shared.weightUnit.rawValue)"
             }
             .joined(separator: "\n")
     }

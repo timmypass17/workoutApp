@@ -260,8 +260,11 @@ class WorkoutDetailTableViewController: UITableViewController {
             navigationItem.rightBarButtonItems = [addEditButton, calendarButton]
         case .startWorkout(_):
             // Timer
-            timerButton = TimerBarButton()
-            navigationItem.rightBarButtonItems = [addEditButton, timerButton!]
+            navigationItem.rightBarButtonItems = [addEditButton]
+            if Settings.shared.showTimer {
+                timerButton = TimerBarButton()
+                navigationItem.rightBarButtonItems?.append(timerButton!)
+            }
 
         default:
             navigationItem.rightBarButtonItem = addEditButton

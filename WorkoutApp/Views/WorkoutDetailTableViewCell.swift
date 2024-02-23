@@ -163,7 +163,7 @@ class WorkoutDetailTableViewCell: UITableViewCell {
             repsTextField.placeholder = previousSet.reps
         } else {
             previousLabel.text = "-"
-            weightTextField.placeholder = "135"
+            weightTextField.placeholder = Settings.shared.weightUnit == .lbs ? "135" : "60"
             repsTextField.placeholder = "5"
         }
         print("weight: \(set.weight)")
@@ -190,7 +190,7 @@ class WorkoutDetailTableViewCell: UITableViewCell {
             } else {
                 weight = Float(set.weight ?? "0") ?? 0.0
             }
-            weight += 5
+            weight += Settings.shared.weightIncrement
             set.weight = String(format: "%g", weight)
             weightTextField.text = String(format: "%g", weight)
         }
@@ -215,7 +215,7 @@ class WorkoutDetailTableViewCell: UITableViewCell {
             } else {
                 weight = Float(set.weight ?? "0") ?? 0.0
             }
-            weight = max(weight - 5, 0)
+            weight = max(weight - Settings.shared.weightIncrement, 0)
             set.weight = String(format: "%g", weight)
             weightTextField.text = String(format: "%g", weight)
         }

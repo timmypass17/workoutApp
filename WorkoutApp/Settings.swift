@@ -31,8 +31,20 @@ struct Settings {
             return unarchiveJSON(key: "weightUnit") ?? .lbs
         }
         set {
-            print("set")
             archiveJSON(value: newValue, key: "weightUnit")
         }
+    }
+    
+    var showTimer: Bool {
+        get {
+            return unarchiveJSON(key: "showTimer") ?? false
+        }
+        set {
+            archiveJSON(value: newValue, key: "showTimer")
+        }
+    }
+    
+    var weightIncrement: Float {
+        return weightUnit == .lbs ? 5 : 2.5
     }
 }
