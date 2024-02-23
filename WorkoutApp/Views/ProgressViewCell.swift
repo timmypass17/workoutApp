@@ -79,7 +79,7 @@ struct HighestWeightView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 4))
             
             HStack(alignment: .firstTextBaseline) {
-                Text("Latest: \(latestSet.weight) \(weightUnit.rawValue)")
+                Text("Latest: \(latestSet.weightString) \(weightUnit.rawValue)")
                     .foregroundColor(.secondary)
                     .font(.caption)
             }
@@ -103,7 +103,7 @@ struct ExerciseChartView: View {
             guard let createdAt = set.exercise?.workout?.createdAt else { continue }
             setsByDate[createdAt, default: []].append(set)
         }
-        var sortedDates = setsByDate.keys.sorted()
+        let sortedDates = setsByDate.keys.sorted()
         for date in sortedDates {
             if res.count >= 7 {
                 break
@@ -123,7 +123,7 @@ struct ExerciseChartView: View {
         // Show only 7 recent exercises (graph looks funny with 100s of plots)
         Chart(latestSet) { set in
             LineMark(x: .value("Date", set.exercise?.workout?.createdAt ?? Date()),
-                     y: .value("Weight", Float(set.weight ?? "0") ?? 0.0))
+                     y: .value("Weight", Float(set.weight ) ?? 0.0))
             .symbol(Circle().strokeBorder(lineWidth: 2))
             .symbolSize(CGSize(width: 6, height: 6))
         }

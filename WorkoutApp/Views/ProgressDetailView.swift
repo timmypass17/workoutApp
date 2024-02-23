@@ -66,11 +66,12 @@ struct FilterSegmentedView: View {
 }
 
 struct ProgressHeaderView: View {
+    @AppStorage("weightUnit") var weightUnit: WeightType = Settings.shared.weightUnit
     var filteredData: [ExerciseSet]
     
     var personalRecordWeight: String {
         return filteredData
-            .max { Float($0.weight) ?? 0.0 < Float($1.weight) ?? 0.0 }?.weight ?? "-"
+            .max { Float($0.weight) ?? 0.0 < Float($1.weight) ?? 0.0 }?.weightString ?? "-"
     }
     
     var dateRangeString: String {
@@ -88,7 +89,7 @@ struct ProgressHeaderView: View {
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(personalRecordWeight)
                     .font(.title)
-                Text("lb")
+                Text("\(weightUnit.rawValue)")
                     .foregroundColor(.secondary)
             }
             
@@ -132,15 +133,23 @@ struct ProgressListView: View {
 }
 
 struct ProgressDetailViewCell: View {
+    @AppStorage("weightUnit") var weightUnit: WeightType = Settings.shared.weightUnit
     var filteredData: [ExerciseSet]
     let i: Int
     let exercise: ExerciseSet
+    
+    func weightStringFormat(weight: Float) -> String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.minimumFractionDigits = 0
+        numberFormatter.maximumFractionDigits = weight.truncatingRemainder(dividingBy: 1) == 0 ? 0 : 2
+        return numberFormatter.string(from: NSNumber(value: weight)) ?? ""
+    }
     
     var body: some View {
         VStack(spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("\(exercise.weight) lbs")
+                    Text("\(exercise.weightString) \(weightUnit.rawValue)")
                         .font(.headline)
                     
                     //"60lbs 3x5 Sep 20, 2023"
@@ -162,19 +171,19 @@ struct ProgressDetailViewCell: View {
                     let difference = weight - previousWeight
                     if difference > 0 {
                         // More weight
-                        Text("+\(String(format: "%g", difference)) lbs")
+                        Text("+\(weightStringFormat(weight: difference)) \(weightUnit.rawValue)")
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
                             .background(.blue, in: RoundedRectangle(cornerRadius: 4))
                     } else if difference < 0 {
                         // Less weight
-                        Text("\(String(format: "%g", difference)) lbs")
+                        Text("-\(weightStringFormat(weight: difference)) \(weightUnit.rawValue)")
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
                             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
                     } else {
                         // No weight gain
-                        Text("+0 lbs")
+                        Text("+0 \(weightUnit.rawValue)")
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
                             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))

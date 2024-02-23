@@ -31,6 +31,7 @@ struct Settings {
             return unarchiveJSON(key: "weightUnit") ?? .lbs
         }
         set {
+            print("set")
             archiveJSON(value: newValue, key: "weightUnit")
         }
     }

@@ -19,7 +19,7 @@ extension ExerciseSet {
 
     @NSManaged public var isComplete: Bool
     @NSManaged public var reps: String?
-    @NSManaged public var weight_: String? // always in lbs
+    @NSManaged public var weight_: String? // always in lbs (real weight)
     @NSManaged public var exercise: Exercise?
     
     var weight: String {
@@ -41,6 +41,7 @@ extension ExerciseSet {
         }
     }
     
+    // Weight string formatted nicely
     var weightString: String {
         guard let doubleValue = Double(weight) else { return "" }
         let numberFormatter = NumberFormatter()
