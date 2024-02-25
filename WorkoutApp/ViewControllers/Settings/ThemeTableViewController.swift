@@ -54,3 +54,20 @@ class ThemeTableViewController: UITableViewController {
     }
 }
 
+extension UIUserInterfaceStyle: Codable, CaseIterable {
+    public static var allCases: [UIUserInterfaceStyle] = [.unspecified, .light, .dark]
+    static let valueChangedNotification = Notification.Name("Theme.ValueChangedNotification")
+    
+    var description: String {
+        switch self {
+        case .unspecified:
+            return "Automatic"
+        case .light:
+            return "Light"
+        case .dark:
+            return "Dark"
+        @unknown default:
+            return "Automatic"
+        }
+    }
+}

@@ -7,6 +7,7 @@
 
 import UIKit
 
+//TODO: Fix light mode colors, add "hide add set" and "hide exercise" settings
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
@@ -20,6 +21,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(updateTheme),
                                                name: UIUserInterfaceStyle.valueChangedNotification,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(updateAccentColor),
+                                               name: AccentColor.valueChangedNotification,
                                                object: nil)
 
         let tabBarController = UITabBarController()
@@ -41,6 +46,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         window = UIWindow(frame: windowScene.coordinateSpace.bounds)
         updateTheme()
+        updateAccentColor()
         window?.windowScene = windowScene
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
@@ -48,6 +54,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     @objc func updateTheme() {
         window?.overrideUserInterfaceStyle = Settings.shared.theme
+    }
+    
+    @objc func updateAccentColor() {
+        window?.tintColor = Settings.shared.accentColor.color
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 protocol WorkoutDetailTableViewCellDelegate: AnyObject {
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didUpdateExerciseSet exerciseSet: ExerciseSet)
@@ -145,13 +146,14 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         let indexOfCurrentSet = exercise.getExerciseSets().firstIndex { !$0.isComplete } ?? exercise.getExerciseSets().count
         let isCurrentSet = indexPath.row == indexOfCurrentSet
         var config = UIImage.SymbolConfiguration(pointSize: 30)
-        let colors: [UIColor] = isCurrentSet ? [.white, .systemBlue] : [.gray, .gray]
+        // TODO: Color is invisable in light mode (also make workoutTableViewCell have white text instead of blank)
+        let colors: [UIColor] = isCurrentSet ? [.white, Settings.shared.accentColor.color] : [.systemGray, .systemGray]
         config = config.applying(UIImage.SymbolConfiguration(paletteColors: colors))
         setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle", withConfiguration: config), for: .normal)
 
         // Selected
         var selectedConfig = UIImage.SymbolConfiguration(pointSize: 30)
-        selectedConfig = selectedConfig.applying(UIImage.SymbolConfiguration(paletteColors: [.white, .systemBlue]))
+        selectedConfig = selectedConfig.applying(UIImage.SymbolConfiguration(paletteColors: [.white, Settings.shared.accentColor.color]))
         setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle.fill", withConfiguration: selectedConfig), for: .selected)
 
         if let previousExercise {

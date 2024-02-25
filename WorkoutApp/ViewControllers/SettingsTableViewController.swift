@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import SafariServices
+import MessageUI
 
 class SettingsTableViewController: UITableViewController {
     
@@ -34,7 +36,7 @@ class SettingsTableViewController: UITableViewController {
                        Model(image: UIImage(systemName: "alarm.fill")!, text: "Show Timer", backgroundColor: .accentColor)]),
         Section(title: "Appearance",
                 data: [Model(image: UIImage(systemName: "moon.stars.fill")!, text: "Theme", secondary: Settings.shared.theme.description, backgroundColor: .systemIndigo),
-                       Model(image: UIImage(systemName: "paintpalette.fill")!, text: "Accent Color", backgroundColor: .systemOrange)]),
+                       Model(image: UIImage(systemName: "paintpalette.fill")!, text: "Accent Color", secondary: Settings.shared.accentColor.rawValue.capitalized, backgroundColor: .systemOrange)]),
         Section(title: "Help & Support",
                 data: [Model(image: UIImage(systemName: "mail.fill")!, text: "Contact Us", backgroundColor: .systemGreen),
                        Model(image: UIImage(systemName: "ladybug.fill")!, text: "Bug Report", backgroundColor: .systemRed)]),
@@ -45,7 +47,11 @@ class SettingsTableViewController: UITableViewController {
     static let weightIndexPath = IndexPath(row: 0, section: 0)
     static let timerIndexPath = IndexPath(row: 1, section: 0)
     static let themeIndexpath = IndexPath(row: 0, section: 1)
-        
+    static let accentColorIndexpath = IndexPath(row: 1, section: 1)
+    static let contactIndexPath = IndexPath(row: 0, section: 2)
+    static let bugIndexPath = IndexPath(row: 1, section: 2)
+    private let email = "timmypass21@gmail.com"
+    
     init() {
         super.init(style: .grouped)
     }
@@ -61,17 +67,17 @@ class SettingsTableViewController: UITableViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         tableView.register(SettingsTableViewCell.self, forCellReuseIdentifier: SettingsTableViewCell.identifier)
     }
-
+    
     // MARK: - Table view data source
-
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return sections.count
     }
-
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return sections[section].data.count
     }
-
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "SettingsCell", for: indexPath) as! SettingsTableViewCell
         let model = sections[indexPath.section].data[indexPath.row]
@@ -81,7 +87,7 @@ class SettingsTableViewController: UITableViewController {
         }
         return cell
     }
-
+    
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return sections[section].title
     }
@@ -95,6 +101,35 @@ class SettingsTableViewController: UITableViewController {
             let themeTableViewController = ThemeTableViewController(style: .grouped)
             themeTableViewController.delegate = self
             navigationController?.pushViewController(themeTableViewController, animated: true)
+        } else if indexPath == SettingsTableViewController.accentColorIndexpath {
+            let accentColorTableViewController = AccentColorTableViewController(style: .grouped)
+            accentColorTableViewController.delegate = self
+            navigationController?.pushViewController(accentColorTableViewController, animated: true)
+        } else if indexPath == SettingsTableViewController.contactIndexPath {
+            guard MFMailComposeViewController.canSendMail() else {
+                showMailErrorAlert()
+                return
+            }
+            
+            let mailComposer = MFMailComposeViewController()
+            mailComposer.mailComposeDelegate = self
+            mailComposer.setToRecipients([email])
+            mailComposer.setSubject("Contact Us")
+            
+            present(mailComposer, animated: true)
+        } else if indexPath == SettingsTableViewController.bugIndexPath {
+            guard MFMailComposeViewController.canSendMail() else {
+                showMailErrorAlert()
+                return
+            }
+            
+            let mailComposer = MFMailComposeViewController()
+            mailComposer.mailComposeDelegate = self
+            
+            mailComposer.setToRecipients([email])
+            mailComposer.setSubject("Bug Report")
+            
+            present(mailComposer, animated: true)
         }
     }
 }
@@ -114,6 +149,34 @@ extension SettingsTableViewController: ThemeTableViewControllerDelegate {
         tableView.reloadRows(at: [themeIndexPath], with: .automatic)
     }
 }
+
+extension SettingsTableViewController: AccentColorTableViewControllerDelegate {
+    func accentColorTableViewController(_ controller: AccentColorTableViewController, didSelectAccentColor color: AccentColor) {
+        let colorIndexPath = SettingsTableViewController.accentColorIndexpath
+        sections[colorIndexPath.section].data[colorIndexPath.row].secondary = color.rawValue.capitalized
+        tableView.reloadRows(at: [colorIndexPath], with: .automatic)
+    }
+}
+
+extension SettingsTableViewController: MFMailComposeViewControllerDelegate {
+    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
+        dismiss(animated: true)
+        if let selectedIndexPath = tableView.indexPathForSelectedRow {
+            tableView.deselectRow(at: selectedIndexPath, animated: true)
+        }
+    }
+    
+    func showMailErrorAlert() {
+        let alert = UIAlertController(
+            title: "No Email Account Found",
+            message: "There is no email account associated to this device. If you have any questions, please feel free to reach out to us at \(email)",
+            preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .default, handler: { _ in }))
+        self.present(alert, animated: true, completion: nil)
+    }
+}
+
 
 class RoundedSquareImageView: UIImageView {
     

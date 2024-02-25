@@ -69,6 +69,11 @@ class WorkoutDetailTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        NotificationCenter.default.addObserver(tableView!,
+                                               selector: #selector(UITableView.reloadData),
+                                               name: AccentColor.valueChangedNotification,
+                                               object: nil)
+        
         navigationItem.title = workout.title
         navigationController?.navigationBar.prefersLargeTitles = true
         
