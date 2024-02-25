@@ -50,6 +50,8 @@ class SettingsTableViewController: UITableViewController {
     static let accentColorIndexpath = IndexPath(row: 1, section: 1)
     static let contactIndexPath = IndexPath(row: 0, section: 2)
     static let bugIndexPath = IndexPath(row: 1, section: 2)
+    static let privacyIndexPath = IndexPath(row: 0, section: 3)
+    
     private let email = "timmypass21@gmail.com"
     
     init() {
@@ -130,6 +132,9 @@ class SettingsTableViewController: UITableViewController {
             mailComposer.setSubject("Bug Report")
             
             present(mailComposer, animated: true)
+        } else if indexPath == SettingsTableViewController.privacyIndexPath {
+            let privacyTableViewController = PrivacyTableViewController(style: .insetGrouped)
+            navigationController?.pushViewController(privacyTableViewController, animated: true)
         }
     }
 }

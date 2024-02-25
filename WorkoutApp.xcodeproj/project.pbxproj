@@ -43,6 +43,7 @@
 		32D8462E2B6C39130046F0D2 /* CalendarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D8462D2B6C39130046F0D2 /* CalendarViewController.swift */; };
 		32E051D92B7ED1FA0093EE4B /* ExerciseHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32E051D82B7ED1FA0093EE4B /* ExerciseHeaderView.swift */; };
 		32E3A1962B894FC3001FD86B /* AccentColorTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32E3A1952B894FC3001FD86B /* AccentColorTableViewController.swift */; };
+		32E3A1982B8C0865001FD86B /* PrivacyTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32E3A1972B8C0865001FD86B /* PrivacyTableViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -84,6 +85,7 @@
 		32D8462D2B6C39130046F0D2 /* CalendarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarViewController.swift; sourceTree = "<group>"; };
 		32E051D82B7ED1FA0093EE4B /* ExerciseHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseHeaderView.swift; sourceTree = "<group>"; };
 		32E3A1952B894FC3001FD86B /* AccentColorTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentColorTableViewController.swift; sourceTree = "<group>"; };
+		32E3A1972B8C0865001FD86B /* PrivacyTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyTableViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -185,6 +187,7 @@
 				32721AA32B857669002C742B /* WeightTableViewController.swift */,
 				325899792B88503D00C78FED /* ThemeTableViewController.swift */,
 				32E3A1952B894FC3001FD86B /* AccentColorTableViewController.swift */,
+				32E3A1972B8C0865001FD86B /* PrivacyTableViewController.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -284,6 +287,7 @@
 				32A2937B2B42073B00122166 /* AppDelegate.swift in Sources */,
 				32B9D74E2B589A440027DE30 /* LogTableViewCell.swift in Sources */,
 				32A2937D2B42073B00122166 /* SceneDelegate.swift in Sources */,
+				32E3A1982B8C0865001FD86B /* PrivacyTableViewController.swift in Sources */,
 				323148A62B50CAEA00F598A2 /* WorkoutDetailTableViewController.swift in Sources */,
 				32E051D92B7ED1FA0093EE4B /* ExerciseHeaderView.swift in Sources */,
 				321F97032B7408F500AB15B7 /* ProgressTableViewController.swift in Sources */,
