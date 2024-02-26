@@ -23,14 +23,19 @@ class WorkoutTableViewCell: UITableViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+//    let colors: [UIColor] = isCurrentSet ? [Color.ui.cellNo, Settings.shared.accentColor.color] : [.systemGray, .systemGray]
+//    config = config.applying(UIImage.SymbolConfiguration(paletteColors: colors))
+//    setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle", withConfiguration: config), for: .normal)
+
     func update(with workout: Workout) {
         guard let title = workout.title,
               let exercises = workout.exercises?.array as? [Exercise]
         else { return }
         titleLabel.text = title
         let firstLetter = title.first!.lowercased()
-        iconImageView.image = UIImage(systemName: "\(firstLetter).circle.fill")
+        var config = UIImage.SymbolConfiguration(pointSize: 35)
+        config = config.applying(UIImage.SymbolConfiguration(paletteColors: [.white, Settings.shared.accentColor.color]))
+        iconImageView.image = UIImage(systemName: "\(firstLetter).circle.fill", withConfiguration: config)
         descriptionLabel.text = exercises.map { $0.title! }.joined(separator: ", ")
     }
     
@@ -46,14 +51,14 @@ class WorkoutTableViewCell: UITableViewCell {
         let hstack = UIStackView(arrangedSubviews: [iconImageView, vstack])
         hstack.translatesAutoresizingMaskIntoConstraints = false
         hstack.axis = .horizontal
-        hstack.alignment = .leading
+        hstack.alignment = .center
         hstack.spacing = 8
 
         contentView.addSubview(hstack)
         
         NSLayoutConstraint.activate([
-            hstack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
-            hstack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
+            hstack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            hstack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
             hstack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             hstack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
         ])
@@ -78,10 +83,12 @@ class WorkoutTableViewCell: UITableViewCell {
         iconImageView = UIImageView(image: UIImage(systemName: "a.circle.fill"))
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
         iconImageView.contentMode = .scaleAspectFit
-        NSLayoutConstraint.activate([
-            iconImageView.widthAnchor.constraint(equalToConstant: 35),
-            iconImageView.heightAnchor.constraint(equalToConstant: 35)
-        ])
+        iconImageView.setContentHuggingPriority(.required, for: .horizontal)
+        iconImageView.setContentCompressionResistancePriority(.required, for: .horizontal)
+//        NSLayoutConstraint.activate([
+//            iconImageView.widthAnchor.constraint(equalToConstant: 35),
+//            iconImageView.heightAnchor.constraint(equalToConstant: 35)
+//        ])
     }
 }
 

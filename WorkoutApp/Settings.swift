@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import SwiftUI
 
 struct Settings {
     static var shared = Settings()
@@ -26,7 +27,7 @@ struct Settings {
         
         return try! JSONDecoder().decode(T.self, from: data)
     }
-
+    
     var weightUnit: WeightType {
         get {
             return unarchiveJSON(key: "weightUnit") ?? .lbs
@@ -68,4 +69,27 @@ struct Settings {
             archiveJSON(value: newValue, key: "accentColor")
         }
     }
+    
+    var sortingPreference: SortPreference {
+        get {
+            return unarchiveJSON(key: "sortPreference") ?? .weight
+        }
+        set {
+            archiveJSON(value: newValue, key: "sortPreference")
+        }
+    }
 }
+
+enum SortPreference: Codable {
+    case alphabetically, weight, recent
+}
+
+extension Color {
+    static let ui = Color.UI()
+    
+    struct UI {
+        // Asset colors
+        let cellNo = UIColor(named: "CellNo")!
+    }
+}
+

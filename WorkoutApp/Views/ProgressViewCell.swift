@@ -75,7 +75,7 @@ struct HighestWeightView: View {
                 .font(.subheadline)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 2)
-                .background(.secondary.opacity(0.15))
+                .background(.regularMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 4))
             
             HStack(alignment: .firstTextBaseline) {

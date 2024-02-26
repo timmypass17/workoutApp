@@ -146,8 +146,9 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         let indexOfCurrentSet = exercise.getExerciseSets().firstIndex { !$0.isComplete } ?? exercise.getExerciseSets().count
         let isCurrentSet = indexPath.row == indexOfCurrentSet
         var config = UIImage.SymbolConfiguration(pointSize: 30)
+        
         // TODO: Color is invisable in light mode (also make workoutTableViewCell have white text instead of blank)
-        let colors: [UIColor] = isCurrentSet ? [.white, Settings.shared.accentColor.color] : [.systemGray, .systemGray]
+        let colors: [UIColor] = isCurrentSet ? [Color.ui.cellNo, Settings.shared.accentColor.color] : [.systemGray, .systemGray]
         config = config.applying(UIImage.SymbolConfiguration(paletteColors: colors))
         setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle", withConfiguration: config), for: .normal)
 

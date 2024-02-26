@@ -15,6 +15,33 @@ class ProgressTableViewController: UITableViewController {
     var data: [ProgressData]
     let workoutService: WorkoutService
 
+    var sortMenu: UIMenu {
+        var menuItems: [UIAction] = [
+                UIAction(title: "Alphabetical (A-Z)", image: UIImage(systemName: "a.square.fill")) { _ in
+                    // Handle sorting alphabetically
+                    self.data.sort { $0.name < $1.name }
+                    self.tableView.reloadData()
+                    Settings.shared.sortingPreference = .alphabetically
+                },
+                UIAction(title: "Weight", image: UIImage(systemName: "scalemass.fill")) { _ in
+                    // Handle sorting by weight
+                    self.data.sort { data1, data2 in
+                        let weight1 = Float(data1.sets.max { Float($0.weight)! < Float($1.weight)! }!.weight)!
+                        let weight2 = Float(data2.sets.max { Float($0.weight)! < Float($1.weight)! }!.weight)!
+                        return weight1 > weight2
+                    }
+                    self.tableView.reloadData()
+                    Settings.shared.sortingPreference = .weight
+                },
+                UIAction(title: "Recently Updated", image: UIImage(systemName: "clock")) { _ in
+                    self.data.sort { $0.sets.first?.exercise?.workout?.createdAt ?? Date() >  $1.sets.first?.exercise?.workout?.createdAt ?? Date() }
+                    self.tableView.reloadData()
+                    Settings.shared.sortingPreference = .recent
+                }
+        ]
+        return UIMenu(title: "Sort By", image: nil, identifier: nil, options: [], children: menuItems)
+    }
+    
     init(workoutService: WorkoutService) {
         // Load data
         self.data = workoutService.fetchProgressData()
@@ -32,7 +59,7 @@ class ProgressTableViewController: UITableViewController {
         NotificationCenter.default.addObserver(self,
             selector: #selector(updateUI),
             name: WeightType.valueChangedNotification, object: nil)
-
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "line.3.horizontal.decrease"), menu: sortMenu)
         updateUI()
     }
     
@@ -41,6 +68,18 @@ class ProgressTableViewController: UITableViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: ProgressViewCell.reuseIdentifier)
         data = workoutService.fetchProgressData()
+        switch Settings.shared.sortingPreference {
+        case .alphabetically:
+            data.sort { $0.name < $1.name }
+        case .weight:
+            data.sort { data1, data2 in
+                let weight1 = Float(data1.sets.max { Float($0.weight)! < Float($1.weight)! }!.weight)!
+                let weight2 = Float(data2.sets.max { Float($0.weight)! < Float($1.weight)! }!.weight)!
+                return weight1 > weight2
+            }
+        case .recent:
+            data.sort { $0.sets.first?.exercise?.workout?.createdAt ?? Date() >  $1.sets.first?.exercise?.workout?.createdAt ?? Date() }
+        }
         tableView.reloadData()
         tableView.backgroundView = EmptyLabel(text: "Your workout data will appear here")
         tableView.backgroundView?.isHidden = data.isEmpty ? false : true

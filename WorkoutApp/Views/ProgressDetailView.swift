@@ -134,6 +134,7 @@ struct ProgressListView: View {
 
 struct ProgressDetailViewCell: View {
     @AppStorage("weightUnit") var weightUnit: WeightType = Settings.shared.weightUnit
+    @Environment(\.colorScheme) var colorScheme
     var filteredData: [ExerciseSet]
     let i: Int
     let exercise: ExerciseSet
@@ -155,7 +156,7 @@ struct ProgressDetailViewCell: View {
                     //"60lbs 3x5 Sep 20, 2023"
                     Text("\(filteredData[i].exercise!.exerciseSets!.count)x\(filteredData[i].reps!) \(filteredData[i].exercise!.title!) at \(formatDateMonthDayYear(filteredData[i].exercise!.workout!.createdAt!))")
                         .font(.subheadline)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
                         .lineLimit(1)
                 }
                 
@@ -169,24 +170,29 @@ struct ProgressDetailViewCell: View {
                     let weight = Float(filteredData[i].weight)!
                     let previousWeight = Float(filteredData[i + 1].weight)!
                     let difference = weight - previousWeight
-                    if difference > 0 {
-                        // More weight
-                        Text("+\(weightStringFormat(weight: difference)) \(weightUnit.rawValue)")
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 2)
-                            .background(Color(Settings.shared.accentColor.color), in: RoundedRectangle(cornerRadius: 4))
-                    } else if difference < 0 {
-                        // Less weight
-                        Text("\(weightStringFormat(weight: difference)) \(weightUnit.rawValue)")
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 2)
-                            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
-                    } else {
-                        // No weight gain
-                        Text("+0 \(weightUnit.rawValue)")
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 2)
-                            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
+                    Group {
+                        if difference > 0 {
+                            // More weight
+                            Text("+\(weightStringFormat(weight: difference)) \(weightUnit.rawValue)")
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .background(Color(Settings.shared.accentColor.color), in: RoundedRectangle(cornerRadius: 4))
+                        } else if difference < 0 {
+                            // Less weight
+                            Text("\(weightStringFormat(weight: difference)) \(weightUnit.rawValue)")
+                                .foregroundStyle(colorScheme == .dark ? .white : .secondary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
+                        } else {
+                            // No weight gain
+                            Text("+0 \(weightUnit.rawValue)")
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
+                        }
                     }
                 }
             }
