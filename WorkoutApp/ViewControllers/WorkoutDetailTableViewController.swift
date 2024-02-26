@@ -60,7 +60,7 @@ class WorkoutDetailTableViewController: UITableViewController {
             previousExercises[exercise.title!] = exercise.previousExerciseDone
         }
         
-        super.init(style: .plain)
+        super.init(style: .insetGrouped)
     }
     
     required init?(coder: NSCoder) {
@@ -83,13 +83,23 @@ class WorkoutDetailTableViewController: UITableViewController {
         footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
         footer.delegate = self
         tableView.tableFooterView = footer
+        
 //        let header = ExerciseHeaderView(title: "")
 //        header.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
 //        tableView.tableHeaderView = header
+        
         tableView.register(WorkoutDetailTableViewCell.self, forCellReuseIdentifier: WorkoutDetailTableViewCell.reuseIdentifier)
         tableView.register(AddItemTableViewCell.self, forCellReuseIdentifier: AddItemTableViewCell.reuseIdentifier)
         
         updateUI()
+    }
+    
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        guard let exercises = workout.exercises?.array as? [Exercise] else { return nil }
+        let header = ExerciseHeaderView(title: exercises[section].title!)
+//        header.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
+//        tableView.tableHeaderView = header
+        return header
     }
 
     // MARK: - Table view data source
@@ -120,11 +130,11 @@ class WorkoutDetailTableViewController: UITableViewController {
         }
     }
     
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        guard let exercises = workout.exercises?.array as? [Exercise] else { return nil }
-        return exercises[section].title
-    }
-    
+//    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+//        guard let exercises = workout.exercises?.array as? [Exercise] else { return nil }
+//        return exercises[section].title
+//    }
+//    
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         let exercises = workout.exercises?.array as? [Exercise]
         let exerciseSets = exercises?[indexPath.section].exerciseSets?.array as? [ExerciseSet]

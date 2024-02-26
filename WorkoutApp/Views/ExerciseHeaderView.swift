@@ -7,13 +7,38 @@
 
 import UIKit
 
+class PaddedLabel: UILabel {
+    let top: CGFloat
+    let left: CGFloat
+    let bottom: CGFloat
+    let right: CGFloat
+
+    init(top: CGFloat = 0, left: CGFloat = 0, bottom: CGFloat = 0, right: CGFloat = 0) {
+        self.top = top
+        self.left = left
+        self.bottom = bottom
+        self.right = right
+        super.init(frame: .zero)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func drawText(in rect: CGRect) {
+        let insets = UIEdgeInsets(top: top, left: left, bottom: bottom, right: right)
+        super.drawText(in: rect.inset(by: insets))
+    }
+}
+
 class ExerciseHeaderView: UIView {
 
     var titleLabel: UILabel = {
-        let label = UILabel()
+        let label = PaddedLabel()
         label.textAlignment = .left
 //        label.backgroundColor = .blue
-        label.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+        label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
+//        label.font = UIFont.
         return label
     }()
     
@@ -21,6 +46,7 @@ class ExerciseHeaderView: UIView {
         let label = UILabel()
         label.text = "Set"
         label.textAlignment = .center
+        label.textColor = .secondaryLabel
 //        label.backgroundColor = .red
         return label
     }()
@@ -29,6 +55,7 @@ class ExerciseHeaderView: UIView {
         let label = UILabel()
         label.text = "Previous"
         label.textAlignment = .center
+        label.textColor = .secondaryLabel
 //        label.backgroundColor = .orange
         return label
     }()
@@ -36,6 +63,7 @@ class ExerciseHeaderView: UIView {
     var weightLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
+        label.textColor = .secondaryLabel
 //        label.backgroundColor = .yellow
         label.text = "lbs"
         return label
@@ -44,6 +72,7 @@ class ExerciseHeaderView: UIView {
     var repsLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
+        label.textColor = .secondaryLabel
 //        label.backgroundColor = .green
         label.text = "Reps"
         return label
@@ -61,8 +90,9 @@ class ExerciseHeaderView: UIView {
     var vstack: UIStackView = {
         let vstack = UIStackView()
         vstack.axis = .vertical
+        vstack.spacing = 8
         vstack.translatesAutoresizingMaskIntoConstraints = false
-//        vstack.backgroundColor = .gray
+//        vstack.backgroundColor = .purple
         return vstack
     }()
     
@@ -79,7 +109,7 @@ class ExerciseHeaderView: UIView {
         
         addSubview(vstack)
         
-//        backgroundColor = .white
+//        backgroundColor = .gray
         
         NSLayoutConstraint.activate([
             vstack.topAnchor.constraint(equalTo: topAnchor, constant: 8),
