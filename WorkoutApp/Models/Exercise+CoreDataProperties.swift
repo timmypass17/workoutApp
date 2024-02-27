@@ -17,9 +17,18 @@ extension Exercise {
         return NSFetchRequest<Exercise>(entityName: "Exercise")
     }
 
-    @NSManaged public var title: String?
+    @NSManaged private var title_: String?
     @NSManaged public var exerciseSets: NSOrderedSet?
     @NSManaged public var workout: Workout?
+    
+    var title: String {
+        get {
+            return title_ ?? ""
+        }
+        set {
+            title_ = newValue
+        }
+    }
 
     func getExerciseSets() -> [ExerciseSet] {
         return exerciseSets?.array as? [ExerciseSet] ?? []
@@ -29,10 +38,11 @@ extension Exercise {
         return getExerciseSets()[index]
     }
     
+    // TODO: Fix bug
     var previousExerciseDone: Exercise? {
         let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
         let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
-        let predicate = NSPredicate(format: "title == %@", title!)
+        let predicate = NSPredicate(format: "title_ == %@", title)
         let sortDescriptor = NSSortDescriptor(key: "workout.createdAt", ascending: false)
         request.predicate = predicate
         request.sortDescriptors = [sortDescriptor]
@@ -86,7 +96,6 @@ extension Exercise {
 
 extension Exercise : Identifiable {
     func getPrettyString() -> String {
-        return "Exercise(title: \(title!))"
+        return "Exercise(title: \(title))"
     }
-
 }

@@ -17,10 +17,19 @@ extension ExerciseSet {
         return NSFetchRequest<ExerciseSet>(entityName: "ExerciseSet")
     }
 
-    @NSManaged public var isComplete: Bool
-    @NSManaged public var reps: String?
-    @NSManaged public var weight_: String? // always in lbs (real weight)
+    @NSManaged public var isComplete: Bool  // Bool have default value, no need for extra setters/getters
+    @NSManaged private var reps_: String?   // set to private cause we don't want to expose field to outside
+    @NSManaged private var weight_: String? // always in lbs (real weight)
     @NSManaged public var exercise: Exercise?
+    
+    var reps: String {
+        get {
+            return reps_ ?? "0"
+        }
+        set {
+            reps_ = newValue
+        }
+    }
     
     var weight: String {
         get {
@@ -50,6 +59,7 @@ extension ExerciseSet {
         return numberFormatter.string(from: NSNumber(value: doubleValue)) ?? ""
     }
     
+    // Move this methods to Weight class or something (single responsibility)
     private func convertToKg(lbs: String) -> String {
         guard let lbs = Float(lbs) else { return "" }
         let kg = lbs * 0.45359237
@@ -64,41 +74,7 @@ extension ExerciseSet {
 }
 
 extension ExerciseSet : Identifiable {
-    func previousSet(for rowAt: Int) -> ExerciseSet? {
-        guard let exerciseName = exercise?.title else { return nil }
-        
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-        let fetchRequest: NSFetchRequest<ExerciseSet> = ExerciseSet.fetchRequest()
-
-        // Filter set by name AND is not a template
-        let predicate = NSPredicate(format: "exercise.title == %@ AND exercise.workout.createdAt != nil", exerciseName)
-        fetchRequest.predicate = predicate
-
-        // Sort descriptor to sort by workout's createdAt in descending order
-        let sortDescriptor = NSSortDescriptor(key: "exercise.workout.createdAt", ascending: false)
-        fetchRequest.sortDescriptors = [sortDescriptor]
-
-        // Limit the result to fetch only the latest ExerciseSet
-        fetchRequest.fetchLimit = 1
-        
-        do {
-            let results: [ExerciseSet] = try context.fetch(fetchRequest)
-            if let latestSet = results.first {
-                // Handle the latest ExerciseSet with the exercise name "Bench Press"
-//                print(latestSet)
-                return latestSet
-            } else {
-//                print("No set found \(exerciseName)")
-            }
-            
-        } catch {
-            print("Error fetching ExerciseSets: \(error.localizedDescription)")
-        }
-        
-        return nil
-    }
-    
     func getPrettyString() -> String {
-        return "ExerciseSet(isComplete: \(isComplete), weight: \(weight), reps: \(reps!))"
+        return "ExerciseSet(isComplete: \(isComplete), weight: \(weight), reps: \(reps))"
     }
 }

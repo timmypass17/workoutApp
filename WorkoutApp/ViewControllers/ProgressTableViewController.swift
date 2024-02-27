@@ -148,7 +148,7 @@ extension ProgressTableViewController: WorkoutDetailTableViewControllerDelegate 
         var setDict: [String : [ExerciseSet]] = [:]
         let exercises = workout.getExercises()
         for exercise in exercises {
-            setDict[exercise.title!, default: []].append(contentsOf: exercise.getExerciseSets())
+            setDict[exercise.title, default: []].append(contentsOf: exercise.getExerciseSets())
         }
         
         // Update progress data

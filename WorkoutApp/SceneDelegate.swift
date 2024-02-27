@@ -7,7 +7,7 @@
 
 import UIKit
 
-//TODO: Fix light mode colors, add "hide add set" and "hide exercise" settings
+//TODO: Fix bug where app crash when user delete's Workout A log while doing Workout A. Cause due to previous being null since previous was deleted?
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?

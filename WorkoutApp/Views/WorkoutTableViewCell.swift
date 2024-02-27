@@ -28,15 +28,14 @@ class WorkoutTableViewCell: UITableViewCell {
 //    setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle", withConfiguration: config), for: .normal)
 
     func update(with workout: Workout) {
-        guard let title = workout.title,
-              let exercises = workout.exercises?.array as? [Exercise]
-        else { return }
+        let exercises = workout.getExercises()
+        let title = workout.title
         titleLabel.text = title
-        let firstLetter = title.first!.lowercased()
+        let firstLetter = title.first?.lowercased() ?? "a"
         var config = UIImage.SymbolConfiguration(pointSize: 35)
         config = config.applying(UIImage.SymbolConfiguration(paletteColors: [.white, Settings.shared.accentColor.color]))
         iconImageView.image = UIImage(systemName: "\(firstLetter).circle.fill", withConfiguration: config)
-        descriptionLabel.text = exercises.map { $0.title! }.joined(separator: ", ")
+        descriptionLabel.text = exercises.map { $0.title }.joined(separator: ", ")
     }
     
     private func setupView() {

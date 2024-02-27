@@ -65,7 +65,7 @@ class ExerciseHeaderView: UIView {
         label.textAlignment = .center
         label.textColor = .secondaryLabel
 //        label.backgroundColor = .yellow
-        label.text = "lbs"
+        label.text = Settings.shared.weightUnit.rawValue
         return label
     }()
     

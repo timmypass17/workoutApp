@@ -17,9 +17,18 @@ extension Workout {
         return NSFetchRequest<Workout>(entityName: "Workout")
     }
 
-    @NSManaged public var createdAt: Date?
-    @NSManaged public var title: String?
+    @NSManaged public var createdAt: Date? // Should be optional (templates do not have dates, distinct value)
+    @NSManaged private var title_: String?
     @NSManaged public var exercises: NSOrderedSet?
+
+    var title: String {
+        get {
+            return title_ ?? ""
+        }
+        set {
+            title_ = newValue
+        }
+    }
 
     func getExercises() -> [Exercise] {
         return exercises?.array as? [Exercise] ?? []
@@ -70,10 +79,9 @@ extension Workout : Identifiable {
     func printPrettyString() {
         print(Array(repeating: "-", count: 60).joined())
         print(getPrettyString())
-        let exercises = self.exercises?.array as! [Exercise]
-        for (i, exercise) in exercises.enumerated() {
-            print("\(i). \(exercise.getPrettyString())")
-            let sets = exercise.exerciseSets?.array as! [ExerciseSet]
+        let exercises = self.getExercises()
+        for (_, exercise) in exercises.enumerated() {
+            let sets = exercise.getExerciseSets()
             for (j, set) in sets.enumerated() {
                 print("\t\(j). \(set.getPrettyString())")
             }
@@ -81,7 +89,7 @@ extension Workout : Identifiable {
     }
     
     func getPrettyString() -> String {
-        return "Workout(title: \(title!), createdAt: \(createdAt))"
+        return "Workout(title: \(title), createdAt: \(createdAt))"
     }
         
     class func copy(workout: Workout, with context: NSManagedObjectContext) -> Workout {

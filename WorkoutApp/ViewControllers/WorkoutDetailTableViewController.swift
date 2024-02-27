@@ -57,7 +57,7 @@ class WorkoutDetailTableViewController: UITableViewController {
         // Load previous exercises
         let exercises = workout.getExercises()
         for exercise in exercises {
-            previousExercises[exercise.title!] = exercise.previousExerciseDone
+            previousExercises[exercise.title] = exercise.previousExerciseDone
         }
         
         super.init(style: .insetGrouped)
@@ -98,8 +98,8 @@ class WorkoutDetailTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        guard let exercises = workout.exercises?.array as? [Exercise] else { return nil }
-        let header = ExerciseHeaderView(title: exercises[section].title!)
+        let exercises = workout.getExercises()
+        let header = ExerciseHeaderView(title: exercises[section].title)
         return header
     }
 
@@ -126,21 +126,19 @@ class WorkoutDetailTableViewController: UITableViewController {
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutDetailTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutDetailTableViewCell
             cell.delegate = self
-            cell.update(with: workout, for: indexPath, previousExercise: previousExercises[exercise.title!]!)
+            cell.update(with: workout, for: indexPath, previousExercise: previousExercises[exercise.title]!)
             return cell
         }
     }
     
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        let exercises = workout.exercises?.array as? [Exercise]
-        let exerciseSets = exercises?[indexPath.section].exerciseSets?.array as? [ExerciseSet]
-        let size = exerciseSets?.count ?? 0
-        
-        return indexPath.row != size
+        let exercise = workout.getExercise(at: indexPath.section)
+        let exerciseSets = exercise.getExerciseSets()
+        return indexPath.row != exerciseSets.count
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        guard let exercises = workout.exercises?.array as? [Exercise] else { return }
+        let exercises = workout.getExercises()
         
         if (editingStyle == .delete) {
             // handle delete (by removing the data from your array and updating the tableview)
@@ -148,7 +146,7 @@ class WorkoutDetailTableViewController: UITableViewController {
             tableView.beginUpdates()
             tableView.deleteRows(at: [indexPath], with: .automatic)
             
-            if exercises[indexPath.section].exerciseSets?.count == 0 {
+            if exercises[indexPath.section].getExerciseSets().count == 0 {
                 workout.removeFromExercises(exercises[indexPath.section])   // if set is empty, then remove exercise from workout
                 tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
             } else {
@@ -177,20 +175,18 @@ class WorkoutDetailTableViewController: UITableViewController {
     
     func updateFinishButton() {
         // Check if all set is complete
-        guard let exercises = workout.exercises?.array as? [Exercise] else { return }
+        let exercises = workout.getExercises()
         
         let shouldEnableFinishButton = exercises.allSatisfy { exercise in
-            guard let exerciseSets = exercise.exerciseSets?.array as? [ExerciseSet] else { return false }
+            let exerciseSets = exercise.getExerciseSets()
             return exerciseSets.allSatisfy { validInput(exerciseSet: $0) }
         }
         
         navigationItem.rightBarButtonItem?.isEnabled = shouldEnableFinishButton
         
         func validInput(exerciseSet: ExerciseSet) -> Bool {
-            guard let reps = exerciseSet.reps
-            else { return false }
             let weight = exerciseSet.weight
-            return exerciseSet.isComplete && weight.isNumeric && reps.isNumeric
+            return exerciseSet.isComplete && weight.isNumeric && exerciseSet.reps.isNumeric
         }
     }
     
@@ -207,7 +203,7 @@ class WorkoutDetailTableViewController: UITableViewController {
             alertTitle = "Finish Workout?"
         case .updateLog(_):
             buttonTitle = "Save"
-            alertTitle = "Edit Log?"
+            alertTitle = "Save Changes?"
         }
         let action = UIAction { [self] _ in
             timerButton?.timer.stopTimer()
@@ -326,7 +322,7 @@ extension WorkoutDetailTableViewController: WorkoutDetailTableViewCellDelegate {
                     cell.weightTextField.text = cell.weightTextField.placeholder
                 }
                 if cell.repsTextField.text == "" {
-                    cell.set.reps = cell.repsTextField.placeholder
+                    cell.set.reps = cell.repsTextField.placeholder ?? "0"
                     cell.repsTextField.text = cell.repsTextField.placeholder
                 }
                 tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
@@ -401,7 +397,7 @@ extension WorkoutDetailTableViewController: ExercisesTableViewControllerDelegate
     func exercisesTableViewController(_ viewController: ExercisesTableViewController, didSelectExercises exercises: [String]) {
         // Loop through exercises
         for exerciseName in exercises {
-            let section = workout.exercises?.count ?? 0
+            let section = workout.getExercises().count
             // Create exercise item
             let exercise = Exercise(context: childContext)
             exercise.title = exerciseName

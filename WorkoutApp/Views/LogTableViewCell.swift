@@ -101,9 +101,8 @@ class LogTableViewCell: UITableViewCell {
     }
     
     func update(with workout: Workout) {
-        guard let exercises = workout.exercises?.array as? [Exercise],
-              let createdAt = workout.createdAt
-        else { return }
+        guard let createdAt = workout.createdAt else { return }
+        let exercises = workout.getExercises()
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "EEE"
         weekdayLabel.text = dateFormatter.string(from: createdAt)
@@ -111,10 +110,10 @@ class LogTableViewCell: UITableViewCell {
         workoutLabel.text = workout.title
         exercisesLabel.text = exercises
             .map { 
-                let bestExerciseSet = ($0.exerciseSets?.array as! [ExerciseSet]).max(by: { Float($0.weight)! < Float($1.weight)!  })!
+                let bestExerciseSet = ($0.getExerciseSets()).max(by: { Float($0.weight)! < Float($1.weight)!  })!
                 let title = bestExerciseSet.exercise?.title ?? ""
-                let sets = $0.exerciseSets?.count ?? 0
-                let reps = bestExerciseSet.reps ?? ""
+                let sets = $0.getExerciseSets().count
+                let reps = bestExerciseSet.reps
                 let weight = bestExerciseSet.weightString
                 return "\(sets)x\(reps) \(title) - \(weight) \(Settings.shared.weightUnit.rawValue)"
             }

@@ -84,21 +84,7 @@ class WorkoutTableViewController: UITableViewController {
             tableView.backgroundView?.isHidden = workoutPlans.isEmpty ? false : true
         }
     }
-    
-    override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
-            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "arrow.up.square")) { _ in
-                // TODO: Show edit workout view
-            }
 
-            let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-                // TODO: delete
-                // self.performDelete(indexPath)
-            }
-            return UIMenu(title: "", children: [editAction, deleteAction])
-        })
-    }
-    
     func updateUI() {
         navigationItem.title = "Workout"
         navigationController?.navigationBar.prefersLargeTitles = true
