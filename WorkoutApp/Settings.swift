@@ -87,6 +87,16 @@ struct Settings {
             archiveJSON(value: newValue, key: "showAddExercise")
         }
     }
+    
+    static let logBadgeValueChangedNotification = Notification.Name("logBadgeValueChanged")
+    var logBadgeValue: Int { // can't use nil in user defaults
+        get {
+            return unarchiveJSON(key: "logBadge") ?? 0
+        }
+        set {
+            archiveJSON(value: newValue, key: "logBadge")
+        }
+    }
 }
 
 enum SortPreference: Codable {

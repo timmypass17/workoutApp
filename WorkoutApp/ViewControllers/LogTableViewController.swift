@@ -51,6 +51,11 @@ class LogTableViewController: UITableViewController {
         updateUI()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        Settings.shared.logBadgeValue = 0
+        NotificationCenter.default.post(name: Settings.logBadgeValueChangedNotification, object: nil)
+    }
+    
     func updateUI() {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.title = "Log"

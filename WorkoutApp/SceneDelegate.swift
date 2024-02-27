@@ -11,6 +11,7 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
+    var logTabBarItem: UITabBarItem!
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
@@ -25,6 +26,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(updateAccentColor),
                                                name: AccentColor.valueChangedNotification,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(updateLogBadge),
+                                               name: Settings.logBadgeValueChangedNotification,
                                                object: nil)
 
         let tabBarController = UITabBarController()
@@ -45,8 +50,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         tabBarController.viewControllers = [workoutViewController, logViewController, progressViewController, settingsViewController].map { UINavigationController(rootViewController: $0) }
         
         window = UIWindow(frame: windowScene.coordinateSpace.bounds)
+        logTabBarItem = logViewController.tabBarItem
         updateTheme()
         updateAccentColor()
+        updateLogBadge()
         window?.windowScene = windowScene
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
@@ -59,6 +66,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     @objc func updateAccentColor() {
         window?.tintColor = Settings.shared.accentColor.color
     }
+    
+    
+    @objc func updateLogBadge() {
+        if Settings.shared.logBadgeValue == 0 {
+            logTabBarItem.badgeValue = nil
+        } else {
+            logTabBarItem.badgeValue = String(Settings.shared.logBadgeValue)
+        }
+    }
+    
 
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.

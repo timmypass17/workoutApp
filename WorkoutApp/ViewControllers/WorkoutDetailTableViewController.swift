@@ -235,6 +235,8 @@ class WorkoutDetailTableViewController: UITableViewController {
                     case .startWorkout(_):
                         delegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
                         progressDelegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
+                        Settings.shared.logBadgeValue += 1
+                        NotificationCenter.default.post(name: Settings.logBadgeValueChangedNotification, object: nil)
                     case .updateLog(let log):
                         // Delete old log
                         if let logContext = log.managedObjectContext {
