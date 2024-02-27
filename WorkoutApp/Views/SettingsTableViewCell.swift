@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol SettingsTableViewCellDelegate: AnyObject {
+    func settingsTableViewCell(_ sender: SettingsTableViewCell, toggleValueChanged: Bool)
+}
+
 class SettingsTableViewCell: UITableViewCell {
     static let identifier = "SettingsCell"
     
@@ -55,6 +59,8 @@ class SettingsTableViewCell: UITableViewCell {
         return stackView
     }()
     
+    weak var delegate: SettingsTableViewCellDelegate?
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
 
@@ -101,12 +107,10 @@ class SettingsTableViewCell: UITableViewCell {
     }
     
     @objc func toggleValueChanged(sender: UISwitch) {
-        Settings.shared.showTimer = sender.isOn
+        delegate?.settingsTableViewCell(self, toggleValueChanged: sender.isOn)
     }
     
     func addToggleView() {
-        toggleView.isOn = Settings.shared.showTimer
         container.addArrangedSubview(toggleView)
-        accessoryType = .none
     }
 }

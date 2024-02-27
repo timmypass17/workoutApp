@@ -78,15 +78,18 @@ class WorkoutDetailTableViewController: UITableViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         
         setupBarButton()
-        
-        let footer = AddExerciseFooterView()
-        footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
-        footer.delegate = self
-        tableView.tableFooterView = footer
-        
-//        let header = ExerciseHeaderView(title: "")
-//        header.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
-//        tableView.tableHeaderView = header
+        if Settings.shared.showAddExercise {
+            let footer = AddExerciseFooterView()
+            footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
+            footer.delegate = self
+            tableView.tableFooterView = footer
+        } else if case .createWorkout = state {
+            // can't really combine if case with OR :/
+            let footer = AddExerciseFooterView()
+            footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
+            footer.delegate = self
+            tableView.tableFooterView = footer
+        }
         
         tableView.register(WorkoutDetailTableViewCell.self, forCellReuseIdentifier: WorkoutDetailTableViewCell.reuseIdentifier)
         tableView.register(AddItemTableViewCell.self, forCellReuseIdentifier: AddItemTableViewCell.reuseIdentifier)
@@ -97,8 +100,6 @@ class WorkoutDetailTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         guard let exercises = workout.exercises?.array as? [Exercise] else { return nil }
         let header = ExerciseHeaderView(title: exercises[section].title!)
-//        header.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
-//        tableView.tableHeaderView = header
         return header
     }
 
@@ -109,7 +110,7 @@ class WorkoutDetailTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return workout.getExercise(at: section).getExerciseSets().count + 1 // extra for button
+        return workout.getExercise(at: section).getExerciseSets().count + 1
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -130,11 +131,6 @@ class WorkoutDetailTableViewController: UITableViewController {
         }
     }
     
-//    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-//        guard let exercises = workout.exercises?.array as? [Exercise] else { return nil }
-//        return exercises[section].title
-//    }
-//    
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         let exercises = workout.exercises?.array as? [Exercise]
         let exerciseSets = exercises?[indexPath.section].exerciseSets?.array as? [ExerciseSet]
@@ -148,7 +144,6 @@ class WorkoutDetailTableViewController: UITableViewController {
         
         if (editingStyle == .delete) {
             // handle delete (by removing the data from your array and updating the tableview)
-            print("Removing set at \(indexPath)")
             exercises[indexPath.section].removeFromExerciseSets(at: indexPath.row)
             tableView.beginUpdates()
             tableView.deleteRows(at: [indexPath], with: .automatic)

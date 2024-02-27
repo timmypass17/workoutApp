@@ -33,7 +33,9 @@ class SettingsTableViewController: UITableViewController {
     var sections = [
         Section(title: "General",
                 data: [Model(image: UIImage(systemName: "dumbbell.fill")!, text: "Weight Units", secondary: Settings.shared.weightUnit.description, backgroundColor: .accentColor),
-                       Model(image: UIImage(systemName: "alarm.fill")!, text: "Show Timer", backgroundColor: .accentColor)]),
+                       Model(image: UIImage(systemName: "alarm.fill")!, text: "Show Timer", backgroundColor: .accentColor),
+                Model(image: UIImage(systemName: "figure.run")!, text: "Show \"Add Exercise\"", backgroundColor: .accentColor),
+                      ]),
         Section(title: "Appearance",
                 data: [Model(image: UIImage(systemName: "moon.stars.fill")!, text: "Theme", secondary: Settings.shared.theme.description, backgroundColor: .systemIndigo),
                        Model(image: UIImage(systemName: "paintpalette.fill")!, text: "Accent Color", secondary: Settings.shared.accentColor.rawValue.capitalized, backgroundColor: .systemOrange)]),
@@ -43,9 +45,11 @@ class SettingsTableViewController: UITableViewController {
         Section(title: "Privacy",
                 data: [Model(image: UIImage(systemName: "hand.raised.fill")!, text: "Privacy Policy", backgroundColor: .systemGray)])
     ]
-    
+
     static let weightIndexPath = IndexPath(row: 0, section: 0)
-    static let timerIndexPath = IndexPath(row: 1, section: 0)
+    static let showTimerIndexPath = IndexPath(row: 1, section: 0)
+    static let showExerciseIndexPath = IndexPath(row: 2, section: 0)
+
     static let themeIndexpath = IndexPath(row: 0, section: 1)
     static let accentColorIndexpath = IndexPath(row: 1, section: 1)
     static let contactIndexPath = IndexPath(row: 0, section: 2)
@@ -84,9 +88,16 @@ class SettingsTableViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "SettingsCell", for: indexPath) as! SettingsTableViewCell
         let model = sections[indexPath.section].data[indexPath.row]
         cell.update(with: model)
-        if indexPath == SettingsTableViewController.timerIndexPath {
+        if indexPath == SettingsTableViewController.showTimerIndexPath || indexPath == SettingsTableViewController.showExerciseIndexPath {
             cell.addToggleView()
+            cell.accessoryType = .none
+            if indexPath == SettingsTableViewController.showTimerIndexPath {
+                cell.toggleView.isOn = Settings.shared.showTimer
+            } else if indexPath == SettingsTableViewController.showExerciseIndexPath {
+                cell.toggleView.isOn = Settings.shared.showAddExercise
+            }
         }
+        cell.delegate = self
         return cell
     }
     
@@ -182,27 +193,17 @@ extension SettingsTableViewController: MFMailComposeViewControllerDelegate {
     }
 }
 
-
-class RoundedSquareImageView: UIImageView {
-    
-    init(systemName: String, backgroundColor: UIColor) {
-        super.init(image: UIImage(systemName: systemName))
-        self.backgroundColor = backgroundColor
-        setupView()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    private func setupView() {
-        // Set corner radius to create a rounded square
-        self.layer.cornerRadius = 5.0
-        self.layer.masksToBounds = true
-        self.layer.borderColor = UIColor.red.cgColor
-        self.layer.borderWidth = 1.0;
+extension SettingsTableViewController: SettingsTableViewCellDelegate {
+    func settingsTableViewCell(_ sender: SettingsTableViewCell, toggleValueChanged: Bool) {
+        guard let indexPath = tableView.indexPath(for: sender) else { return }
+        if indexPath == SettingsTableViewController.showTimerIndexPath {
+            Settings.shared.showTimer = toggleValueChanged
+        } else if indexPath == SettingsTableViewController.showExerciseIndexPath {
+            Settings.shared.showAddExercise = toggleValueChanged
+        }
     }
 }
+
 
 /**
  2 Ways to to pass messages between objects

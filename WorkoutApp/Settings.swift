@@ -78,6 +78,15 @@ struct Settings {
             archiveJSON(value: newValue, key: "sortPreference")
         }
     }
+    
+    var showAddExercise: Bool {
+        get {
+            return unarchiveJSON(key: "showAddExercise") ?? true
+        }
+        set {
+            archiveJSON(value: newValue, key: "showAddExercise")
+        }
+    }
 }
 
 enum SortPreference: Codable {
