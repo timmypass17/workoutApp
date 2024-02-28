@@ -24,7 +24,7 @@ protocol WorkoutDetailTableViewControllerDelegate: AnyObject {
 class WorkoutDetailTableViewController: UITableViewController {
     let workout: Workout
     let state: State
-    var previousExercises: [String: Exercise?] = [:]
+    var previousExercises: [String: [(String, String)]] = [:]
     var timerButton: TimerBarButton?
         
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -54,10 +54,12 @@ class WorkoutDetailTableViewController: UITableViewController {
         case .updateLog(let log):
             workout = Workout.copy(workout: log, with: childContext)   // make copy of log, then save new log and delete old log
         }
-        // Load previous exercises
+        // Load previous exercise's weights
         let exercises = workout.getExercises()
         for exercise in exercises {
-            previousExercises[exercise.title] = exercise.previousExerciseDone
+            if let previousExercise = exercise.getPreviousExerciseDone() {
+                previousExercises[exercise.title] = previousExercise.getExerciseSets().map { ($0.weightString, $0.reps) }
+            }
         }
         
         super.init(style: .insetGrouped)
@@ -126,7 +128,8 @@ class WorkoutDetailTableViewController: UITableViewController {
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutDetailTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutDetailTableViewCell
             cell.delegate = self
-            cell.update(with: workout, for: indexPath, previousExercise: previousExercises[exercise.title]!)
+            let previousWeights = previousExercises[exercise.title, default: []]
+            cell.update(with: workout, for: indexPath, previousWeights: previousWeights)
             return cell
         }
     }
@@ -404,7 +407,9 @@ extension WorkoutDetailTableViewController: ExercisesTableViewControllerDelegate
             exercise.addToExerciseSets(set)
             
             // Add previous exercise
-            previousExercises[exerciseName] = exercise.previousExerciseDone
+            if let previousExercise = exercise.getPreviousExerciseDone() {
+                previousExercises[exercise.title] = previousExercise.getExerciseSets().map { ($0.weightString, $0.reps) }
+            }
             // Add section (this also insert's row)
             tableView.insertSections(IndexSet(integer: section), with: .automatic)
         }
@@ -415,6 +420,13 @@ extension String {
     var isNumeric: Bool {
         // Attempt to create an Int or Double from the string
         return Double(self) != nil
+    }
+}
+
+extension Collection {
+    /// Returns the element at the specified index if it is within bounds, otherwise nil.
+    subscript (safe index: Index) -> Element? {
+        return indices.contains(index) ? self[index] : nil
     }
 }
 

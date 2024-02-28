@@ -134,7 +134,7 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(with workout: Workout, for indexPath: IndexPath, previousExercise: Exercise?) {
+    func update(with workout: Workout, for indexPath: IndexPath, previousWeights: [(String, String)]) {
         self.workout = workout
         let exercise = workout.getExercise(at: indexPath.section)
         self.set = exercise.getExerciseSet(at: indexPath.row)
@@ -155,14 +155,24 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         selectedConfig = selectedConfig.applying(UIImage.SymbolConfiguration(paletteColors: [.white, Settings.shared.accentColor.color]))
         setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle.fill", withConfiguration: selectedConfig), for: .selected)
 
-        if let previousExercise {
-            let setCount = previousExercise.getExerciseSets().count
-            let pos = min(indexPath.row, setCount - 1)  // only use index that are within previousExercise count
-            let previousSet = previousExercise.getExerciseSet(at: pos)
-            previousLabel.text = indexPath.row < setCount ? previousSet.weightString : "-"
-            weightTextField.placeholder = previousSet.weightString
-            repsTextField.placeholder = previousSet.reps
+        if previousWeights.count > 0 {
+            // Use previous weight
+            if indexPath.row < previousWeights.count {
+                let (previousWeight, previousReps) = previousWeights[indexPath.row]
+                previousLabel.text = previousWeight
+                weightTextField.placeholder = previousWeight
+                repsTextField.placeholder = previousReps
+            }
+            else {
+                // Out of bounds, use last weight instead
+                if let (previousWeight, previousReps) = previousWeights.last {
+                    previousLabel.text = "-"
+                    weightTextField.placeholder = previousWeight
+                    repsTextField.placeholder = previousReps
+                }
+            }
         } else {
+            // No previous weight, use default values
             previousLabel.text = "-"
             weightTextField.placeholder = Settings.shared.weightUnit == .lbs ? "135" : "60"
             repsTextField.placeholder = "5"

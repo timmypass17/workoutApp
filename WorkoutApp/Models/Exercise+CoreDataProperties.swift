@@ -39,7 +39,7 @@ extension Exercise {
     }
     
     // TODO: Fix bug
-    var previousExerciseDone: Exercise? {
+    func getPreviousExerciseDone() -> Exercise? {
         let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
         let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
         let predicate = NSPredicate(format: "title_ == %@", title)
