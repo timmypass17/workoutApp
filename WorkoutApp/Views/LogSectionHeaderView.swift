@@ -33,7 +33,7 @@ class LogSectionHeaderView: UIView {
     init(title: String, workoutCount: Int) {
         super.init(frame: .zero)
         monthYearLabel.text = title.uppercased()
-        workoutCountLabel.text = "\(workoutCount) Workouts"
+        workoutCountLabel.text = workoutCount > 1 ? "\(workoutCount) Workouts" : "\(workoutCount) Workout"
         
         container.addArrangedSubview(monthYearLabel)
         container.addArrangedSubview(workoutCountLabel)

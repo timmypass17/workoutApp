@@ -13,14 +13,16 @@ class LogTableViewCell: UITableViewCell {
     private let weekdayLabel: UILabel = {
         let label = UILabel()
         label.font = .preferredFont(forTextStyle: .caption1)
+        label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
         label.textColor = .secondaryLabel
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private let dayLabel: UILabel = {
         let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
     
@@ -28,7 +30,6 @@ class LogTableViewCell: UITableViewCell {
         let label = UILabel()
         label.lineBreakMode = .byTruncatingTail
         label.numberOfLines = 1
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -37,9 +38,7 @@ class LogTableViewCell: UITableViewCell {
         label.font = .preferredFont(forTextStyle: .caption1)
         label.textColor = .secondaryLabel
         label.lineBreakMode = .byTruncatingTail
-        // Setting the max number of allowed lines in sub-title to 3
         label.numberOfLines = 3
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -47,14 +46,12 @@ class LogTableViewCell: UITableViewCell {
         let vstack = UIStackView()
         vstack.axis = .vertical
         vstack.alignment = .center
-        vstack.translatesAutoresizingMaskIntoConstraints = false
         return vstack
     }()
     
     private let workoutVStackView: UIStackView = {
         let vstack = UIStackView()
         vstack.axis = .vertical
-        vstack.translatesAutoresizingMaskIntoConstraints = false
         return vstack
     }()
     
@@ -83,14 +80,13 @@ class LogTableViewCell: UITableViewCell {
         contentView.addSubview(containerHStackView)
         
         NSLayoutConstraint.activate([
-            dateVStackView.widthAnchor.constraint(equalToConstant: 50),
-            dateVStackView.leadingAnchor.constraint(equalTo: containerHStackView.leadingAnchor, constant: 8)
+            dateVStackView.widthAnchor.constraint(equalToConstant: 50)
         ])
         
         NSLayoutConstraint.activate([
             containerHStackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             containerHStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-            containerHStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+            containerHStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16), // extra to push dateview
             containerHStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
         ])
                 

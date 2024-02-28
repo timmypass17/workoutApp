@@ -25,16 +25,19 @@ class SettingsTableViewCell: UITableViewCell {
         let imageView = UIImageView()
         imageView.tintColor = .white
         imageView.contentMode = .scaleAspectFit
-        // Wrap content
-        imageView.setContentHuggingPriority(.required, for: .horizontal)
-        imageView.setContentCompressionResistancePriority(.required, for: .horizontal)
         imageView.translatesAutoresizingMaskIntoConstraints = false
+        // Set image width & height
+        NSLayoutConstraint.activate([
+            imageView.widthAnchor.constraint(equalToConstant: 22),
+            imageView.heightAnchor.constraint(equalToConstant: 22)
+        ])
         return imageView
     }()
     
     var label: UILabel = {
         let label = UILabel()
         label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
     
@@ -42,6 +45,7 @@ class SettingsTableViewCell: UITableViewCell {
         let label = UILabel()
         label.textColor = .secondaryLabel
         label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
     
@@ -78,18 +82,11 @@ class SettingsTableViewCell: UITableViewCell {
             container.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16)
         ])
         
-        // Padding
         NSLayoutConstraint.activate([
             iconImageView.topAnchor.constraint(equalTo: iconContainer.topAnchor, constant: 4),
             iconImageView.bottomAnchor.constraint(equalTo: iconContainer.bottomAnchor, constant: -4),
             iconImageView.leadingAnchor.constraint(equalTo: iconContainer.leadingAnchor, constant: 4),
             iconImageView.trailingAnchor.constraint(equalTo: iconContainer.trailingAnchor, constant: -4)
-        ])
-        
-        // Set imageView width/height
-        NSLayoutConstraint.activate([
-            iconImageView.widthAnchor.constraint(equalToConstant: 22),
-            iconImageView.heightAnchor.constraint(equalToConstant: 22)
         ])
         
     }
