@@ -24,11 +24,10 @@
 		32A2937B2B42073B00122166 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A2937A2B42073B00122166 /* AppDelegate.swift */; };
 		32A2937D2B42073B00122166 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A2937C2B42073B00122166 /* SceneDelegate.swift */; };
 		32A2937F2B42073B00122166 /* WorkoutTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A2937E2B42073B00122166 /* WorkoutTableViewController.swift */; };
-		32A293852B42073B00122166 /* SwiftLift.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 32A293832B42073B00122166 /* SwiftLift.xcdatamodeld */; };
+		32A293852B42073B00122166 /* Steel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 32A293832B42073B00122166 /* Steel.xcdatamodeld */; };
 		32A293872B42073C00122166 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 32A293862B42073C00122166 /* Assets.xcassets */; };
 		32A2938A2B42073C00122166 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 32A293882B42073C00122166 /* LaunchScreen.storyboard */; };
 		32A293972B4213D100122166 /* WorkoutTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A293962B4213D100122166 /* WorkoutTableViewCell.swift */; };
-		32A2939B2B43CCF900122166 /* WorkoutTitleTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A2939A2B43CCF900122166 /* WorkoutTitleTableViewCell.swift */; };
 		32A81E3E2B45027800A5C8C2 /* AddWorkoutFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A81E3D2B45027800A5C8C2 /* AddWorkoutFooterView.swift */; };
 		32B9D74C2B588A9E0027DE30 /* LogTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32B9D74B2B588A9E0027DE30 /* LogTableViewController.swift */; };
 		32B9D74E2B589A440027DE30 /* LogTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32B9D74D2B589A440027DE30 /* LogTableViewCell.swift */; };
@@ -61,7 +60,7 @@
 		32721AA52B858BFC002C742B /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		327268612B5A10D600FA6D04 /* LogSectionHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogSectionHeaderView.swift; sourceTree = "<group>"; };
 		327DCA022B82DDDD0034139E /* TimerBarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerBarButton.swift; sourceTree = "<group>"; };
-		32A293772B42073B00122166 /* SwiftLift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftLift.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		32A293772B42073B00122166 /* Steel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Steel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		32A2937A2B42073B00122166 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		32A2937C2B42073B00122166 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		32A2937E2B42073B00122166 /* WorkoutTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTableViewController.swift; sourceTree = "<group>"; };
@@ -70,7 +69,6 @@
 		32A293892B42073C00122166 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		32A2938B2B42073C00122166 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		32A293962B4213D100122166 /* WorkoutTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTableViewCell.swift; sourceTree = "<group>"; };
-		32A2939A2B43CCF900122166 /* WorkoutTitleTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTitleTableViewCell.swift; sourceTree = "<group>"; };
 		32A81E3D2B45027800A5C8C2 /* AddWorkoutFooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddWorkoutFooterView.swift; sourceTree = "<group>"; };
 		32B9D74B2B588A9E0027DE30 /* LogTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTableViewController.swift; sourceTree = "<group>"; };
 		32B9D74D2B589A440027DE30 /* LogTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTableViewCell.swift; sourceTree = "<group>"; };
@@ -110,7 +108,7 @@
 		32A293782B42073B00122166 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				32A293772B42073B00122166 /* SwiftLift.app */,
+				32A293772B42073B00122166 /* Steel.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -126,7 +124,7 @@
 				32A293862B42073C00122166 /* Assets.xcassets */,
 				32A293882B42073C00122166 /* LaunchScreen.storyboard */,
 				32A2938B2B42073C00122166 /* Info.plist */,
-				32A293832B42073B00122166 /* SwiftLift.xcdatamodeld */,
+				32A293832B42073B00122166 /* Steel.xcdatamodeld */,
 				32D8462B2B6305CF0046F0D2 /* WorkoutService.swift */,
 				32721AA52B858BFC002C742B /* Settings.swift */,
 			);
@@ -165,7 +163,6 @@
 			isa = PBXGroup;
 			children = (
 				32A293962B4213D100122166 /* WorkoutTableViewCell.swift */,
-				32A2939A2B43CCF900122166 /* WorkoutTitleTableViewCell.swift */,
 				32A81E3D2B45027800A5C8C2 /* AddWorkoutFooterView.swift */,
 				323148BB2B50E4FB00F598A2 /* WorkoutDetailTableViewCell.swift */,
 				323148BD2B51BF1A00F598A2 /* AddItemTableViewCell.swift */,
@@ -195,9 +192,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		32A293762B42073B00122166 /* SwiftLift */ = {
+		32A293762B42073B00122166 /* Steel */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 32A2938E2B42073C00122166 /* Build configuration list for PBXNativeTarget "SwiftLift" */;
+			buildConfigurationList = 32A2938E2B42073C00122166 /* Build configuration list for PBXNativeTarget "Steel" */;
 			buildPhases = (
 				32A293732B42073B00122166 /* Sources */,
 				32A293742B42073B00122166 /* Frameworks */,
@@ -207,9 +204,9 @@
 			);
 			dependencies = (
 			);
-			name = SwiftLift;
+			name = Steel;
 			productName = WorkoutApp;
-			productReference = 32A293772B42073B00122166 /* SwiftLift.app */;
+			productReference = 32A293772B42073B00122166 /* Steel.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -227,7 +224,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 32A293722B42073B00122166 /* Build configuration list for PBXProject "SwiftLift" */;
+			buildConfigurationList = 32A293722B42073B00122166 /* Build configuration list for PBXProject "Steel" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -240,7 +237,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				32A293762B42073B00122166 /* SwiftLift */,
+				32A293762B42073B00122166 /* Steel */,
 			);
 		};
 /* End PBXProject section */
@@ -280,7 +277,6 @@
 				322040F72B83F03D004D7CB1 /* SettingsTableViewController.swift in Sources */,
 				32D8462A2B5F1EDB0046F0D2 /* ExercisesTableViewController.swift in Sources */,
 				32B9D74C2B588A9E0027DE30 /* LogTableViewController.swift in Sources */,
-				32A2939B2B43CCF900122166 /* WorkoutTitleTableViewCell.swift in Sources */,
 				3258997A2B88503D00C78FED /* ThemeTableViewController.swift in Sources */,
 				32A293972B4213D100122166 /* WorkoutTableViewCell.swift in Sources */,
 				324C37422B76EC7F0098B5E6 /* ProgressDetailView.swift in Sources */,
@@ -295,7 +291,7 @@
 				32D846262B5F06260046F0D2 /* Exercise+CoreDataProperties.swift in Sources */,
 				327268622B5A10D600FA6D04 /* LogSectionHeaderView.swift in Sources */,
 				327DCA032B82DDDD0034139E /* TimerBarButton.swift in Sources */,
-				32A293852B42073B00122166 /* SwiftLift.xcdatamodeld in Sources */,
+				32A293852B42073B00122166 /* Steel.xcdatamodeld in Sources */,
 				325FC5D52B747E8C0023C02D /* EmptyLabel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -452,7 +448,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.SwiftLift;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.Steel;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -479,7 +475,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.SwiftLift;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.Steel;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -490,7 +486,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		32A293722B42073B00122166 /* Build configuration list for PBXProject "SwiftLift" */ = {
+		32A293722B42073B00122166 /* Build configuration list for PBXProject "Steel" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				32A2938C2B42073C00122166 /* Debug */,
@@ -499,7 +495,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		32A2938E2B42073C00122166 /* Build configuration list for PBXNativeTarget "SwiftLift" */ = {
+		32A2938E2B42073C00122166 /* Build configuration list for PBXNativeTarget "Steel" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				32A2938F2B42073C00122166 /* Debug */,
@@ -511,13 +507,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCVersionGroup section */
-		32A293832B42073B00122166 /* SwiftLift.xcdatamodeld */ = {
+		32A293832B42073B00122166 /* Steel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
 				32A293842B42073B00122166 /* WorkoutApp.xcdatamodel */,
 			);
 			currentVersion = 32A293842B42073B00122166 /* WorkoutApp.xcdatamodel */;
-			path = SwiftLift.xcdatamodeld;
+			path = Steel.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};

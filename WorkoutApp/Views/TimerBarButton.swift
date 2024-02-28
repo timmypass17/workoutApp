@@ -67,7 +67,6 @@ class WorkoutTimer {
         // Have to create new timer (can't stop and start again)
         timer = Timer(timeInterval: 1.0, repeats: true) { [self] _ in
             elapsedTime += 1
-            print(elapsedTime)
             delegate?.workoutTimer(self, elapsedTimeDidChange: elapsedTime)
         }
         

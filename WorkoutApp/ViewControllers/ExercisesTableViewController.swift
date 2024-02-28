@@ -89,7 +89,6 @@ class ExercisesTableViewController: UITableViewController, UISearchResultsUpdati
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print(indexPath)
         let exercise = sections[indexPath.section].exercises[indexPath.row]
         selectedExercises.append(exercise)
         updateUI()

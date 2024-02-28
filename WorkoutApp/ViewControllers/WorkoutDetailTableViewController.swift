@@ -80,13 +80,13 @@ class WorkoutDetailTableViewController: UITableViewController {
         setupBarButton()
         if Settings.shared.showAddExercise {
             let footer = AddExerciseFooterView()
-            footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
+            footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 42)
             footer.delegate = self
             tableView.tableFooterView = footer
         } else if case .createWorkout = state {
             // can't really combine if case with OR :/
             let footer = AddExerciseFooterView()
-            footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
+            footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 42)
             footer.delegate = self
             tableView.tableFooterView = footer
         }
@@ -141,7 +141,6 @@ class WorkoutDetailTableViewController: UITableViewController {
         let exercises = workout.getExercises()
         
         if (editingStyle == .delete) {
-            // handle delete (by removing the data from your array and updating the tableview)
             exercises[indexPath.section].removeFromExerciseSets(at: indexPath.row)
             tableView.beginUpdates()
             tableView.deleteRows(at: [indexPath], with: .automatic)
@@ -279,11 +278,6 @@ class WorkoutDetailTableViewController: UITableViewController {
         }
     }
     
-    @objc func timerButtonTapped() {
-        
-    }
-    
-    
 }
 
 extension WorkoutDetailTableViewController: AddItemTableViewCellDelegate {
@@ -291,8 +285,7 @@ extension WorkoutDetailTableViewController: AddItemTableViewCellDelegate {
         guard let indexPath = tableView.indexPath(for: sender) else { return }
         
         // Add set
-        let exercises = workout.getExercises()
-        let exercise = exercises[indexPath.section]
+        let exercise = workout.getExercise(at: indexPath.section)
         let set = ExerciseSet(context: childContext)
         set.isComplete = false
         set.weight = ""
@@ -373,7 +366,6 @@ extension WorkoutDetailTableViewController: WorkoutDetailTableViewCellDelegate {
     }
     
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didUpdateExerciseSet exerciseSet: ExerciseSet) {
-        guard let indexPath = tableView.indexPath(for: cell) else { return }
         updateUI()
     }
     
@@ -435,5 +427,6 @@ extension String {
  Whenever user modifies core data object...
  - if context.save(), changes is persisted
  - if user doesn't save, unsaved changes are still persisted while app is active until user does context.save() or closes app (changes are discarded and not seen after reopening app)
+    - actually this might be because context.save() is called in sceneDidEnterBackground()
  - unsaved changes are still temporarily saved in core data (so user still see thoses changes even tho they didn't fully commit to saving)
  */

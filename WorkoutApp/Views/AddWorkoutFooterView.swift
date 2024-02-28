@@ -34,7 +34,7 @@ class AddExerciseFooterView: UIView {
         addSubview(addExerciseButton)
         
         NSLayoutConstraint.activate([
-            addExerciseButton.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            addExerciseButton.topAnchor.constraint(equalTo: topAnchor),
             addExerciseButton.bottomAnchor.constraint(equalTo: bottomAnchor),
             addExerciseButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
             addExerciseButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8)

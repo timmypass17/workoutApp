@@ -54,13 +54,9 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         let bar = UIToolbar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 44))
         let doneButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(doneButtonTapped))
         let leftButton = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), style: .plain, target: self, action: #selector(previousButtonTapped))
-        leftButton.tintColor = .white
         let rightButton = UIBarButtonItem(image: UIImage(systemName: "chevron.right"), style: .plain, target: self, action: #selector(nextButtonTapped))
-        rightButton.tintColor = .white
         let minusButton = UIBarButtonItem(image: UIImage(systemName: "minus"), style: .plain, target: self, action: #selector(decrement))
-        minusButton.tintColor = .white
         let plusButton = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(increment))
-        plusButton.tintColor = .white
 
         bar.items = [leftButton, .flexibleSpace(), rightButton, .flexibleSpace(), minusButton, .flexibleSpace(), plusButton, .flexibleSpace(), doneButton]
         bar.sizeToFit()
@@ -171,8 +167,6 @@ class WorkoutDetailTableViewCell: UITableViewCell {
             weightTextField.placeholder = Settings.shared.weightUnit == .lbs ? "135" : "60"
             repsTextField.placeholder = "5"
         }
-        print("weight: \(set.weight)")
-        print("weightString: \(set.weightString)")
     }
     
     @objc func doneButtonTapped() {

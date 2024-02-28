@@ -81,7 +81,7 @@ struct Settings {
     
     var showAddExercise: Bool {
         get {
-            return unarchiveJSON(key: "showAddExercise") ?? true
+            return unarchiveJSON(key: "showAddExercise") ?? false
         }
         set {
             archiveJSON(value: newValue, key: "showAddExercise")

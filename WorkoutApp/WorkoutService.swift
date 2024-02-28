@@ -19,7 +19,6 @@ class WorkoutService {
         
         do {
             let workoutPlans = try context.fetch(request)
-            print("Loaded \(workoutPlans.count) workouts")
             return workoutPlans
         } catch {
             print("Error fetching workouts: \(error.localizedDescription)")
@@ -36,7 +35,6 @@ class WorkoutService {
         
         do {
             let workoutPlans = try context.fetch(request)
-            print("Loaded \(workoutPlans.count) logs")
             return workoutPlans
         } catch {
             print("Error fetching logs: \(error.localizedDescription)")

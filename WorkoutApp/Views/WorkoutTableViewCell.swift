@@ -23,9 +23,6 @@ class WorkoutTableViewCell: UITableViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-//    let colors: [UIColor] = isCurrentSet ? [Color.ui.cellNo, Settings.shared.accentColor.color] : [.systemGray, .systemGray]
-//    config = config.applying(UIImage.SymbolConfiguration(paletteColors: colors))
-//    setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle", withConfiguration: config), for: .normal)
 
     func update(with workout: Workout) {
         let exercises = workout.getExercises()
@@ -84,10 +81,6 @@ class WorkoutTableViewCell: UITableViewCell {
         iconImageView.contentMode = .scaleAspectFit
         iconImageView.setContentHuggingPriority(.required, for: .horizontal)
         iconImageView.setContentCompressionResistancePriority(.required, for: .horizontal)
-//        NSLayoutConstraint.activate([
-//            iconImageView.widthAnchor.constraint(equalToConstant: 35),
-//            iconImageView.heightAnchor.constraint(equalToConstant: 35)
-//        ])
     }
 }
 
