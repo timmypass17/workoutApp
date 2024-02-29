@@ -102,6 +102,10 @@ class WorkoutDetailTableViewCell: UITableViewCell {
                 let reps = Int(repsTextField.placeholder ?? "0") ?? 0
                 set.reps = String(reps)
             }
+            if Settings.shared.enableHaptic {
+                let generator = UIImpactFeedbackGenerator(style: .heavy)
+                generator.impactOccurred()
+            }
             delegate?.workoutDetailTableViewCell(self, didTapCheckmarkForSet: set)
         }
         setButton.addAction(checkmarkToggleAction, for: .primaryActionTriggered)
@@ -214,6 +218,10 @@ class WorkoutDetailTableViewCell: UITableViewCell {
             set.reps = String(reps)
             repsTextField.text = String(reps)
         }
+        if Settings.shared.enableHaptic {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+        }
     }
     
     @objc func decrement() {
@@ -238,6 +246,10 @@ class WorkoutDetailTableViewCell: UITableViewCell {
             reps = max(reps - 1, 0)
             set.reps = String(reps)
             repsTextField.text = String(reps)
+        }
+        if Settings.shared.enableHaptic {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
         }
     }
 }

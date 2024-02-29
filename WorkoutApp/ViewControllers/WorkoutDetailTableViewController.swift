@@ -325,6 +325,10 @@ extension WorkoutDetailTableViewController: WorkoutDetailTableViewCellDelegate {
                     cell.set.reps = cell.repsTextField.placeholder ?? "0"
                     cell.repsTextField.text = cell.repsTextField.placeholder
                 }
+                if Settings.shared.enableHaptic {
+                    let generator = UIImpactFeedbackGenerator(style: .heavy)
+                    generator.impactOccurred()
+                }
                 tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
                 updateUI()
             }

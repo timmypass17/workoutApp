@@ -88,6 +88,15 @@ struct Settings {
         }
     }
     
+    var enableHaptic: Bool {
+        get {
+            return unarchiveJSON(key: "enableHaptic") ?? true
+        }
+        set {
+            archiveJSON(value: newValue, key: "enableHaptic")
+        }
+    }
+    
     static let logBadgeValueChangedNotification = Notification.Name("logBadgeValueChanged")
     var logBadgeValue: Int { // can't use nil in user defaults
         get {
@@ -97,6 +106,7 @@ struct Settings {
             archiveJSON(value: newValue, key: "logBadge")
         }
     }
+    
 }
 
 enum SortPreference: Codable {

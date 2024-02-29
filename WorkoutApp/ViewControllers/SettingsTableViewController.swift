@@ -35,6 +35,7 @@ class SettingsTableViewController: UITableViewController {
                 data: [Model(image: UIImage(systemName: "dumbbell.fill")!, text: "Weight Units", secondary: Settings.shared.weightUnit.description, backgroundColor: .accentColor),
                        Model(image: UIImage(systemName: "alarm.fill")!, text: "Show Timer", backgroundColor: .accentColor),
                 Model(image: UIImage(systemName: "figure.run")!, text: "Show \"Add Exercise\"", backgroundColor: .accentColor),
+                       Model(image: UIImage(systemName: "iphone.radiowaves.left.and.right")!, text: "Haptic Feedback", backgroundColor: .accentColor),
                       ]),
         Section(title: "Appearance",
                 data: [Model(image: UIImage(systemName: "moon.stars.fill")!, text: "Theme", secondary: Settings.shared.theme.description, backgroundColor: .systemIndigo),
@@ -49,6 +50,7 @@ class SettingsTableViewController: UITableViewController {
     static let weightIndexPath = IndexPath(row: 0, section: 0)
     static let showTimerIndexPath = IndexPath(row: 1, section: 0)
     static let showExerciseIndexPath = IndexPath(row: 2, section: 0)
+    static let hapticIndexPath = IndexPath(row: 3, section: 0)
 
     static let themeIndexpath = IndexPath(row: 0, section: 1)
     static let accentColorIndexpath = IndexPath(row: 1, section: 1)
@@ -88,13 +90,15 @@ class SettingsTableViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "SettingsCell", for: indexPath) as! SettingsTableViewCell
         let model = sections[indexPath.section].data[indexPath.row]
         cell.update(with: model)
-        if indexPath == SettingsTableViewController.showTimerIndexPath || indexPath == SettingsTableViewController.showExerciseIndexPath {
+        if indexPath == SettingsTableViewController.showTimerIndexPath || indexPath == SettingsTableViewController.showExerciseIndexPath || indexPath == SettingsTableViewController.hapticIndexPath {
             cell.addToggleView()
             cell.accessoryType = .none
             if indexPath == SettingsTableViewController.showTimerIndexPath {
                 cell.toggleView.isOn = Settings.shared.showTimer
             } else if indexPath == SettingsTableViewController.showExerciseIndexPath {
                 cell.toggleView.isOn = Settings.shared.showAddExercise
+            } else if indexPath == SettingsTableViewController.hapticIndexPath {
+                cell.toggleView.isOn = Settings.shared.enableHaptic
             }
         }
         cell.delegate = self
@@ -127,7 +131,7 @@ class SettingsTableViewController: UITableViewController {
             let mailComposer = MFMailComposeViewController()
             mailComposer.mailComposeDelegate = self
             mailComposer.setToRecipients([email])
-            mailComposer.setSubject("[Steel] Contact Us")
+            mailComposer.setSubject("[BuiltDiff] Contact Us")
             
             present(mailComposer, animated: true)
         } else if indexPath == SettingsTableViewController.bugIndexPath {
@@ -140,7 +144,7 @@ class SettingsTableViewController: UITableViewController {
             mailComposer.mailComposeDelegate = self
             
             mailComposer.setToRecipients([email])
-            mailComposer.setSubject("[Steel] Bug Report")
+            mailComposer.setSubject("[BuiltDiff] Bug Report")
             
             present(mailComposer, animated: true)
         } else if indexPath == SettingsTableViewController.privacyIndexPath {
@@ -200,6 +204,8 @@ extension SettingsTableViewController: SettingsTableViewCellDelegate {
             Settings.shared.showTimer = toggleValueChanged
         } else if indexPath == SettingsTableViewController.showExerciseIndexPath {
             Settings.shared.showAddExercise = toggleValueChanged
+        } else if indexPath == SettingsTableViewController.hapticIndexPath {
+            Settings.shared.enableHaptic = toggleValueChanged
         }
     }
 }
