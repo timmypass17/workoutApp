@@ -56,7 +56,7 @@ class SettingsTableViewController: UITableViewController {
     static let bugIndexPath = IndexPath(row: 1, section: 2)
     static let privacyIndexPath = IndexPath(row: 0, section: 3)
     
-    private let email = "timmypass21@gmail.com"
+    private let email = "timmysappstuff@gmail.com"
     
     init() {
         super.init(style: .grouped)
@@ -127,7 +127,7 @@ class SettingsTableViewController: UITableViewController {
             let mailComposer = MFMailComposeViewController()
             mailComposer.mailComposeDelegate = self
             mailComposer.setToRecipients([email])
-            mailComposer.setSubject("Contact Us")
+            mailComposer.setSubject("[Steel] Contact Us")
             
             present(mailComposer, animated: true)
         } else if indexPath == SettingsTableViewController.bugIndexPath {
@@ -140,7 +140,7 @@ class SettingsTableViewController: UITableViewController {
             mailComposer.mailComposeDelegate = self
             
             mailComposer.setToRecipients([email])
-            mailComposer.setSubject("Bug Report")
+            mailComposer.setSubject("[Steel] Bug Report")
             
             present(mailComposer, animated: true)
         } else if indexPath == SettingsTableViewController.privacyIndexPath {

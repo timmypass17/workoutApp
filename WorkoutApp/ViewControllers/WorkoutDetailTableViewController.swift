@@ -178,6 +178,10 @@ class WorkoutDetailTableViewController: UITableViewController {
     func updateFinishButton() {
         // Check if all set is complete
         let exercises = workout.getExercises()
+        guard !exercises.isEmpty else {
+            navigationItem.rightBarButtonItem?.isEnabled = false
+            return
+        }
         
         let shouldEnableFinishButton = exercises.allSatisfy { exercise in
             let exerciseSets = exercise.getExerciseSets()

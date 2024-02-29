@@ -84,7 +84,7 @@ struct HighestWeightView: View {
                     .font(.caption)
             }
             
-            Text("Updated: \(latestSet.exercise!.workout!.createdAt!.formatted())")
+            Text("Updated: \(latestSet.exercise!.workout!.createdAt!.formatted(date: .abbreviated, time: .omitted))")
                 .foregroundColor(.secondary)
                 .font(.caption2)
 
@@ -96,7 +96,7 @@ struct ExerciseChartView: View {
     var sets: [ExerciseSet]
     
     var latestSet: [ExerciseSet] {
-        // Get best set in each day (for past week)
+        // Get atleast 7 best set in each day
         var res: [ExerciseSet] = []
         var setsByDate: [Date: [ExerciseSet]] = [:]
         for set in sets {
@@ -122,13 +122,13 @@ struct ExerciseChartView: View {
     var body: some View {
         // Show only 7 recent exercises (graph looks funny with 100s of plots)
         Chart(latestSet) { set in
-            LineMark(x: .value("Date", set.exercise?.workout?.createdAt ?? Date()),
+            LineMark(x: .value("Position", latestSet.firstIndex { $0 == set } ?? 0),
                      y: .value("Weight", Float(set.weight ) ?? 0.0))
             .symbol(Circle().strokeBorder(lineWidth: 2))
             .symbolSize(CGSize(width: 6, height: 6))
         }
         .chartXAxis(.hidden)
-        .chartYAxis(.hidden)
+//        .chartYAxis(.hidden)
         .chartYScale(domain: .automatic(includesZero: false))
         .padding(.vertical, 8)
     }
