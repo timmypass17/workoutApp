@@ -58,6 +58,11 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         let minusButton = UIBarButtonItem(image: UIImage(systemName: "minus"), style: .plain, target: self, action: #selector(decrement))
         let plusButton = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(increment))
 
+        leftButton.tintColor = Settings.shared.accentColor.color
+        rightButton.tintColor = Settings.shared.accentColor.color
+        minusButton.tintColor = Settings.shared.accentColor.color
+        plusButton.tintColor = Settings.shared.accentColor.color
+
         bar.items = [leftButton, .flexibleSpace(), rightButton, .flexibleSpace(), minusButton, .flexibleSpace(), plusButton, .flexibleSpace(), doneButton]
         bar.sizeToFit()
         return bar

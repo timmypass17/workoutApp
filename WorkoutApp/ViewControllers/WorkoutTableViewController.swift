@@ -29,7 +29,7 @@ class WorkoutTableViewController: UITableViewController {
         NotificationCenter.default.addObserver(tableView!,
                                                selector: #selector(UITableView.reloadData),
                                                name: AccentColor.valueChangedNotification, object: nil)
-
+        
         updateUI()
     }
     
