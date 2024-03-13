@@ -84,6 +84,20 @@ class WorkoutTableViewController: UITableViewController {
             tableView.backgroundView?.isHidden = workoutPlans.isEmpty ? false : true
         }
     }
+    
+    override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
+            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "arrow.up.square")) { _ in
+                // TODO: Show edit workout view
+            }
+
+            let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                // TODO: delete
+                // self.performDelete(indexPath)
+            }
+            return UIMenu(title: "", children: [editAction, deleteAction])
+        })
+    }
 
     func updateUI() {
         navigationItem.title = "Workout"
@@ -92,6 +106,8 @@ class WorkoutTableViewController: UITableViewController {
         tableView.backgroundView = EmptyLabel(text: "Tap the '+' button to create your first workout template!")
         tableView.backgroundView?.isHidden = workoutPlans.isEmpty ? false : true
         setupAddButton()
+        tableView.dragDelegate = self
+        tableView.dragInteractionEnabled = true
         tableView.reloadData()
     }
     
@@ -124,6 +140,33 @@ class WorkoutTableViewController: UITableViewController {
         
         addButton = UIBarButtonItem(title: "Add Workout", image: UIImage(systemName: "plus"), primaryAction: addWorkoutAction)
         navigationItem.rightBarButtonItem = addButton
+    }
+}
+//
+extension WorkoutTableViewController: UITableViewDragDelegate {
+    func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        let dragItem = UIDragItem(itemProvider: NSItemProvider())
+        dragItem.localObject = workoutPlans[indexPath.row]
+        return [dragItem]
+    }
+    
+    override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        guard sourceIndexPath != destinationIndexPath else { return  }
+        
+        let mover = workoutPlans.remove(at: sourceIndexPath.row)
+        workoutPlans.insert(mover, at: destinationIndexPath.row)
+        
+        // Save new ordering positions
+        for (index, workout) in workoutPlans.enumerated() {
+            workout.index = Int16(index)
+        }
+        
+        do {
+            try context.save()
+            print("save: \(context)")
+        } catch {
+            print("Error saving reordering: \(error)")
+        }
     }
 }
 

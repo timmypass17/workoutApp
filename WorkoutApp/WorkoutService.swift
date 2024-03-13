@@ -15,9 +15,12 @@ class WorkoutService {
     func fetchWorkoutPlans() -> [Workout] {
         let request: NSFetchRequest<Workout> = Workout.fetchRequest()
         let predicate = NSPredicate(format: "createdAt == nil")
+        let sortDescriptor = NSSortDescriptor(key: "index", ascending: true)
         request.predicate = predicate
-        
+        request.sortDescriptors = [sortDescriptor]
+
         do {
+            print("\(#function) \(context)")
             let workoutPlans = try context.fetch(request)
             return workoutPlans
         } catch {

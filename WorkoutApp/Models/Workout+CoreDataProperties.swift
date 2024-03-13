@@ -19,7 +19,8 @@ extension Workout {
 
     @NSManaged public var createdAt: Date? // Should be optional (templates do not have dates, distinct value)
     @NSManaged private var title_: String?
-    @NSManaged public var exercises: NSOrderedSet?
+    @NSManaged public var index: Int16  // used to sort a list of workout
+    @NSManaged public var exercises: NSOrderedSet? // ordered means the exercises are in the order u added them in.
 
     var title: String {
         get {
