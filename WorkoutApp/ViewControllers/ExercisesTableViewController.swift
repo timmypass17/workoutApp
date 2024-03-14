@@ -44,10 +44,13 @@ class ExercisesTableViewController: UITableViewController, UISearchResultsUpdati
             self.delegate?.exercisesTableViewController(self, didSelectExercises: self.selectedExercises)
             self.navigationController?.dismiss(animated: true)
         }
-        
+
         // Top bar buttons
         navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: cancelAction)
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add", primaryAction: addAction)
+        navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(title: "Add", primaryAction: addAction),
+            UIBarButtonItem(image: UIImage(systemName: "square.and.pencil"), style: .plain, target: self, action: #selector(createButtonTapped))
+        ]
         navigationItem.rightBarButtonItem?.isEnabled = false
         
         // Search bar
@@ -133,4 +136,28 @@ class ExercisesTableViewController: UITableViewController, UISearchResultsUpdati
         toolbarItems?[1].title = "\(selectedExercises.count) selected"
     }
     
+    @objc func createButtonTapped() {
+        let alert = UIAlertController(title: "Add Exercise", message: "Enter exercise name below", preferredStyle: .alert)
+        
+        alert.addTextField { textField in
+            textField.placeholder = "Ex. Bench Press"
+            textField.autocapitalizationType = .sentences
+            let textChangedAction = UIAction { _ in
+                alert.actions[1].isEnabled = textField.text!.count > 0
+            }
+            textField.addAction(textChangedAction, for: .allEditingEvents)
+        }
+
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { _ in
+            guard let exercise = alert.textFields?[0].text else { return }
+            self.selectedExercises.removeAll()
+            self.selectedExercises.append(exercise)
+            self.delegate?.exercisesTableViewController(self, didSelectExercises: self.selectedExercises)
+            self.navigationController?.dismiss(animated: true)
+        }))
+        
+        self.present(alert, animated: true, completion: nil)
+    }
 }

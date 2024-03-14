@@ -11,6 +11,7 @@ import CoreData
 // Split this delegate up, some classes don't implment some functionss
 protocol WorkoutDetailTableViewControllerDelegate: AnyObject {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didCreateWorkout workout: Workout)
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateWorkout workout: Workout)
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didFinishWorkout workout: Workout)
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateLog workout: Workout)
 }
@@ -35,6 +36,7 @@ class WorkoutDetailTableViewController: UITableViewController {
     
     enum State {
         case createWorkout(String)
+        case updateWorkout(Workout)
         case startWorkout(Workout)
         case updateLog(Workout)
     }
@@ -49,11 +51,29 @@ class WorkoutDetailTableViewController: UITableViewController {
             workout = Workout(context: childContext)
             workout.title = workoutName
             workout.createdAt = nil // templates do not have dates
+        case .updateWorkout(let template):
+            workout = Workout.copy(workout: template, with: childContext)
+            for exercise in workout.getExercises() {
+                for set in exercise.getExerciseSets() {
+                    set.isComplete = false
+                    set.weight = ""
+                    set.reps = ""
+                }
+            }
         case .startWorkout(let template):
             workout = Workout.copy(workout: template, with: childContext)
+            workout.createdAt = .now
+            for exercise in workout.getExercises() {
+                for set in exercise.getExerciseSets() {
+                    set.isComplete = false
+                    set.weight = ""
+                    set.reps = ""
+                }
+            }
         case .updateLog(let log):
             workout = Workout.copy(workout: log, with: childContext)   // make copy of log, then save new log and delete old log
         }
+        
         // Load previous exercise's weights
         let exercises = workout.getExercises()
         for exercise in exercises {
@@ -61,7 +81,7 @@ class WorkoutDetailTableViewController: UITableViewController {
                 previousExercises[exercise.title] = previousExercise.getExerciseSets().map { ($0.weightString, $0.reps) }
             }
         }
-        
+                
         super.init(style: .insetGrouped)
     }
     
@@ -77,6 +97,10 @@ class WorkoutDetailTableViewController: UITableViewController {
                                                object: nil)
         
         navigationItem.title = workout.title
+        if case .updateWorkout(_) = state {
+            navigationItem.title = "\(workout.title) [Template]"
+        }
+
         navigationController?.navigationBar.prefersLargeTitles = true
         
         setupBarButton()
@@ -91,6 +115,11 @@ class WorkoutDetailTableViewController: UITableViewController {
             footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 42)
             footer.delegate = self
             tableView.tableFooterView = footer
+        } else if case .updateWorkout(_) = state {
+            let footer = AddExerciseFooterView()
+            footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 42)
+            footer.delegate = self
+            tableView.tableFooterView = footer
         }
         
         tableView.register(WorkoutDetailTableViewCell.self, forCellReuseIdentifier: WorkoutDetailTableViewCell.reuseIdentifier)
@@ -101,7 +130,13 @@ class WorkoutDetailTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let exercises = workout.getExercises()
-        let header = ExerciseHeaderView(title: exercises[section].title)
+        let header = ExerciseHeaderView(title: exercises[section].title, section: section)
+        header.delegate = self
+        if case .updateWorkout(_) = state {
+            header.editButton.isHidden = false
+        } else {
+            header.editButton.isHidden = true
+        }
         return header
     }
 
@@ -204,6 +239,9 @@ class WorkoutDetailTableViewController: UITableViewController {
         case .createWorkout(_):
             buttonTitle = "Save"
             alertTitle = "Create Workout?"
+        case .updateWorkout(_):
+            buttonTitle = "Save"
+            alertTitle = "Save Template?"
         case .startWorkout(_):
             buttonTitle = "Finish"
             alertTitle = "Finish Workout?"
@@ -229,11 +267,19 @@ class WorkoutDetailTableViewController: UITableViewController {
             
             alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [self] _ in
                 do {
+                    
                     try childContext.save()
                     
                     switch state {
                     case .createWorkout(_):
                         delegate?.workoutDetailTableViewController(self, didCreateWorkout: workout)
+                    case .updateWorkout(let template):
+                        // Delete old template
+                        if let templateContext = template.managedObjectContext {
+                            templateContext.delete(template)
+                            try templateContext.save()
+                            delegate?.workoutDetailTableViewController(self, didUpdateWorkout: workout)
+                        }
                     case .startWorkout(_):
                         delegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
                         progressDelegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
@@ -248,6 +294,7 @@ class WorkoutDetailTableViewController: UITableViewController {
                         delegate?.workoutDetailTableViewController(self, didUpdateLog: workout)
                         progressDelegate?.workoutDetailTableViewController(self, didUpdateLog: workout)
                     }
+
                     navigationController?.popViewController(animated: true)
                 } catch {
                     print("Failed to save workout: \(error)")
@@ -421,6 +468,14 @@ extension WorkoutDetailTableViewController: ExercisesTableViewControllerDelegate
             // Add section (this also insert's row)
             tableView.insertSections(IndexSet(integer: section), with: .automatic)
         }
+    }
+}
+
+extension WorkoutDetailTableViewController: ExerciseHeaderViewDelegate {
+    func exerciseHeaderView(_ sender: ExerciseHeaderView, didRenameExercise name: String, viewForHeaderInSection section: Int) {
+        let exercise = workout.getExercise(at: section)
+        exercise.title = name
+        tableView.reloadSections(IndexSet(integer: section), with: .automatic)
     }
 }
 

@@ -87,8 +87,11 @@ class WorkoutTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
-            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "arrow.up.square")) { _ in
-                // TODO: Show edit workout view
+            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "arrow.up.square")) { [self] _ in
+                let template = workoutPlans[indexPath.row]
+                let workoutDetailTableViewController = WorkoutDetailTableViewController(.updateWorkout(template))
+                workoutDetailTableViewController.delegate = self
+                navigationController?.pushViewController(workoutDetailTableViewController, animated: true)
             }
 
             let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
@@ -172,7 +175,22 @@ extension WorkoutTableViewController: UITableViewDragDelegate {
 
 extension WorkoutTableViewController: WorkoutDetailTableViewControllerDelegate {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didCreateWorkout workout: Workout) {
+        workout.index = Int16(workoutPlans.count)
+        do {
+            if let workoutContext = workout.managedObjectContext {
+                try workoutContext.save()
+            }
+        } catch {
+            print("Error saving index: \(error)")
+        }
         workoutPlans.append(workout)
+        updateUI()
+    }
+    
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateWorkout workout: Workout) {
+        print("didUpdateWorkout")
+        workout.printPrettyString()
+        workoutPlans = workoutService.fetchWorkoutPlans()
         updateUI()
     }
     

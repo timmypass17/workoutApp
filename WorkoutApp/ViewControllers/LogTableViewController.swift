@@ -156,6 +156,10 @@ extension LogTableViewController: WorkoutDetailTableViewControllerDelegate {
         return
     }
     
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateWorkout workout: Workout) {
+        return
+    }
+    
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didFinishWorkout workout: Workout) {
         updateUI()
     }

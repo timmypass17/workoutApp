@@ -38,7 +38,6 @@ extension Exercise {
         return getExerciseSets()[index]
     }
     
-    // TODO: Fix bug
     func getPreviousExerciseDone() -> Exercise? {
         let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
         let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()

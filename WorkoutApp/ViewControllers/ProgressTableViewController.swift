@@ -144,6 +144,10 @@ extension ProgressTableViewController: WorkoutDetailTableViewControllerDelegate 
         return
     }
     
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateWorkout workout: Workout) {
+        return
+    }
+    
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didFinishWorkout workout: Workout) {
         var setDict: [String : [ExerciseSet]] = [:]
         let exercises = workout.getExercises()

@@ -92,12 +92,12 @@ extension Workout : Identifiable {
     func getPrettyString() -> String {
         return "Workout(title: \(title), createdAt: \(createdAt))"
     }
-        
+
     class func copy(workout: Workout, with context: NSManagedObjectContext) -> Workout {
-        let isStartingNewWorkout = workout.createdAt == nil // copying template
         let workoutCopy = Workout(context: context)
         workoutCopy.title = workout.title
-        workoutCopy.createdAt = isStartingNewWorkout ? .now : workout.createdAt
+        workoutCopy.createdAt = workout.createdAt
+        workoutCopy.index = workout.index
         
         for exercise in workout.getExercises() {
             let exerciseCopy = Exercise(context: context)
@@ -106,14 +106,38 @@ extension Workout : Identifiable {
             workoutCopy.addToExercises(exerciseCopy)
             for set in exercise.getExerciseSets() {
                 let setCopy = ExerciseSet(context: context)
-                setCopy.isComplete = isStartingNewWorkout ? false : set.isComplete
-                setCopy.weight = isStartingNewWorkout ? "" : set.weight
-                setCopy.reps = isStartingNewWorkout ? "" : set.reps
+                setCopy.isComplete = set.isComplete
+                setCopy.weight = set.weight
+                setCopy.reps = set.reps
                 setCopy.exercise = exerciseCopy
                 exerciseCopy.addToExerciseSets(setCopy)
             }
         }
         return workoutCopy
     }
+    
+//    class func copy(workout: Workout, with context: NSManagedObjectContext) -> Workout {
+//        let isStartingNewWorkout = workout.createdAt == nil // copying template
+//        let workoutCopy = Workout(context: context)
+//        workoutCopy.title = workout.title
+//        workoutCopy.createdAt = isStartingNewWorkout ? .now : workout.createdAt
+//        workoutCopy.index = workout.index
+//        
+//        for exercise in workout.getExercises() {
+//            let exerciseCopy = Exercise(context: context)
+//            exerciseCopy.title = exercise.title
+//            exerciseCopy.workout = workoutCopy
+//            workoutCopy.addToExercises(exerciseCopy)
+//            for set in exercise.getExerciseSets() {
+//                let setCopy = ExerciseSet(context: context)
+//                setCopy.isComplete = isStartingNewWorkout ? false : set.isComplete
+//                setCopy.weight = isStartingNewWorkout ? "" : set.weight
+//                setCopy.reps = isStartingNewWorkout ? "" : set.reps
+//                setCopy.exercise = exerciseCopy
+//                exerciseCopy.addToExerciseSets(setCopy)
+//            }
+//        }
+//        return workoutCopy
+//    }
 
 }

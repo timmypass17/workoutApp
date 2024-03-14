@@ -22,6 +22,9 @@ class WorkoutService {
         do {
             print("\(#function) \(context)")
             let workoutPlans = try context.fetch(request)
+            for workout in workoutPlans {
+                print(workout.title, workout.index)
+            }
             return workoutPlans
         } catch {
             print("Error fetching workouts: \(error.localizedDescription)")
