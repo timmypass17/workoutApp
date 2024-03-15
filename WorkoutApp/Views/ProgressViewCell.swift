@@ -84,7 +84,7 @@ struct HighestWeightView: View {
                     .font(.caption)
             }
             
-            Text("Updated: \(latestSet.exercise!.workout!.createdAt!.formatted(date: .abbreviated, time: .omitted))")
+            Text("Updated: \(latestSet.exercise?.workout?.createdAt?.formatted(date: .abbreviated, time: .omitted) ?? Date().formatted(date: .abbreviated, time: .omitted))")
                 .foregroundColor(.secondary)
                 .font(.caption2)
 

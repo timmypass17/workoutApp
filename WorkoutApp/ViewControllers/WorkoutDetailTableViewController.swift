@@ -8,7 +8,7 @@
 import UIKit
 import CoreData
 
-// Split this delegate up, some classes don't implment some functionss
+// TODO: Split this delegate up, some classes don't implment some functionss
 protocol WorkoutDetailTableViewControllerDelegate: AnyObject {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didCreateWorkout workout: Workout)
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateWorkout workout: Workout)
@@ -16,12 +16,6 @@ protocol WorkoutDetailTableViewControllerDelegate: AnyObject {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateLog workout: Workout)
 }
 
-// TODO: Bug with deleting log, deletes all exercise and sets
-// 1. Finish Workout A
-// 2. Delete Workout A's logged bench press
-// 3. Workout A's bench press is empty and previous is empty
-// Solution: Problably something with deletion rule
-// Child context: Child contexts are useful when you want to make changes in a separate context and then either save those changes or discard them without affecting the main context.
 class WorkoutDetailTableViewController: UITableViewController {
     let workout: Workout
     let state: State
@@ -99,6 +93,9 @@ class WorkoutDetailTableViewController: UITableViewController {
         navigationItem.title = workout.title
         if case .updateWorkout(_) = state {
             navigationItem.title = "\(workout.title) [Template]"
+        }
+        if case .createWorkout(let title) = state {
+            navigationItem.title = "\(title) [Template]"
         }
 
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -238,7 +235,7 @@ class WorkoutDetailTableViewController: UITableViewController {
         switch state {
         case .createWorkout(_):
             buttonTitle = "Save"
-            alertTitle = "Create Workout?"
+            alertTitle = "Create Template?"
         case .updateWorkout(_):
             buttonTitle = "Save"
             alertTitle = "Save Template?"

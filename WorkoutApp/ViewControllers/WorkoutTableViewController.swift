@@ -95,7 +95,8 @@ class WorkoutTableViewController: UITableViewController {
             }
 
             let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-                // TODO: delete
+                // TODO: Delete workout plan. Add alert confirming deletion
+                // TODO: Fix decimal formatting when using kg (and incrementing by 2.5)
                 // self.performDelete(indexPath)
             }
             return UIMenu(title: "", children: [editAction, deleteAction])

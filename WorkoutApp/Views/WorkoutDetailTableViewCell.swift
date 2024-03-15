@@ -202,22 +202,25 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     
     @objc func increment() {
         if weightTextField.isFirstResponder {
-            var weight: Float
+            var weight: Double
             if set.weight == "" {
-                weight = Float(weightTextField.placeholder ?? "0") ?? 0.0
+                weight = Double(weightTextField.placeholder ?? "0") ?? 0.0
             } else {
-                weight = Float(set.weight ?? "0") ?? 0.0
+                weight = Double(set.weight) ?? 0.0
             }
+            
             weight += Settings.shared.weightIncrement
-            set.weight = String(format: "%g", weight)
-            weightTextField.text = String(format: "%g", weight)
+            
+            print(String(format: "%g", weight.rounded(toPlaces: 2)))
+            set.weight = String(format: "%g", weight.rounded(toPlaces: 2))
+            weightTextField.text = String(format: "%g", weight.rounded(toPlaces: 2))
         }
         else if repsTextField.isFirstResponder {
             var reps: Int
             if set.reps == "" {
                 reps = Int(repsTextField.placeholder ?? "0") ?? 0
             } else {
-                reps = Int(set.reps ?? "0") ?? 0
+                reps = Int(set.reps ) ?? 0
             }
             reps += 1
             set.reps = String(reps)
@@ -231,15 +234,16 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     
     @objc func decrement() {
         if weightTextField.isFirstResponder {
-            var weight: Float
+            var weight: Double
             if set.weight == "" {
-                weight = Float(weightTextField.placeholder ?? "0") ?? 0.0
+                weight = Double(weightTextField.placeholder ?? "0") ?? 0.0
             } else {
-                weight = Float(set.weight ?? "0") ?? 0.0
+                weight = Double(set.weight ) ?? 0.0
             }
             weight = max(weight - Settings.shared.weightIncrement, 0)
-            set.weight = String(format: "%g", weight)
-            weightTextField.text = String(format: "%g", weight)
+            print(String(format: "%g", weight.rounded(toPlaces: 2)))
+            set.weight = String(format: "%g", weight.rounded(toPlaces: 2))
+            weightTextField.text = String(format: "%g", weight.rounded(toPlaces: 2))
         }
         else if repsTextField.isFirstResponder {
             var reps: Int
@@ -261,4 +265,12 @@ class WorkoutDetailTableViewCell: UITableViewCell {
 
 #Preview {
     WorkoutDetailTableViewCell()
+}
+
+extension Double {
+    /// Rounds the double to decimal places value
+    func rounded(toPlaces places:Int) -> Double {
+        let divisor = pow(10.0, Double(places))
+        return (self * divisor).rounded() / divisor
+    }
 }

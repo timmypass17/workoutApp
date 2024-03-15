@@ -39,16 +39,16 @@ struct Settings {
     
     var showTimer: Bool {
         get {
-            return unarchiveJSON(key: "showTimer") ?? true
+            return unarchiveJSON(key: "showTimer") ?? false
         }
         set {
             archiveJSON(value: newValue, key: "showTimer")
         }
     }
     
-    var weightIncrement: Float {
-        let lbs: Float = 5
-        let kg: Float = 2.5
+    var weightIncrement: Double {
+        let lbs: Double = 5
+        let kg: Double = 2.5
         return weightUnit == .lbs ? lbs : kg
     }
     
