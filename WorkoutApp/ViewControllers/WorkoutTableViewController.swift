@@ -70,18 +70,7 @@ class WorkoutTableViewController: UITableViewController {
         if (editingStyle == .delete) {
             // Changed relationship delete rule to "Cascade" (delete Workout A, deletes exercises and sets too)
             // When working with parent child context, there could be different contexts so u need to make sure u are deleting in same context that the object was created with (either child or main context)
-            let workoutToDelete = workoutPlans[indexPath.row]
-            if let workoutContext = workoutToDelete.managedObjectContext {
-                workoutContext.delete(workoutToDelete)
-                do {
-                    try workoutContext.save()
-                } catch {
-                    print("Failed to delete workout plan: \(error)")
-                }
-            }
-            workoutPlans.remove(at: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .automatic)
-            tableView.backgroundView?.isHidden = workoutPlans.isEmpty ? false : true
+            showDeleteAlert(indexPath: indexPath)
         }
     }
     
@@ -95,9 +84,7 @@ class WorkoutTableViewController: UITableViewController {
             }
 
             let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-                // TODO: Delete workout plan. Add alert confirming deletion
-                // TODO: Fix decimal formatting when using kg (and incrementing by 2.5)
-                // self.performDelete(indexPath)
+                self.showDeleteAlert(indexPath: indexPath)
             }
             return UIMenu(title: "", children: [editAction, deleteAction])
         })
@@ -144,6 +131,33 @@ class WorkoutTableViewController: UITableViewController {
         
         addButton = UIBarButtonItem(title: "Add Workout", image: UIImage(systemName: "plus"), primaryAction: addWorkoutAction)
         navigationItem.rightBarButtonItem = addButton
+    }
+    
+    private func deleteWorkout(indexPath: IndexPath) {
+        let workoutToDelete = workoutPlans[indexPath.row]
+        if let workoutContext = workoutToDelete.managedObjectContext {
+            workoutContext.delete(workoutToDelete)
+            do {
+                try workoutContext.save()
+            } catch {
+                print("Failed to delete workout plan: \(error)")
+            }
+        }
+        workoutPlans.remove(at: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: .automatic)
+        tableView.backgroundView?.isHidden = workoutPlans.isEmpty ? false : true
+    }
+    
+    func showDeleteAlert(indexPath: IndexPath) {
+        let workout = workoutPlans[indexPath.row]
+        let alert = UIAlertController(title: "Remove Template?", message: "Are you sure you want to remove \"\(workout.title)\"", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Remove", style: .destructive, handler: { _ in
+            self.deleteWorkout(indexPath: indexPath)
+        }))
+        
+        self.present(alert, animated: true, completion: nil)
     }
 }
 //

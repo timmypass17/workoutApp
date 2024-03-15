@@ -238,7 +238,7 @@ class WorkoutDetailTableViewController: UITableViewController {
             alertTitle = "Create Template?"
         case .updateWorkout(_):
             buttonTitle = "Save"
-            alertTitle = "Save Template?"
+            alertTitle = "Save Changes?"
         case .startWorkout(_):
             buttonTitle = "Finish"
             alertTitle = "Finish Workout?"
@@ -316,6 +316,31 @@ class WorkoutDetailTableViewController: UITableViewController {
             }
             let calendarButton = UIBarButtonItem(image: UIImage(systemName: "calendar"), primaryAction: calendarAction)
             navigationItem.rightBarButtonItems = [addEditButton, calendarButton]
+        case .updateWorkout(_):
+            let renameAction = UIAction { [self] _ in
+                let alert = UIAlertController(title: "Rename Template", message: "Enter new name below", preferredStyle: .alert)
+                
+                alert.addTextField { textField in
+                    textField.placeholder = "Ex. Push Day"
+                    textField.autocapitalizationType = .sentences
+                    let textChangedAction = UIAction { _ in
+                        alert.actions[1].isEnabled = textField.text!.count > 0
+                    }
+                    textField.addAction(textChangedAction, for: .allEditingEvents)
+                }
+                
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+                alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { _ in
+                    guard let templateName = alert.textFields?[0].text else { return }
+                    print(templateName)
+                    self.workout.title = templateName
+                    self.navigationItem.title = "\(templateName) [Template]"
+                }))
+                
+                self.present(alert, animated: true, completion: nil)
+            }
+            let renameButton = UIBarButtonItem(image: UIImage(systemName: "rectangle.and.pencil.and.ellipsis"), primaryAction: renameAction)
+            navigationItem.rightBarButtonItems = [addEditButton, renameButton]
         case .startWorkout(_):
             // Timer
             navigationItem.rightBarButtonItems = [addEditButton]
@@ -323,7 +348,6 @@ class WorkoutDetailTableViewController: UITableViewController {
                 timerButton = TimerBarButton()
                 navigationItem.rightBarButtonItems?.append(timerButton!)
             }
-
         default:
             navigationItem.rightBarButtonItem = addEditButton
         }
