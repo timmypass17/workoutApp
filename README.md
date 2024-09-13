@@ -1,7 +1,7 @@
 # BuiltDiff
 An iOS workout tracker.
 
-<a href="https://apps.apple.com/us/app/builtdiff/id6478643263">
+<a href="https://apps.apple.com/us/app/builtdiff/id6478643263?platform=iphone">
   <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store" width="200 style="padding-bottom: 20px;"/>
 </a>
 
