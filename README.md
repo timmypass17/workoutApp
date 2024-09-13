@@ -37,5 +37,5 @@ An iOS workout tracker to track lifting sets and reps.
    
 ## Technologies used
 - Swift
-- UIKit
+- UIKit (No Storyboard)
 - Core Data
