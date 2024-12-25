@@ -1,13 +1,31 @@
 //
-//  ViewController.swift
-//  WorkoutApp
+//  WorkoutViewController.swift
+//  BuiltDiff
 //
-//  Created by Timmy Nguyen on 12/31/23.
+//  Created by Timmy Nguyen on 12/25/24.
 //
 
 import UIKit
 
-class WorkoutTableViewController: UITableViewController {
+class WorkoutViewController: UIViewController {
+    
+    let tableView: UITableView = {
+        let tableView = UITableView()
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        return tableView
+    }()
+    
+    var contentUnavailableView: UIView = {
+        var configuration = UIContentUnavailableConfiguration.empty()
+        configuration.text = "No Workouts Yet"
+        configuration.secondaryText = "Your workouts will appear here once you add them."
+        configuration.image = UIImage(systemName: "dumbbell") // figure.strengthtraining.traditional
+
+        let view = UIContentUnavailableView(configuration: configuration)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isHidden = true
+        return view
+    }()
     
     var workoutPlans: [Workout] = []
     var addButton: UIBarButtonItem!
@@ -17,7 +35,7 @@ class WorkoutTableViewController: UITableViewController {
     init(workoutService: WorkoutService) {
         self.workoutService = workoutService
         workoutPlans = workoutService.fetchWorkoutPlans()
-        super.init(style: .plain)
+        super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {
@@ -26,76 +44,32 @@ class WorkoutTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        NotificationCenter.default.addObserver(tableView!,
+        NotificationCenter.default.addObserver(tableView,
                                                selector: #selector(UITableView.reloadData),
                                                name: AccentColor.valueChangedNotification, object: nil)
-        
+        tableView.dataSource = self
+        tableView.delegate = self
+        view.addSubview(tableView)
+        view.addSubview(contentUnavailableView)
+
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            contentUnavailableView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            contentUnavailableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            contentUnavailableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+
         updateUI()
     }
     
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
-    }
-    
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return workoutPlans.count
-    }
-    
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutTableViewCell
-        let workout = workoutPlans[indexPath.row]
-        cell.update(with: workout)
-        return cell
-    }
-    
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let workoutPlan = workoutPlans[indexPath.row]
-        let workoutDetailViewController = WorkoutDetailTableViewController(.startWorkout(workoutPlan))
-        
-        if let logTableViewController = (tabBarController?.viewControllers?[1] as? UINavigationController)?.viewControllers[0] as? LogTableViewController {
-            workoutDetailViewController.delegate = logTableViewController
-        }
-        if let progressTableViewController = (tabBarController?.viewControllers?[2] as? UINavigationController)?.viewControllers[0] as? ProgressTableViewController {
-            workoutDetailViewController.progressDelegate = progressTableViewController
-        }
-        
-        navigationController?.pushViewController(workoutDetailViewController, animated: true)
-    }
-    
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if (editingStyle == .delete) {
-            // Changed relationship delete rule to "Cascade" (delete Workout A, deletes exercises and sets too)
-            // When working with parent child context, there could be different contexts so u need to make sure u are deleting in same context that the object was created with (either child or main context)
-            showDeleteAlert(indexPath: indexPath)
-        }
-    }
-    
-    override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
-            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "arrow.up.square")) { [self] _ in
-                let template = workoutPlans[indexPath.row]
-                let workoutDetailTableViewController = WorkoutDetailTableViewController(.updateWorkout(template))
-                workoutDetailTableViewController.delegate = self
-                navigationController?.pushViewController(workoutDetailTableViewController, animated: true)
-            }
-
-            let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-                self.showDeleteAlert(indexPath: indexPath)
-            }
-            return UIMenu(title: "", children: [editAction, deleteAction])
-        })
-    }
-
     func updateUI() {
         navigationItem.title = "Workout"
         navigationController?.navigationBar.prefersLargeTitles = true
         tableView.register(WorkoutTableViewCell.self, forCellReuseIdentifier: WorkoutTableViewCell.reuseIdentifier)
-        tableView.backgroundView = EmptyLabel(text: "Tap the '+' button to create your first workout template!")
-        tableView.backgroundView?.isHidden = workoutPlans.isEmpty ? false : true
+        contentUnavailableView.isHidden = !workoutPlans.isEmpty
         setupAddButton()
         tableView.dragDelegate = self
         tableView.dragInteractionEnabled = true
@@ -160,15 +134,80 @@ class WorkoutTableViewController: UITableViewController {
         self.present(alert, animated: true, completion: nil)
     }
 }
+
+extension WorkoutViewController: UITableViewDataSource {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return workoutPlans.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutTableViewCell
+        let workout = workoutPlans[indexPath.row]
+        cell.update(with: workout)
+        return cell
+    }
+
+}
+
+extension WorkoutViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let workoutPlan = workoutPlans[indexPath.row]
+        let workoutDetailViewController = WorkoutDetailTableViewController(.startWorkout(workoutPlan))
+        
+        if let logTableViewController = (tabBarController?.viewControllers?[1] as? UINavigationController)?.viewControllers[0] as? LogViewController {
+            workoutDetailViewController.delegate = logTableViewController
+        }
+        if let progressTableViewController = (tabBarController?.viewControllers?[2] as? UINavigationController)?.viewControllers[0] as? ProgressViewController {
+            workoutDetailViewController.progressDelegate = progressTableViewController
+        }
+        
+        navigationController?.pushViewController(workoutDetailViewController, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if (editingStyle == .delete) {
+            // Changed relationship delete rule to "Cascade" (delete Workout A, deletes exercises and sets too)
+            // When working with parent child context, there could be different contexts so u need to make sure u are deleting in same context that the object was created with (either child or main context)
+            showDeleteAlert(indexPath: indexPath)
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
+            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "arrow.up.square")) { [self] _ in
+                let template = workoutPlans[indexPath.row]
+                let workoutDetailTableViewController = WorkoutDetailTableViewController(.updateWorkout(template))
+                workoutDetailTableViewController.delegate = self
+                navigationController?.pushViewController(workoutDetailTableViewController, animated: true)
+            }
+
+            let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                self.showDeleteAlert(indexPath: indexPath)
+            }
+            return UIMenu(title: "", children: [editAction, deleteAction])
+        })
+    }
+}
+
 //
-extension WorkoutTableViewController: UITableViewDragDelegate {
+extension WorkoutViewController: UITableViewDragDelegate {
     func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
         let dragItem = UIDragItem(itemProvider: NSItemProvider())
         dragItem.localObject = workoutPlans[indexPath.row]
         return [dragItem]
     }
     
-    override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
         guard sourceIndexPath != destinationIndexPath else { return  }
         
         let mover = workoutPlans.remove(at: sourceIndexPath.row)
@@ -188,7 +227,7 @@ extension WorkoutTableViewController: UITableViewDragDelegate {
     }
 }
 
-extension WorkoutTableViewController: WorkoutDetailTableViewControllerDelegate {
+extension WorkoutViewController: WorkoutDetailTableViewControllerDelegate {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didCreateWorkout workout: Workout) {
         workout.index = Int16(workoutPlans.count)
         do {

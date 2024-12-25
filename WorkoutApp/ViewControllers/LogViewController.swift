@@ -7,12 +7,30 @@
 
 import UIKit
 
-protocol LogTableViewControllerDelegate: AnyObject {
-    func logTableViewController(_ viewController: LogTableViewController, didDeleteWorkout workout: Workout)
+protocol LogViewControllerDelegate: AnyObject {
+    func logViewController(_ viewController: LogViewController, didDeleteWorkout workout: Workout)
 }
 
-class LogTableViewController: UITableViewController {
+class LogViewController: UIViewController {
 
+    let tableView: UITableView = {
+        let tableView = UITableView()
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        return tableView
+    }()
+    
+    var contentUnavailableView: UIView = {
+        var configuration = UIContentUnavailableConfiguration.empty()
+        configuration.text = "No Logs Yet"
+        configuration.secondaryText = "Your logs will appear here once you finish a workout."
+        configuration.image = UIImage(systemName: "calendar")
+
+        let view = UIContentUnavailableView(configuration: configuration)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isHidden = true
+        return view
+    }()
+    
     var pastWorkouts: [String: [Workout]] = [:]
     var sortedMonthYears: [String]  {
         return pastWorkouts.keys.sorted { (month1, month2) -> Bool in
@@ -24,7 +42,7 @@ class LogTableViewController: UITableViewController {
     }
     let workoutService: WorkoutService
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    weak var delegate: LogTableViewControllerDelegate?
+    weak var delegate: LogViewControllerDelegate?
     
     init(workoutService: WorkoutService) {
         self.workoutService = workoutService
@@ -35,7 +53,7 @@ class LogTableViewController: UITableViewController {
             let monthYear = getMonthYear(from: createdAt)
             pastWorkouts[monthYear, default: []].append(workout)
         }
-        super.init(style: .plain)
+        super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {
@@ -44,10 +62,26 @@ class LogTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        NotificationCenter.default.addObserver(tableView!,
+        NotificationCenter.default.addObserver(tableView,
             selector: #selector(UITableView.reloadData),
             name: WeightType.valueChangedNotification, object: nil)
 
+        tableView.dataSource = self
+        tableView.delegate = self
+        
+        view.addSubview(tableView)
+        view.addSubview(contentUnavailableView)
+
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            contentUnavailableView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            contentUnavailableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            contentUnavailableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+        
         updateUI()
     }
     
@@ -60,8 +94,8 @@ class LogTableViewController: UITableViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.title = "Log"
         tableView.register(LogTableViewCell.self, forCellReuseIdentifier: LogTableViewCell.reuseIdentifier)
-        tableView.backgroundView = EmptyLabel(text: "Your workout history will appear here")
         
+        contentUnavailableView.isHidden = !pastWorkouts.isEmpty
         pastWorkouts.removeAll()
         let workouts: [Workout] = workoutService.fetchLoggedWorkouts()
         for workout in workouts {
@@ -70,21 +104,38 @@ class LogTableViewController: UITableViewController {
             pastWorkouts[monthYear, default: []].append(workout)
         }
         tableView.reloadData()
-        tableView.backgroundView?.isHidden = pastWorkouts.isEmpty ? false : true
     }
 
-    // MARK: - Table view data source
+    private func deleteWorkout(forRowAt indexPath: IndexPath) {
+        // Remove from core data
+        let monthYear = sortedMonthYears[indexPath.section]
+        let workoutToDelete = pastWorkouts[monthYear]![indexPath.row]
+        // Object may have been created in detail view (has it's own seperate child context from main context). Use that specific context instead
+        let context = workoutToDelete.managedObjectContext!
+        context.delete(workoutToDelete)
+        do {
+            try context.save()
+            delegate?.logViewController(self, didDeleteWorkout: workoutToDelete)
+        } catch {
+            print("Failed to delete workout: \(error)")
+        }
+        // Remove locally
+        pastWorkouts[monthYear]?.remove(at: indexPath.row)
+    }
+}
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
+extension LogViewController: UITableViewDataSource {
+
+    func numberOfSections(in tableView: UITableView) -> Int {
         return sortedMonthYears.count
     }
 
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let month = sortedMonthYears[section]
         return pastWorkouts[month]?.count ?? 0
     }
 
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: LogTableViewCell.reuseIdentifier, for: indexPath) as! LogTableViewCell
         let monthYear = sortedMonthYears[indexPath.section]
         if let workout = pastWorkouts[monthYear]?[indexPath.row] {
@@ -93,11 +144,14 @@ class LogTableViewController: UITableViewController {
         return cell
     }
 
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+}
+
+extension LogViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }
 
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if (editingStyle == .delete) {
             // Remove workout
             deleteWorkout(forRowAt: indexPath)
@@ -115,43 +169,27 @@ class LogTableViewController: UITableViewController {
         }
     }
     
-    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let monthYear = sortedMonthYears[section]
         return LogSectionHeaderView(title: monthYear, workoutCount: pastWorkouts[monthYear]?.count ?? 0)
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let month = sortedMonthYears[indexPath.section]
         guard let workouts = pastWorkouts[month] else { return }
         
         let workout = workouts[indexPath.row]
         let workoutDetailViewController = WorkoutDetailTableViewController(.updateLog(workout))
         workoutDetailViewController.delegate = self
-        if let progressTableViewController = (tabBarController?.viewControllers?[2] as? UINavigationController)?.viewControllers[0] as? ProgressTableViewController {
+        if let progressTableViewController = (tabBarController?.viewControllers?[2] as? UINavigationController)?.viewControllers[0] as? ProgressViewController {
             workoutDetailViewController.progressDelegate = progressTableViewController
         }
         navigationController?.pushViewController(workoutDetailViewController, animated: true)
     }
     
-    private func deleteWorkout(forRowAt indexPath: IndexPath) {
-        // Remove from core data
-        let monthYear = sortedMonthYears[indexPath.section]
-        let workoutToDelete = pastWorkouts[monthYear]![indexPath.row]
-        // Object may have been created in detail view (has it's own seperate child context from main context). Use that specific context instead
-        let context = workoutToDelete.managedObjectContext!
-        context.delete(workoutToDelete)
-        do {
-            try context.save()
-            delegate?.logTableViewController(self, didDeleteWorkout: workoutToDelete)
-        } catch {
-            print("Failed to delete workout: \(error)")
-        }
-        // Remove locally
-        pastWorkouts[monthYear]?.remove(at: indexPath.row)
-    }
 }
 
-extension LogTableViewController: WorkoutDetailTableViewControllerDelegate {
+extension LogViewController: WorkoutDetailTableViewControllerDelegate {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didCreateWorkout workout: Workout) {
         return
     }

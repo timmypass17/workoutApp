@@ -20,11 +20,11 @@ class WorkoutService {
         request.sortDescriptors = [sortDescriptor]
 
         do {
-            print("\(#function) \(context)")
+//            print("\(#function) \(context)")
             let workoutPlans = try context.fetch(request)
-            for workout in workoutPlans {
-                print(workout.title, workout.index)
-            }
+//            for workout in workoutPlans {
+//                print(workout.title, workout.index)
+//            }
             return workoutPlans
         } catch {
             print("Error fetching workouts: \(error.localizedDescription)")

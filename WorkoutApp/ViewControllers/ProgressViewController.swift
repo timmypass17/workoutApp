@@ -10,8 +10,26 @@ import UIKit
 import SwiftUI
 
 
-class ProgressTableViewController: UITableViewController {
-        
+class ProgressViewController: UIViewController {
+    
+    let tableView: UITableView = {
+        let tableView = UITableView(frame: .zero, style: .insetGrouped)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        return tableView
+    }()
+    
+    var contentUnavailableView: UIView = {
+        var configuration = UIContentUnavailableConfiguration.empty()
+        configuration.text = "No Progress Yet"
+        configuration.secondaryText = "Your progress will appear here once you finish a workout."
+        configuration.image = UIImage(systemName: "chart.bar.fill")
+
+        let view = UIContentUnavailableView(configuration: configuration)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isHidden = true
+        return view
+    }()
+    
     var data: [ProgressData]
     let workoutService: WorkoutService
 
@@ -47,7 +65,7 @@ class ProgressTableViewController: UITableViewController {
         self.data = workoutService.fetchProgressData()
             .sorted(by: { $0.name < $1.name})
         self.workoutService = workoutService
-        super.init(style: .insetGrouped)
+        super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {
@@ -60,6 +78,23 @@ class ProgressTableViewController: UITableViewController {
             selector: #selector(updateUI),
             name: WeightType.valueChangedNotification, object: nil)
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "line.3.horizontal.decrease"), menu: sortMenu)
+        
+        tableView.delegate = self
+        tableView.dataSource = self
+        
+        view.addSubview(tableView)
+        view.addSubview(contentUnavailableView)
+
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            contentUnavailableView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            contentUnavailableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            contentUnavailableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+        
         updateUI()
     }
     
@@ -81,21 +116,23 @@ class ProgressTableViewController: UITableViewController {
             data.sort { $0.sets.first?.exercise?.workout?.createdAt ?? Date() >  $1.sets.first?.exercise?.workout?.createdAt ?? Date() }
         }
         tableView.reloadData()
-        tableView.backgroundView = EmptyLabel(text: "Your workout data will appear here")
-        tableView.backgroundView?.isHidden = data.isEmpty ? false : true
+//        tableView.backgroundView = EmptyLabel(text: "Your workout data will appear here")
+//        tableView.backgroundView?.isHidden = data.isEmpty ? false : true
+        contentUnavailableView.isHidden = !data.isEmpty
     }
     
-    // MARK: - Table view data source
+}
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
+extension ProgressViewController: UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
 
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return data.count
     }
 
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: ProgressViewCell.reuseIdentifier, for: indexPath)
         let setsInSection = data[indexPath.row]
         cell.contentConfiguration = UIHostingConfiguration {
@@ -104,13 +141,16 @@ class ProgressTableViewController: UITableViewController {
         
         return cell
     }
+}
+
+extension ProgressViewController: UITableViewDelegate {
     
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         guard !data.isEmpty else{ return nil }
         return "Exercises"
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let progressData = data[indexPath.row]
         // Filter data by best set per day
         var res: [ExerciseSet] = []
@@ -135,10 +175,9 @@ class ProgressTableViewController: UITableViewController {
         hostingController.navigationItem.title = progressData.name // set title here, wierd delay if setting in swiftui
         navigationController?.pushViewController(hostingController, animated: true)
     }
-    
 }
 
-extension ProgressTableViewController: WorkoutDetailTableViewControllerDelegate {
+extension ProgressViewController: WorkoutDetailTableViewControllerDelegate {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didCreateWorkout workout: Workout) {
         // Creating workout template shouldn't update log
         return
@@ -174,8 +213,8 @@ extension ProgressTableViewController: WorkoutDetailTableViewControllerDelegate 
     
 }
 
-extension ProgressTableViewController: LogTableViewControllerDelegate {
-    func logTableViewController(_ viewController: LogTableViewController, didDeleteWorkout workout: Workout) {
+extension ProgressViewController: LogViewControllerDelegate {
+    func logViewController(_ viewController: LogViewController, didDeleteWorkout workout: Workout) {
         updateUI()
     }
 }
