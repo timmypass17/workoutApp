@@ -31,6 +31,7 @@
 		32BF97692D1CB35B0004FA47 /* WorkoutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF97682D1CB35B0004FA47 /* WorkoutViewController.swift */; };
 		32BF976B2D1CC39B0004FA47 /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF976A2D1CC39B0004FA47 /* LogViewController.swift */; };
 		32BF976D2D1CC7070004FA47 /* ProgressViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF976C2D1CC7070004FA47 /* ProgressViewController.swift */; };
+		32BF976F2D1CD06A0004FA47 /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF976E2D1CD06A0004FA47 /* CoreDataStack.swift */; };
 		32D846232B5F06260046F0D2 /* Workout+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D8461D2B5F06260046F0D2 /* Workout+CoreDataClass.swift */; };
 		32D846242B5F06260046F0D2 /* Workout+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D8461E2B5F06260046F0D2 /* Workout+CoreDataProperties.swift */; };
 		32D846252B5F06260046F0D2 /* Exercise+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D8461F2B5F06260046F0D2 /* Exercise+CoreDataClass.swift */; };
@@ -72,6 +73,7 @@
 		32BF97682D1CB35B0004FA47 /* WorkoutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutViewController.swift; sourceTree = "<group>"; };
 		32BF976A2D1CC39B0004FA47 /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
 		32BF976C2D1CC7070004FA47 /* ProgressViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressViewController.swift; sourceTree = "<group>"; };
+		32BF976E2D1CD06A0004FA47 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		32D8461D2B5F06260046F0D2 /* Workout+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Workout+CoreDataClass.swift"; sourceTree = "<group>"; };
 		32D8461E2B5F06260046F0D2 /* Workout+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Workout+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		32D8461F2B5F06260046F0D2 /* Exercise+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Exercise+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -127,6 +129,7 @@
 				32A293832B42073B00122166 /* BuiltDiff.xcdatamodeld */,
 				32D8462B2B6305CF0046F0D2 /* WorkoutService.swift */,
 				32721AA52B858BFC002C742B /* Settings.swift */,
+				32BF976E2D1CD06A0004FA47 /* CoreDataStack.swift */,
 			);
 			path = WorkoutApp;
 			sourceTree = "<group>";
@@ -259,6 +262,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				32BF976F2D1CD06A0004FA47 /* CoreDataStack.swift in Sources */,
 				32721AA42B857669002C742B /* WeightTableViewController.swift in Sources */,
 				32D8462E2B6C39130046F0D2 /* CalendarViewController.swift in Sources */,
 				32BF97692D1CB35B0004FA47 /* WorkoutViewController.swift in Sources */,

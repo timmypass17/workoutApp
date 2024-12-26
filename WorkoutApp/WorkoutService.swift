@@ -10,26 +10,24 @@ import CoreData
 import UIKit
 
 class WorkoutService {
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    private let context: NSManagedObjectContext
 
+    init(context: NSManagedObjectContext) {
+        self.context = context
+    }
+    
     func fetchWorkoutPlans() -> [Workout] {
         let request: NSFetchRequest<Workout> = Workout.fetchRequest()
-        let predicate = NSPredicate(format: "createdAt == nil")
-        let sortDescriptor = NSSortDescriptor(key: "index", ascending: true)
-        request.predicate = predicate
-        request.sortDescriptors = [sortDescriptor]
-
+        request.predicate = NSPredicate(format: "createdAt == nil")
+        request.sortDescriptors = [NSSortDescriptor(key: "index", ascending: true)]
+        
         do {
-//            print("\(#function) \(context)")
             let workoutPlans = try context.fetch(request)
-//            for workout in workoutPlans {
-//                print(workout.title, workout.index)
-//            }
             return workoutPlans
         } catch {
             print("Error fetching workouts: \(error.localizedDescription)")
+            return []
         }
-        return []
     }
     
     func fetchLoggedWorkouts() -> [Workout] {
@@ -44,8 +42,8 @@ class WorkoutService {
             return workoutPlans
         } catch {
             print("Error fetching logs: \(error.localizedDescription)")
+            return []
         }
-        return []
     }
     
     /// Get exercise data  from Core Data.
@@ -70,10 +68,35 @@ class WorkoutService {
                 .sorted(by: { $0.name < $1.name})
         } catch {
             print("Error fetching logs: \(error.localizedDescription)")
+            return []
         }
-        return []
     }
     
+    func deleteWorkout(_ workout: Workout) {
+        context.delete(workout)
+        
+        do {
+            try context.save()
+        } catch {
+            print("Failed to delete workout: \(error)")
+        }
+    }
     
-    
+    func reorderWorkouts(_ workouts: inout [Workout], moveWorkoutAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        guard sourceIndexPath != destinationIndexPath else { return }
+        
+        let workoutToMove = workouts.remove(at: sourceIndexPath.row)
+        workouts.insert(workoutToMove, at: destinationIndexPath.row)
+        
+        for (index, workout) in workouts.enumerated() {
+            workout.index = Int16(index)
+        }
+        
+        do {
+            try context.save()
+            print("save: \(context)")
+        } catch {
+            print("Error saving reordering: \(error)")
+        }
+    }
 }

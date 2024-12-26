@@ -9,7 +9,7 @@ import UIKit
 
 class CalendarViewController: UIViewController {
     var workout: Workout
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let context = CoreDataStack.shared.mainContext
     
     init(workout: Workout) {
         self.workout = workout

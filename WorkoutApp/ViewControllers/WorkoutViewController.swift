@@ -9,13 +9,13 @@ import UIKit
 
 class WorkoutViewController: UIViewController {
     
-    let tableView: UITableView = {
+    private let tableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
     
-    var contentUnavailableView: UIView = {
+    private var contentUnavailableView: UIView = {
         var configuration = UIContentUnavailableConfiguration.empty()
         configuration.text = "No Workouts Yet"
         configuration.secondaryText = "Your workouts will appear here once you add them."
@@ -27,10 +27,11 @@ class WorkoutViewController: UIViewController {
         return view
     }()
     
-    var workoutPlans: [Workout] = []
-    var addButton: UIBarButtonItem!
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    let workoutService: WorkoutService
+    private var addButton: UIBarButtonItem!
+    
+    private var workoutPlans: [Workout] = []
+    private let context = CoreDataStack.shared.mainContext
+    private let workoutService: WorkoutService
     
     init(workoutService: WorkoutService) {
         self.workoutService = workoutService
@@ -44,11 +45,17 @@ class WorkoutViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        NotificationCenter.default.addObserver(tableView,
-                                               selector: #selector(UITableView.reloadData),
-                                               name: AccentColor.valueChangedNotification, object: nil)
+        navigationItem.title = "Workout"
+        navigationController?.navigationBar.prefersLargeTitles = true
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.dragDelegate = self
+        tableView.dragInteractionEnabled = true
+        tableView.register(WorkoutTableViewCell.self, forCellReuseIdentifier: WorkoutTableViewCell.reuseIdentifier)
+        
+        addButton = UIBarButtonItem(image: UIImage(systemName: "plus"), primaryAction: didTapAddButton())
+        navigationItem.rightBarButtonItem = addButton
+        
         view.addSubview(tableView)
         view.addSubview(contentUnavailableView)
 
@@ -61,70 +68,60 @@ class WorkoutViewController: UIViewController {
             contentUnavailableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             contentUnavailableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
-
+        
+        NotificationCenter.default.addObserver(tableView,
+                                               selector: #selector(UITableView.reloadData),
+                                               name: AccentColor.valueChangedNotification, object: nil)
+        
         updateUI()
     }
     
     func updateUI() {
-        navigationItem.title = "Workout"
-        navigationController?.navigationBar.prefersLargeTitles = true
-        tableView.register(WorkoutTableViewCell.self, forCellReuseIdentifier: WorkoutTableViewCell.reuseIdentifier)
         contentUnavailableView.isHidden = !workoutPlans.isEmpty
-        setupAddButton()
-        tableView.dragDelegate = self
-        tableView.dragInteractionEnabled = true
         tableView.reloadData()
     }
     
-    func setupAddButton() {
-        let addWorkoutAction = UIAction { _ in
-            let alert = UIAlertController(title: "Create Workout Template", message: "Enter name below", preferredStyle: .alert)
-            
-            alert.addTextField { textField in
-                textField.placeholder = "Ex. Push Day"
-                textField.autocapitalizationType = .sentences
-                let textChangedAction = UIAction { _ in
-                    alert.actions[1].isEnabled = textField.text!.count > 0
-                }
-                textField.addAction(textChangedAction, for: .allEditingEvents)
+    private func didTapAddButton() -> UIAction {
+        return UIAction { _ in
+            self.showCreateWorkoutAlert()
+        }
+    }
+    
+    private func showCreateWorkoutAlert() {
+        let alert = UIAlertController(title: "Create Workout Template", message: "Enter name below", preferredStyle: .alert)
+        
+        alert.addTextField { textField in
+            textField.placeholder = "Ex. Push Day"
+            textField.autocapitalizationType = .sentences
+            let textChangedAction = UIAction { _ in
+                alert.actions[1].isEnabled = textField.text!.count > 0
             }
-            
-            let createAction = UIAlertAction(title: "Create", style: .default, handler: { [self] _ in
-                guard let title = alert.textFields?[0].text else { return }
-                let workoutDetailTableViewController = WorkoutDetailTableViewController(.createWorkout(title))
-                workoutDetailTableViewController.delegate = self
-                self.navigationController?.pushViewController(workoutDetailTableViewController, animated: true)
-            })
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-            alert.addAction(createAction)
-            
-            
-            self.present(alert, animated: true, completion: nil)
+            textField.addAction(textChangedAction, for: .allEditingEvents)
         }
         
-        addButton = UIBarButtonItem(title: "Add Workout", image: UIImage(systemName: "plus"), primaryAction: addWorkoutAction)
-        navigationItem.rightBarButtonItem = addButton
+        let createAction = UIAlertAction(title: "Create", style: .default) { [weak self] _ in
+            guard let self, let title = alert.textFields?[0].text else { return }
+            let workoutDetailTableViewController = WorkoutDetailTableViewController(.createWorkout(title))
+            workoutDetailTableViewController.delegate = self
+            self.navigationController?.pushViewController(workoutDetailTableViewController, animated: true)
+        }
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(createAction)
+        
+        self.present(alert, animated: true, completion: nil)
     }
     
     private func deleteWorkout(indexPath: IndexPath) {
-        let workoutToDelete = workoutPlans[indexPath.row]
-        if let workoutContext = workoutToDelete.managedObjectContext {
-            workoutContext.delete(workoutToDelete)
-            do {
-                try workoutContext.save()
-            } catch {
-                print("Failed to delete workout plan: \(error)")
-            }
-        }
-        workoutPlans.remove(at: indexPath.row)
+        let workoutToDelete = workoutPlans.remove(at: indexPath.row)
+        workoutService.deleteWorkout(workoutToDelete)
         tableView.deleteRows(at: [indexPath], with: .automatic)
-        tableView.backgroundView?.isHidden = workoutPlans.isEmpty ? false : true
+        contentUnavailableView.isHidden = !workoutPlans.isEmpty
     }
     
     func showDeleteAlert(indexPath: IndexPath) {
         let workout = workoutPlans[indexPath.row]
-        let alert = UIAlertController(title: "Remove Template?", message: "Are you sure you want to remove \"\(workout.title)\"", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Delete Workout?", message: "Are you sure you want to delete \"\(workout.title)\"", preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Remove", style: .destructive, handler: { _ in
@@ -184,7 +181,7 @@ extension WorkoutViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
-            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "arrow.up.square")) { [self] _ in
+            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "square.and.pencil")) { [self] _ in
                 let template = workoutPlans[indexPath.row]
                 let workoutDetailTableViewController = WorkoutDetailTableViewController(.updateWorkout(template))
                 workoutDetailTableViewController.delegate = self
@@ -209,40 +206,23 @@ extension WorkoutViewController: UITableViewDragDelegate {
     
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
         guard sourceIndexPath != destinationIndexPath else { return  }
-        
-        let mover = workoutPlans.remove(at: sourceIndexPath.row)
-        workoutPlans.insert(mover, at: destinationIndexPath.row)
-        
-        // Save new ordering positions
-        for (index, workout) in workoutPlans.enumerated() {
-            workout.index = Int16(index)
-        }
-        
-        do {
-            try context.save()
-            print("save: \(context)")
-        } catch {
-            print("Error saving reordering: \(error)")
-        }
+        workoutService.reorderWorkouts(&workoutPlans, moveWorkoutAt: sourceIndexPath, to: destinationIndexPath)
     }
+    
+    
 }
 
 extension WorkoutViewController: WorkoutDetailTableViewControllerDelegate {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didCreateWorkout workout: Workout) {
         workout.index = Int16(workoutPlans.count)
-        do {
-            if let workoutContext = workout.managedObjectContext {
-                try workoutContext.save()
-            }
-        } catch {
-            print("Error saving index: \(error)")
-        }
+        CoreDataStack.shared.saveContext()
+        
         workoutPlans.append(workout)
-        updateUI()
+        tableView.insertRows(at: [IndexPath(row: workoutPlans.count - 1, section: 0)], with: .automatic)
+        contentUnavailableView.isHidden = !workoutPlans.isEmpty
     }
     
     func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateWorkout workout: Workout) {
-        print("didUpdateWorkout")
         workout.printPrettyString()
         workoutPlans = workoutService.fetchWorkoutPlans()
         updateUI()

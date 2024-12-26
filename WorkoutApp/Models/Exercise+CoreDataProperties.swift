@@ -39,7 +39,7 @@ extension Exercise {
     }
     
     func getPreviousExerciseDone() -> Exercise? {
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let context = CoreDataStack.shared.mainContext
         let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
         let predicate = NSPredicate(format: "title_ == %@", title)
         let sortDescriptor = NSSortDescriptor(key: "workout.createdAt", ascending: false)

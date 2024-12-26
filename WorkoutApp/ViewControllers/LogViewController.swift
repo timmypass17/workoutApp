@@ -41,7 +41,7 @@ class LogViewController: UIViewController {
         }
     }
     let workoutService: WorkoutService
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let context = CoreDataStack.shared.mainContext
     weak var delegate: LogViewControllerDelegate?
     
     init(workoutService: WorkoutService) {

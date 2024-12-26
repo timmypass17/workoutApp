@@ -22,7 +22,7 @@ class WorkoutDetailTableViewController: UITableViewController {
     var previousExercises: [String: [(String, String)]] = [:]
     var timerButton: TimerBarButton?
         
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let context = CoreDataStack.shared.mainContext
     let childContext: NSManagedObjectContext
     
     weak var delegate: WorkoutDetailTableViewControllerDelegate?
@@ -38,7 +38,8 @@ class WorkoutDetailTableViewController: UITableViewController {
     // TODO: Maybe use protocol instead of switch statements.
     init(_ state: State) {
         self.state = state
-        childContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
+        childContext = CoreDataStack.shared.newBackgroundContext()
+//        childContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
 
         switch state {
         case .createWorkout(let workoutName):
@@ -265,6 +266,9 @@ class WorkoutDetailTableViewController: UITableViewController {
             alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [self] _ in
                 do {
                     
+                    // Isolated Changes: Use child contexts for features like editing forms, where changes can be discarded without affecting the main context if the user cancels.
+
+                    // push changes to parent's context (parent will also need to save() aswell)
                     try childContext.save()
                     
                     switch state {
