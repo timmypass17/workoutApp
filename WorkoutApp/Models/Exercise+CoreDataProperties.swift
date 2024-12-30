@@ -17,16 +17,16 @@ extension Exercise {
         return NSFetchRequest<Exercise>(entityName: "Exercise")
     }
 
-    @NSManaged private var title_: String?
+    @NSManaged private var name_: String?
     @NSManaged public var exerciseSets: NSOrderedSet?
     @NSManaged public var workout: Workout?
     
-    var title: String {
+    var name: String {
         get {
-            return title_ ?? ""
+            return name_ ?? ""
         }
         set {
-            title_ = newValue
+            name_ = newValue
         }
     }
 
@@ -41,7 +41,7 @@ extension Exercise {
     func getPreviousExerciseDone() -> Exercise? {
         let context = CoreDataStack.shared.mainContext
         let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
-        let predicate = NSPredicate(format: "title_ == %@", title)
+        let predicate = NSPredicate(format: "title_ == %@", name)
         let sortDescriptor = NSSortDescriptor(key: "workout.createdAt", ascending: false)
         request.predicate = predicate
         request.sortDescriptors = [sortDescriptor]
@@ -95,6 +95,6 @@ extension Exercise {
 
 extension Exercise : Identifiable {
     func getPrettyString() -> String {
-        return "Exercise(title: \(title))"
+        return "Exercise(title: \(name))"
     }
 }

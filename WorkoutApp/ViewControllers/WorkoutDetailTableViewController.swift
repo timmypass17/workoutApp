@@ -73,7 +73,7 @@ class WorkoutDetailTableViewController: UITableViewController {
         let exercises = workout.getExercises()
         for exercise in exercises {
             if let previousExercise = exercise.getPreviousExerciseDone() {
-                previousExercises[exercise.title] = previousExercise.getExerciseSets().map { ($0.weightString, $0.reps) }
+                previousExercises[exercise.name] = previousExercise.getExerciseSets().map { ($0.weightString, $0.reps) }
             }
         }
                 
@@ -128,7 +128,7 @@ class WorkoutDetailTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let exercises = workout.getExercises()
-        let header = ExerciseHeaderView(title: exercises[section].title, section: section)
+        let header = ExerciseHeaderView(title: exercises[section].name, section: section)
         header.delegate = self
         if case .updateWorkout(_) = state {
             header.editButton.isHidden = false
@@ -161,7 +161,7 @@ class WorkoutDetailTableViewController: UITableViewController {
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutDetailTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutDetailTableViewCell
             cell.delegate = self
-            let previousWeights = previousExercises[exercise.title, default: []]
+            let previousWeights = previousExercises[exercise.name, default: []]
             cell.update(with: workout, for: indexPath, previousWeights: previousWeights)
             return cell
         }
@@ -468,6 +468,17 @@ extension WorkoutDetailTableViewController: AddExerciseFooterViewDelegate {
     }
 }
 
+extension WorkoutDetailTableViewController: AddExerciseDetailViewControllerDelegate {
+    func addExerciseDetailViewControllerDelegate(_ viewController: AddExerciseDetailViewController, didAddExercise exercise: String, sets: Int, reps: Int) {
+        
+    }
+    
+    func addExerciseDetailViewControllerDelegate(_ viewController: AddExerciseDetailViewController, didDismiss: Bool) {
+        
+    }
+
+}
+
 extension WorkoutDetailTableViewController: ExercisesTableViewControllerDelegate {
     func exercisesTableViewController(_ viewController: ExercisesTableViewController, didSelectExercises exercises: [String]) {
         // Loop through exercises
@@ -475,7 +486,7 @@ extension WorkoutDetailTableViewController: ExercisesTableViewControllerDelegate
             let section = workout.getExercises().count
             // Create exercise item
             let exercise = Exercise(context: childContext)
-            exercise.title = exerciseName
+            exercise.name = exerciseName
             exercise.workout = workout  // need to set parent aswell, workout.addToExercises(exercise) does not do this.
             workout.addToExercises(exercise)
             // Create a single exerciseSet item
@@ -488,7 +499,7 @@ extension WorkoutDetailTableViewController: ExercisesTableViewControllerDelegate
             
             // Add previous exercise
             if let previousExercise = exercise.getPreviousExerciseDone() {
-                previousExercises[exercise.title] = previousExercise.getExerciseSets().map { ($0.weightString, $0.reps) }
+                previousExercises[exercise.name] = previousExercise.getExerciseSets().map { ($0.weightString, $0.reps) }
             }
             // Add section (this also insert's row)
             tableView.insertSections(IndexSet(integer: section), with: .automatic)
@@ -499,7 +510,7 @@ extension WorkoutDetailTableViewController: ExercisesTableViewControllerDelegate
 extension WorkoutDetailTableViewController: ExerciseHeaderViewDelegate {
     func exerciseHeaderView(_ sender: ExerciseHeaderView, didRenameExercise name: String, viewForHeaderInSection section: Int) {
         let exercise = workout.getExercise(at: section)
-        exercise.title = name
+        exercise.name = name
         tableView.reloadSections(IndexSet(integer: section), with: .automatic)
     }
 }

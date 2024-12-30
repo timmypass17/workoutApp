@@ -107,7 +107,7 @@ class LogTableViewCell: UITableViewCell {
         exercisesLabel.text = exercises
             .map { 
                 let bestExerciseSet = ($0.getExerciseSets()).max(by: { Float($0.weight)! < Float($1.weight)!  })!
-                let title = bestExerciseSet.exercise?.title ?? ""
+                let title = bestExerciseSet.exercise?.name ?? ""
                 let sets = $0.getExerciseSets().count
                 let reps = bestExerciseSet.reps
                 let weight = bestExerciseSet.weightString

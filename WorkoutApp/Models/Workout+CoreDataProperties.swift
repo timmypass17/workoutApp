@@ -101,7 +101,7 @@ extension Workout : Identifiable {
         
         for exercise in workout.getExercises() {
             let exerciseCopy = Exercise(context: context)
-            exerciseCopy.title = exercise.title
+            exerciseCopy.name = exercise.name
             exerciseCopy.workout = workoutCopy
             workoutCopy.addToExercises(exerciseCopy)
             for set in exercise.getExerciseSets() {
@@ -115,29 +115,5 @@ extension Workout : Identifiable {
         }
         return workoutCopy
     }
-    
-//    class func copy(workout: Workout, with context: NSManagedObjectContext) -> Workout {
-//        let isStartingNewWorkout = workout.createdAt == nil // copying template
-//        let workoutCopy = Workout(context: context)
-//        workoutCopy.title = workout.title
-//        workoutCopy.createdAt = isStartingNewWorkout ? .now : workout.createdAt
-//        workoutCopy.index = workout.index
-//        
-//        for exercise in workout.getExercises() {
-//            let exerciseCopy = Exercise(context: context)
-//            exerciseCopy.title = exercise.title
-//            exerciseCopy.workout = workoutCopy
-//            workoutCopy.addToExercises(exerciseCopy)
-//            for set in exercise.getExerciseSets() {
-//                let setCopy = ExerciseSet(context: context)
-//                setCopy.isComplete = isStartingNewWorkout ? false : set.isComplete
-//                setCopy.weight = isStartingNewWorkout ? "" : set.weight
-//                setCopy.reps = isStartingNewWorkout ? "" : set.reps
-//                setCopy.exercise = exerciseCopy
-//                exerciseCopy.addToExerciseSets(setCopy)
-//            }
-//        }
-//        return workoutCopy
-//    }
 
 }

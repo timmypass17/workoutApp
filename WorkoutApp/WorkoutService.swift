@@ -16,6 +16,22 @@ class WorkoutService {
         self.context = context
     }
     
+    
+    func fetchTemplates() -> [Template] {
+        let request: NSFetchRequest<Template> = Template.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "index", ascending: true)]
+        
+        do {
+            let templates = try context.fetch(request)
+            print("Fetched \(templates.count) templates")
+            return templates
+        } catch {
+            print("Error fetching workouts: \(error.localizedDescription)")
+            return []
+        }
+    }
+        
+        
     func fetchWorkoutPlans() -> [Workout] {
         let request: NSFetchRequest<Workout> = Workout.fetchRequest()
         request.predicate = NSPredicate(format: "createdAt == nil")
@@ -60,7 +76,7 @@ class WorkoutService {
         do {
             let exerciseSets: [ExerciseSet] = try context.fetch(request)
             for set in exerciseSets {
-                guard let name = set.exercise?.title else { continue }
+                guard let name = set.exercise?.name else { continue }
                 data[name, default: []].append(set)
             }
             return data
@@ -69,6 +85,22 @@ class WorkoutService {
         } catch {
             print("Error fetching logs: \(error.localizedDescription)")
             return []
+        }
+    }
+    
+    
+    func deleteTemplate(_ templates: inout [Template], at indexPath: IndexPath) {
+        let templateToRemove = templates.remove(at: indexPath.row)
+        context.delete(templateToRemove)
+        
+        for (index, template) in templates.enumerated() {
+            template.index = Int16(index)
+        }
+
+        do {
+            try context.save()
+        } catch {
+            print("Failed to delete template: \(error)")
         }
     }
     

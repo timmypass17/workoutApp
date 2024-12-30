@@ -23,17 +23,26 @@ class WorkoutTableViewCell: UITableViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
-    func update(with workout: Workout) {
-        let exercises = workout.getExercises()
-        let title = workout.title
-        titleLabel.text = title
-        let firstLetter = title.first?.lowercased() ?? "a"
+    
+    func update(template: Template) {
+        titleLabel.text = "\(template.title) \(template.index)"
+        let firstLetter =  template.title.first?.lowercased() ?? "a"
         var config = UIImage.SymbolConfiguration(pointSize: 35)
         config = config.applying(UIImage.SymbolConfiguration(paletteColors: [.white, Settings.shared.accentColor.color]))
         iconImageView.image = UIImage(systemName: "\(firstLetter).circle.fill", withConfiguration: config)
-        descriptionLabel.text = exercises.map { $0.title }.joined(separator: ", ")
+        descriptionLabel.text = template.templateExercises.map { $0.name }.joined(separator: ", ")
     }
+
+//    func update(with workout: Workout) {
+//        let exercises = workout.getExercises()
+//        let title = workout.title
+//        titleLabel.text = title
+//        let firstLetter = title.first?.lowercased() ?? "a"
+//        var config = UIImage.SymbolConfiguration(pointSize: 35)
+//        config = config.applying(UIImage.SymbolConfiguration(paletteColors: [.white, Settings.shared.accentColor.color]))
+//        iconImageView.image = UIImage(systemName: "\(firstLetter).circle.fill", withConfiguration: config)
+//        descriptionLabel.text = exercises.map { $0.name }.joined(separator: ", ")
+//    }
     
     private func setupView() {
         setupTitleLabel()
