@@ -107,11 +107,12 @@ class ProgressViewController: UIViewController {
         case .alphabetically:
             data.sort { $0.name < $1.name }
         case .weight:
-            data.sort { data1, data2 in
-                let weight1 = Float(data1.sets.max { Float($0.weight)! < Float($1.weight)! }!.weight)!
-                let weight2 = Float(data2.sets.max { Float($0.weight)! < Float($1.weight)! }!.weight)!
-                return weight1 > weight2
-            }
+            break
+//            data.sort { data1, data2 in
+//                let weight1 = Float(data1.sets.max { Float($0.weight)! < Float($1.weight)! }!.weight)!
+//                let weight2 = Float(data2.sets.max { Float($0.weight)! < Float($1.weight)! }!.weight)!
+//                return weight1 > weight2
+//            }
         case .recent:
             data.sort { $0.sets.first?.exercise?.workout?.createdAt ?? Date() >  $1.sets.first?.exercise?.workout?.createdAt ?? Date() }
         }
@@ -178,16 +179,16 @@ extension ProgressViewController: UITableViewDelegate {
 }
 
 extension ProgressViewController: WorkoutDetailTableViewControllerDelegate {
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didCreateWorkout workout: Workout) {
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didCreateWorkout workout: Workout) {
         // Creating workout template shouldn't update log
         return
     }
     
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateWorkout workout: Workout) {
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didUpdateWorkout workout: Workout) {
         return
     }
     
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didFinishWorkout workout: Workout) {
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didFinishWorkout workout: Workout) {
         var setDict: [String : [ExerciseSet]] = [:]
         let exercises = workout.getExercises()
         for exercise in exercises {
@@ -207,7 +208,7 @@ extension ProgressViewController: WorkoutDetailTableViewControllerDelegate {
         updateUI()
     }
     
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateLog workout: Workout) {
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didUpdateLog workout: Workout) {
         updateUI()
     }
     

@@ -21,6 +21,16 @@ extension ExerciseSet {
     @NSManaged private var reps_: String?   // set to private cause we don't want to expose field to outside
     @NSManaged private var weight_: String? // always in lbs (real weight)
     @NSManaged public var exercise: Exercise?
+    @NSManaged public var index: Int16  // used to sort a list of workout
+
+    var isCurrentSet: Bool {
+        guard let exerciseSets = exercise?.getExerciseSets(),
+              let currentSet = exerciseSets.first(where: { !$0.isComplete }) else {
+            return false
+        }
+
+        return self == currentSet
+    }
     
     var reps: String {
         get {
@@ -75,6 +85,6 @@ extension ExerciseSet {
 
 extension ExerciseSet : Identifiable {
     func getPrettyString() -> String {
-        return "ExerciseSet(isComplete: \(isComplete), weight: \(weight), reps: \(reps))"
+        return "ExerciseSet(index: \(index), isComplete: \(isComplete), weight: \(weight), reps: \(reps))"
     }
 }

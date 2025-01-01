@@ -29,6 +29,19 @@ extension Exercise {
             name_ = newValue
         }
     }
+    
+    var minReps: Int? {
+        let reps = getExerciseSets()
+            .compactMap { Int($0.reps) }
+        return reps.min() ?? 0
+    }
+    
+    var maxReps: Int? {
+        let reps = getExerciseSets()
+            .compactMap { Int($0.reps) }
+        return reps.max() ?? 0
+    }
+
 
     func getExerciseSets() -> [ExerciseSet] {
         return exerciseSets?.array as? [ExerciseSet] ?? []
@@ -42,7 +55,7 @@ extension Exercise {
         let context = CoreDataStack.shared.mainContext
         let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
         let predicate = NSPredicate(format: "title_ == %@", name)
-        let sortDescriptor = NSSortDescriptor(key: "workout.createdAt", ascending: false)
+        let sortDescriptor = NSSortDescriptor(key: "workout.createdAt_", ascending: false)
         request.predicate = predicate
         request.sortDescriptors = [sortDescriptor]
         request.fetchLimit = 1
@@ -95,6 +108,6 @@ extension Exercise {
 
 extension Exercise : Identifiable {
     func getPrettyString() -> String {
-        return "Exercise(title: \(name))"
+        return "Exercise(title: \"\(name)\")"
     }
 }

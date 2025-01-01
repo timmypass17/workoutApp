@@ -12,7 +12,7 @@ class LogTableViewCell: UITableViewCell {
     
     private let weekdayLabel: UILabel = {
         let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .caption1)
+        label.font = .preferredFont(forTextStyle: .subheadline)
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
         label.textColor = .secondaryLabel
@@ -21,6 +21,7 @@ class LogTableViewCell: UITableViewCell {
     
     private let dayLabel: UILabel = {
         let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .headline)
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
         return label
@@ -28,6 +29,7 @@ class LogTableViewCell: UITableViewCell {
     
     private let workoutLabel: UILabel = {
         let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .headline)
         label.lineBreakMode = .byTruncatingTail
         label.numberOfLines = 1
         return label
@@ -35,7 +37,7 @@ class LogTableViewCell: UITableViewCell {
     
     private let exercisesLabel: UILabel = {
         let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .caption1)
+        label.font = .preferredFont(forTextStyle: .subheadline)
         label.textColor = .secondaryLabel
         label.lineBreakMode = .byTruncatingTail
         label.numberOfLines = 3
@@ -97,21 +99,22 @@ class LogTableViewCell: UITableViewCell {
     }
     
     func update(with workout: Workout) {
-        guard let createdAt = workout.createdAt else { return }
-        let exercises = workout.getExercises()
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "EEE"
-        weekdayLabel.text = dateFormatter.string(from: createdAt)
-        dayLabel.text = "\(Calendar.current.component(.day, from: createdAt))"
+        weekdayLabel.text = dateFormatter.string(from: workout.createdAt)
+        dayLabel.text = "\(Calendar.current.component(.day, from: workout.createdAt))"
         workoutLabel.text = workout.title
-        exercisesLabel.text = exercises
-            .map { 
-                let bestExerciseSet = ($0.getExerciseSets()).max(by: { Float($0.weight)! < Float($1.weight)!  })!
-                let title = bestExerciseSet.exercise?.name ?? ""
-                let sets = $0.getExerciseSets().count
-                let reps = bestExerciseSet.reps
-                let weight = bestExerciseSet.weightString
-                return "\(sets)x\(reps) \(title) - \(weight) \(Settings.shared.weightUnit.rawValue)"
+        exercisesLabel.text = workout.getExercises()
+            .compactMap { exercise in
+                guard let minReps = exercise.minReps,
+                      let maxReps = exercise.maxReps
+                else { return nil }
+                                
+                if minReps != maxReps {
+                    return "\(exercise.getExerciseSets().count)x\(minReps)-\(maxReps) \(exercise.name)"
+                } else {
+                    return "\(exercise.getExerciseSets().count)x\(maxReps) \(exercise.name)"
+                }
             }
             .joined(separator: "\n")
     }

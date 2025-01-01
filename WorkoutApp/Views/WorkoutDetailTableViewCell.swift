@@ -11,16 +11,20 @@ import SwiftUI
 protocol WorkoutDetailTableViewCellDelegate: AnyObject {
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didUpdateExerciseSet exerciseSet: ExerciseSet)
     // Had to separte func because user typing focus disappears when pressing checkmark (Due to reloadsection)
-    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapCheckmarkForSet exerciseSet: ExerciseSet)
+//    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapCheckmarkForSet exerciseSet: ExerciseSet)
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, nextButtonTapped: Bool)
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, previousButtonTapped: Bool)
+    
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapSetButton: Bool)
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, weightTextDidChange weightText: String)
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, repsTextDidChange repsText: String)
 }
 
 class WorkoutDetailTableViewCell: UITableViewCell {
     static let reuseIdentifier = "WorkoutDetailCell"
     
-    var workout: Workout!
-    var set: ExerciseSet!
+//    var workout: Workout!
+//    var set: ExerciseSet!
     
     var setButton: UIButton = {
         let button = UIButton()
@@ -79,7 +83,7 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     
 
     weak var delegate: WorkoutDetailTableViewCellDelegate?
-    
+
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         selectionStyle = .none
@@ -87,35 +91,9 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         weightTextField.inputAccessoryView = toolbar
         repsTextField.inputAccessoryView = toolbar
         
-        let setTextFieldChangedAction = UIAction { [self] _ in
-            set.weight = weightTextField.text ?? ""
-            set.reps = repsTextField.text ?? ""
-            if weightTextField.text == "" || repsTextField.text == "" {
-                set.isComplete = false
-                setButton.isSelected = false
-            }
-            delegate?.workoutDetailTableViewCell(self, didUpdateExerciseSet: set)
-        }
-        
-        let checkmarkToggleAction = UIAction { [self] _ in
-            set.isComplete = setButton.isSelected
-            if weightTextField.text == "" {
-                let weight = Float(weightTextField.placeholder ?? "0") ?? 0.0
-                set.weight = String(format: "%g", weight)
-            }
-            if repsTextField.text == "" {
-                let reps = Int(repsTextField.placeholder ?? "0") ?? 0
-                set.reps = String(reps)
-            }
-            if Settings.shared.enableHaptic {
-                let generator = UIImpactFeedbackGenerator(style: .heavy)
-                generator.impactOccurred()
-            }
-            delegate?.workoutDetailTableViewCell(self, didTapCheckmarkForSet: set)
-        }
-        setButton.addAction(checkmarkToggleAction, for: .primaryActionTriggered)
-        weightTextField.addAction(setTextFieldChangedAction, for: .editingChanged)
-        repsTextField.addAction(setTextFieldChangedAction, for: .editingChanged)
+        setButton.addAction(didTapCheckmark(), for: .primaryActionTriggered)
+        weightTextField.addAction(weightTextFieldDidChange(), for: .editingChanged)
+        repsTextField.addAction(repsTextFieldDidChange(), for: .editingChanged)
         
         container.addArrangedSubview(setButton)
         container.addArrangedSubview(previousLabel)
@@ -143,50 +121,89 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(with workout: Workout, for indexPath: IndexPath, previousWeights: [(String, String)]) {
-        self.workout = workout
-        let exercise = workout.getExercise(at: indexPath.section)
-        self.set = exercise.getExerciseSet(at: indexPath.row)
-        setButton.isSelected = set.isComplete
-        weightTextField.text = set.weightString
-        repsTextField.text = set.reps
-        
-        // Normal
-        let indexOfCurrentSet = exercise.getExerciseSets().firstIndex { !$0.isComplete } ?? exercise.getExerciseSets().count
-        let isCurrentSet = indexPath.row == indexOfCurrentSet
+    func update(exerciseSet: ExerciseSet) {
+        setButton.isSelected = exerciseSet.isComplete
+        weightTextField.text = exerciseSet.weight
+        repsTextField.text = exerciseSet.reps
+        updateSetButton(exerciseSet: exerciseSet)
+        previousLabel.text = "-"
+    }
+    
+    func updateSetButton(exerciseSet: ExerciseSet) {
         var config = UIImage.SymbolConfiguration(pointSize: 30)
-        let colors: [UIColor] = isCurrentSet ? [Color.ui.cellNo, Settings.shared.accentColor.color] : [.systemGray, .systemGray]
+        let colors: [UIColor] = exerciseSet.isCurrentSet ? [Color.ui.cellNo, Settings.shared.accentColor.color] : [.systemGray, .systemGray]
         config = config.applying(UIImage.SymbolConfiguration(paletteColors: colors))
-        setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle", withConfiguration: config), for: .normal)
+        setButton.setImage(UIImage(systemName: "\(exerciseSet.index + 1).circle", withConfiguration: config), for: .normal)
 
         // Selected
         var selectedConfig = UIImage.SymbolConfiguration(pointSize: 30)
         selectedConfig = selectedConfig.applying(UIImage.SymbolConfiguration(paletteColors: [.white, Settings.shared.accentColor.color]))
-        setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle.fill", withConfiguration: selectedConfig), for: .selected)
+        setButton.setImage(UIImage(systemName: "\(exerciseSet.index + 1).circle.fill", withConfiguration: selectedConfig), for: .selected)
 
-        if previousWeights.count > 0 {
-            // Use previous weight
-            if indexPath.row < previousWeights.count {
-                let (previousWeight, previousReps) = previousWeights[indexPath.row]
-                previousLabel.text = previousWeight
-                weightTextField.placeholder = previousWeight
-                repsTextField.placeholder = previousReps
-            }
-            else {
-                // Out of bounds, use last weight instead
-                if let (previousWeight, previousReps) = previousWeights.last {
-                    previousLabel.text = "-"
-                    weightTextField.placeholder = previousWeight
-                    repsTextField.placeholder = previousReps
-                }
-            }
-        } else {
-            // No previous weight, use default values
-            previousLabel.text = "-"
-            weightTextField.placeholder = Settings.shared.weightUnit == .lbs ? "135" : "60"
-            repsTextField.placeholder = "5"
+    }
+    
+    func didTapCheckmark() -> UIAction {
+        return UIAction { [self] _ in
+            delegate?.workoutDetailTableViewCell(self, didTapSetButton: true)
         }
     }
+    
+    func weightTextFieldDidChange() -> UIAction {
+        return UIAction { _ in
+            self.delegate?.workoutDetailTableViewCell(self, weightTextDidChange: self.weightTextField.text ?? "")
+        }
+    }
+    
+    func repsTextFieldDidChange() -> UIAction {
+        return UIAction { _ in
+            self.delegate?.workoutDetailTableViewCell(self, repsTextDidChange: self.repsTextField.text ?? "")
+        }
+    }
+    
+//    func update(with workout: Workout, for indexPath: IndexPath, previousWeights: [(String, String)]) {
+//        self.workout = workout
+//        let exercise = workout.getExercise(at: indexPath.section)
+//        self.set = exercise.getExerciseSet(at: indexPath.row)
+//        setButton.isSelected = set.isComplete
+//        weightTextField.text = set.weightString
+//        repsTextField.text = set.reps
+//        
+//        // Normal
+//        let indexOfCurrentSet = exercise.getExerciseSets().firstIndex { !$0.isComplete } ?? exercise.getExerciseSets().count
+//        let isCurrentSet = indexPath.row == indexOfCurrentSet
+//        var config = UIImage.SymbolConfiguration(pointSize: 30)
+//        let colors: [UIColor] = isCurrentSet ? [Color.ui.cellNo, Settings.shared.accentColor.color] : [.systemGray, .systemGray]
+//        config = config.applying(UIImage.SymbolConfiguration(paletteColors: colors))
+//        setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle", withConfiguration: config), for: .normal)
+//
+//        // Selected
+//        var selectedConfig = UIImage.SymbolConfiguration(pointSize: 30)
+//        selectedConfig = selectedConfig.applying(UIImage.SymbolConfiguration(paletteColors: [.white, Settings.shared.accentColor.color]))
+//        setButton.setImage(UIImage(systemName: "\(indexPath.row + 1).circle.fill", withConfiguration: selectedConfig), for: .selected)
+//
+//        if previousWeights.count > 0 {
+//            // Use previous weight
+//            if indexPath.row < previousWeights.count {
+//                let (previousWeight, previousReps) = previousWeights[indexPath.row]
+//                previousLabel.text = previousWeight
+//                weightTextField.placeholder = previousWeight
+//                repsTextField.placeholder = previousReps
+//            }
+//            else {
+//                // Out of bounds, use last weight instead
+//                if let (previousWeight, previousReps) = previousWeights.last {
+//                    previousLabel.text = "-"
+//                    weightTextField.placeholder = previousWeight
+//                    repsTextField.placeholder = previousReps
+//                }
+//            }
+//        } else {
+//            // No previous weight, use default values
+//            previousLabel.text = "-"
+//            weightTextField.placeholder = Settings.shared.weightUnit == .lbs ? "135" : "60"
+//            repsTextField.placeholder = "5"
+//        }
+//    }
     
     @objc func doneButtonTapped() {
         endEditing(true)
@@ -202,29 +219,29 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     
     @objc func increment() {
         if weightTextField.isFirstResponder {
-            var weight: Double
-            if set.weight == "" {
-                weight = Double(weightTextField.placeholder ?? "0") ?? 0.0
-            } else {
-                weight = Double(set.weight) ?? 0.0
-            }
-            
-            weight += Settings.shared.weightIncrement
-            
-            print(String(format: "%g", weight.rounded(toPlaces: 2)))
-            set.weight = String(format: "%g", weight.rounded(toPlaces: 2))
-            weightTextField.text = String(format: "%g", weight.rounded(toPlaces: 2))
+//            var weight: Double
+//            if set.weight == "" {
+//                weight = Double(weightTextField.placeholder ?? "0") ?? 0.0
+//            } else {
+//                weight = Double(set.weight) ?? 0.0
+//            }
+//            
+//            weight += Settings.shared.weightIncrement
+//            
+//            print(String(format: "%g", weight.rounded(toPlaces: 2)))
+//            set.weight = String(format: "%g", weight.rounded(toPlaces: 2))
+//            weightTextField.text = String(format: "%g", weight.rounded(toPlaces: 2))
         }
         else if repsTextField.isFirstResponder {
-            var reps: Int
-            if set.reps == "" {
-                reps = Int(repsTextField.placeholder ?? "0") ?? 0
-            } else {
-                reps = Int(set.reps ) ?? 0
-            }
-            reps += 1
-            set.reps = String(reps)
-            repsTextField.text = String(reps)
+//            var reps: Int
+//            if set.reps == "" {
+//                reps = Int(repsTextField.placeholder ?? "0") ?? 0
+//            } else {
+//                reps = Int(set.reps ) ?? 0
+//            }
+//            reps += 1
+//            set.reps = String(reps)
+//            repsTextField.text = String(reps)
         }
         if Settings.shared.enableHaptic {
             let generator = UIImpactFeedbackGenerator(style: .light)
@@ -233,33 +250,33 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     }
     
     @objc func decrement() {
-        if weightTextField.isFirstResponder {
-            var weight: Double
-            if set.weight == "" {
-                weight = Double(weightTextField.placeholder ?? "0") ?? 0.0
-            } else {
-                weight = Double(set.weight ) ?? 0.0
-            }
-            weight = max(weight - Settings.shared.weightIncrement, 0)
-            print(String(format: "%g", weight.rounded(toPlaces: 2)))
-            set.weight = String(format: "%g", weight.rounded(toPlaces: 2))
-            weightTextField.text = String(format: "%g", weight.rounded(toPlaces: 2))
-        }
-        else if repsTextField.isFirstResponder {
-            var reps: Int
-            if set.reps == "" {
-                reps = Int(repsTextField.placeholder ?? "0") ?? 0
-            } else {
-                reps = Int(set.reps ?? "0") ?? 0
-            }
-            reps = max(reps - 1, 0)
-            set.reps = String(reps)
-            repsTextField.text = String(reps)
-        }
-        if Settings.shared.enableHaptic {
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
-        }
+//        if weightTextField.isFirstResponder {
+//            var weight: Double
+//            if set.weight == "" {
+//                weight = Double(weightTextField.placeholder ?? "0") ?? 0.0
+//            } else {
+//                weight = Double(set.weight ) ?? 0.0
+//            }
+//            weight = max(weight - Settings.shared.weightIncrement, 0)
+//            print(String(format: "%g", weight.rounded(toPlaces: 2)))
+//            set.weight = String(format: "%g", weight.rounded(toPlaces: 2))
+//            weightTextField.text = String(format: "%g", weight.rounded(toPlaces: 2))
+//        }
+//        else if repsTextField.isFirstResponder {
+//            var reps: Int
+//            if set.reps == "" {
+//                reps = Int(repsTextField.placeholder ?? "0") ?? 0
+//            } else {
+//                reps = Int(set.reps ?? "0") ?? 0
+//            }
+//            reps = max(reps - 1, 0)
+//            set.reps = String(reps)
+//            repsTextField.text = String(reps)
+//        }
+//        if Settings.shared.enableHaptic {
+//            let generator = UIImpactFeedbackGenerator(style: .light)
+//            generator.impactOccurred()
+//        }
     }
 }
 

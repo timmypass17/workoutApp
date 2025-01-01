@@ -79,6 +79,13 @@ class WorkoutViewController: UIViewController {
         updateUI()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if let selectedIndexPath = tableView.indexPathForSelectedRow {
+            tableView.reloadRows(at: [selectedIndexPath], with: .automatic)
+        }
+    }
+    
     func updateUI() {
         contentUnavailableView.isHidden = !templates.isEmpty
         tableView.reloadData()
@@ -94,28 +101,28 @@ class WorkoutViewController: UIViewController {
     }
     
     private func showCreateWorkoutAlert() {
-        let alert = UIAlertController(title: "Create Workout Template", message: "Enter name below", preferredStyle: .alert)
-        
-        alert.addTextField { textField in
-            textField.placeholder = "Ex. Push Day"
-            textField.autocapitalizationType = .sentences
-            let textChangedAction = UIAction { _ in
-                alert.actions[1].isEnabled = textField.text!.count > 0
-            }
-            textField.addAction(textChangedAction, for: .allEditingEvents)
-        }
-        
-        let createAction = UIAlertAction(title: "Create", style: .default) { [weak self] _ in
-            guard let self, let title = alert.textFields?[0].text else { return }
-            let workoutDetailTableViewController = WorkoutDetailTableViewController(.createWorkout(title))
-            workoutDetailTableViewController.delegate = self
-            self.navigationController?.pushViewController(workoutDetailTableViewController, animated: true)
-        }
-        
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(createAction)
-        
-        self.present(alert, animated: true, completion: nil)
+//        let alert = UIAlertController(title: "Create Workout Template", message: "Enter name below", preferredStyle: .alert)
+//        
+//        alert.addTextField { textField in
+//            textField.placeholder = "Ex. Push Day"
+//            textField.autocapitalizationType = .sentences
+//            let textChangedAction = UIAction { _ in
+//                alert.actions[1].isEnabled = textField.text!.count > 0
+//            }
+//            textField.addAction(textChangedAction, for: .allEditingEvents)
+//        }
+//        
+//        let createAction = UIAlertAction(title: "Create", style: .default) { [weak self] _ in
+//            guard let self, let title = alert.textFields?[0].text else { return }
+//            let workoutDetailTableViewController = WorkoutDetailTableViewController(.createWorkout(title))
+//            workoutDetailTableViewController.delegate = self
+//            self.navigationController?.pushViewController(workoutDetailTableViewController, animated: true)
+//        }
+//        
+//        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+//        alert.addAction(createAction)
+//        
+//        self.present(alert, animated: true, completion: nil)
     }
     
     func showDeleteAlert(indexPath: IndexPath) {
@@ -161,17 +168,16 @@ extension WorkoutViewController: UITableViewDataSource {
 
 extension WorkoutViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        let workoutPlan = workoutPlans[indexPath.row]
-//        let workoutDetailViewController = WorkoutDetailTableViewController(.startWorkout(workoutPlan))
-//        
-//        if let logTableViewController = (tabBarController?.viewControllers?[1] as? UINavigationController)?.viewControllers[0] as? LogViewController {
-//            workoutDetailViewController.delegate = logTableViewController
-//        }
-//        if let progressTableViewController = (tabBarController?.viewControllers?[2] as? UINavigationController)?.viewControllers[0] as? ProgressViewController {
-//            workoutDetailViewController.progressDelegate = progressTableViewController
-//        }
-//        
-//        navigationController?.pushViewController(workoutDetailViewController, animated: true)
+        let template = templates[indexPath.row]
+        let workoutDetailViewController = WorkoutDetailViewController(workoutModel: StartWorkoutModel(template: template))
+        
+        let logTableViewController = (tabBarController?.viewControllers?[1] as? UINavigationController)?.viewControllers[0] as! LogViewController
+        workoutDetailViewController.delegate = logTableViewController
+
+        let progressTableViewController = (tabBarController?.viewControllers?[2] as? UINavigationController)?.viewControllers[0] as! ProgressViewController
+        workoutDetailViewController.progressDelegate = progressTableViewController
+
+        navigationController?.pushViewController(workoutDetailViewController, animated: true)
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -221,7 +227,7 @@ extension WorkoutViewController: UITableViewDragDelegate {
 }
 
 extension WorkoutViewController: WorkoutDetailTableViewControllerDelegate {
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didCreateWorkout workout: Workout) {
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didCreateWorkout workout: Workout) {
 //        workout.index = Int16(workoutPlans.count)
 //        CoreDataStack.shared.saveContext()
 //        
@@ -230,17 +236,17 @@ extension WorkoutViewController: WorkoutDetailTableViewControllerDelegate {
 //        contentUnavailableView.isHidden = !workoutPlans.isEmpty
     }
     
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateWorkout workout: Workout) {
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didUpdateWorkout workout: Workout) {
 //        workout.printPrettyString()
 //        workoutPlans = workoutService.fetchWorkoutPlans()
 //        updateUI()
     }
     
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didFinishWorkout workout: Workout) {
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didFinishWorkout workout: Workout) {
         return
     }
     
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailTableViewController, didUpdateLog workout: Workout) {
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didUpdateLog workout: Workout) {
         return
     }
 }
@@ -250,6 +256,7 @@ extension WorkoutViewController: CreateWorkoutViewControllerDelegate {
         template.index = Int16(templates.count)
         
         // Important: Make sure u finish modifying child object before saving or else additional changes wont be persisted to core data when saving main context
+        // Have to save here because needed to update index. Or maybe pass index ahead of time
         do {
             try viewController.childContext.save()
         } catch {

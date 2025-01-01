@@ -25,7 +25,7 @@ class WorkoutTableViewCell: UITableViewCell {
     }
     
     func update(template: Template) {
-        titleLabel.text = "\(template.title) \(template.index)"
+        titleLabel.text = template.title // "\(template.title) \(template.index)"
         let firstLetter =  template.title.first?.lowercased() ?? "a"
         var config = UIImage.SymbolConfiguration(pointSize: 35)
         config = config.applying(UIImage.SymbolConfiguration(paletteColors: [.white, Settings.shared.accentColor.color]))
@@ -71,6 +71,7 @@ class WorkoutTableViewCell: UITableViewCell {
     
     private func setupTitleLabel() {
         titleLabel = UILabel()
+        titleLabel.font = .preferredFont(forTextStyle: .headline)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.numberOfLines = 1
     }
@@ -79,7 +80,7 @@ class WorkoutTableViewCell: UITableViewCell {
         descriptionLabel = UILabel()
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionLabel.text = "Exercise A, Exercise B, Exercise C"
-        descriptionLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
+        descriptionLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         descriptionLabel.textColor = .secondaryLabel
         descriptionLabel.numberOfLines = 1
     }

@@ -34,7 +34,7 @@ class WorkoutService {
         
     func fetchWorkoutPlans() -> [Workout] {
         let request: NSFetchRequest<Workout> = Workout.fetchRequest()
-        request.predicate = NSPredicate(format: "createdAt == nil")
+        request.predicate = NSPredicate(format: "createdAt_ == nil")
         request.sortDescriptors = [NSSortDescriptor(key: "index", ascending: true)]
         
         do {
@@ -46,16 +46,15 @@ class WorkoutService {
         }
     }
     
-    func fetchLoggedWorkouts() -> [Workout] {
+    func fetchLogs() -> [Workout] {
         let request: NSFetchRequest<Workout> = Workout.fetchRequest()
-        let predicate = NSPredicate(format: "createdAt != nil")
-        let sortDescriptor = NSSortDescriptor(key: "createdAt", ascending: false)
-        request.predicate = predicate
+        let sortDescriptor = NSSortDescriptor(key: "createdAt_", ascending: false)
         request.sortDescriptors = [sortDescriptor]
         
         do {
-            let workoutPlans = try context.fetch(request)
-            return workoutPlans
+            let logs = try context.fetch(request)
+            print("Fetched \(logs.count) logs")
+            return logs
         } catch {
             print("Error fetching logs: \(error.localizedDescription)")
             return []
@@ -68,8 +67,8 @@ class WorkoutService {
     func fetchProgressData() -> [ProgressData] {
         var data: [String : [ExerciseSet]] = [:]
         let request: NSFetchRequest<ExerciseSet> = ExerciseSet.fetchRequest()
-        let predicate = NSPredicate(format: "exercise.workout.createdAt != nil")
-        let sortDescriptor = NSSortDescriptor(key: "exercise.workout.createdAt", ascending: true)
+        let predicate = NSPredicate(format: "exercise.workout.createdAt_ != nil")
+        let sortDescriptor = NSSortDescriptor(key: "exercise.workout.createdAt_", ascending: true)
         request.predicate = predicate
         request.sortDescriptors = [sortDescriptor]
         
@@ -101,6 +100,20 @@ class WorkoutService {
             try context.save()
         } catch {
             print("Failed to delete template: \(error)")
+        }
+    }
+    
+    func deleteLog(_ logs: inout [Date: [Workout]], at indexPath: IndexPath) {
+        let months = logs.keys.sorted()
+        let month = months[indexPath.section]
+        let logToRemove = logs[month, default: []].remove(at: indexPath.row)
+        
+        context.delete(logToRemove)
+        do {
+            try context.save()
+            print("Deleted log successfully")
+        } catch {
+            print("Failed to delete workout: \(error)")
         }
     }
     

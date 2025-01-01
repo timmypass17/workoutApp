@@ -7,25 +7,27 @@
 
 import UIKit
 
-protocol AddItemTableViewCellDelegate: AnyObject {
-    func didTapAddButton(_ sender: UITableViewCell)
+protocol AddSetTableViewCellDelegate: AnyObject {
+    func didTapAddSetButton(_ sender: AddSetTableViewCell)
 }
 
-class AddItemTableViewCell: UITableViewCell {
-    static let reuseIdentifier = "AddItemCell"
+class AddSetTableViewCell: UITableViewCell {
+    static let reuseIdentifier = "AddSetTableViewCell"
+    
     private let addButton: UIButton  = {
         let button = UIButton(configuration: .tinted())
+        button.titleLabel?.text = "Add Set"
         button.setImage(UIImage(systemName: "plus"), for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    weak var delegate: AddItemTableViewCellDelegate?
+    weak var delegate: AddSetTableViewCellDelegate?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         let addAction = UIAction { [self] _ in
-            delegate?.didTapAddButton(self)
+            delegate?.didTapAddSetButton(self)
         }
         addButton.addAction(addAction, for: .touchUpInside)
         contentView.addSubview(addButton)

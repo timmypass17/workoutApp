@@ -17,7 +17,7 @@ extension Workout {
         return NSFetchRequest<Workout>(entityName: "Workout")
     }
 
-    @NSManaged public var createdAt: Date? // Should be optional (templates do not have dates, distinct value)
+    @NSManaged public var createdAt_: Date?
     @NSManaged private var title_: String?
     @NSManaged public var index: Int16  // used to sort a list of workout
     @NSManaged public var exercises: NSOrderedSet? // ordered means the exercises are in the order u added them in.
@@ -30,6 +30,20 @@ extension Workout {
             title_ = newValue
         }
     }
+    
+    var createdAt: Date {
+        get {
+            return createdAt_ ?? .now
+        }
+        set {
+            createdAt_ = newValue
+        }
+    }
+    
+    var monthKey:  Date {
+        let components = Calendar.current.dateComponents([.year, .month], from: createdAt)
+        return Calendar.current.date(from: components)!
+    }
 
     func getExercises() -> [Exercise] {
         return exercises?.array as? [Exercise] ?? []
@@ -37,6 +51,20 @@ extension Workout {
     
     func getExercise(at index: Int) -> Exercise {
         return getExercises()[index]
+    }
+    
+    var isFinished: Bool {
+        let exercises = getExercises()
+        for exercise in exercises {
+            let sets = exercise.getExerciseSets()
+            for set in sets {
+                if set.weight.isEmpty || set.reps.isEmpty {
+                    return false
+                }
+            }
+        }
+        
+        return true
     }
 }
 
@@ -83,14 +111,15 @@ extension Workout : Identifiable {
         let exercises = self.getExercises()
         for (_, exercise) in exercises.enumerated() {
             let sets = exercise.getExerciseSets()
+            print("\t\(exercise.getPrettyString())")
             for (j, set) in sets.enumerated() {
-                print("\t\(j). \(set.getPrettyString())")
+                print("\t\t\(set.getPrettyString())")
             }
         }
     }
     
     func getPrettyString() -> String {
-        return "Workout(title: \(title), createdAt: \(createdAt))"
+        return "Workout(title: \"\(title)\", createdAt: \(createdAt.formatted(date: .abbreviated, time: .omitted)))"
     }
 
     class func copy(workout: Workout, with context: NSManagedObjectContext) -> Workout {

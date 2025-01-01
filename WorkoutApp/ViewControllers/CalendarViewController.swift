@@ -43,7 +43,7 @@ class CalendarViewController: UIViewController {
         navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: cancelAction)
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Confirm", primaryAction: doneAction)
 
-        datePicker.date = workout.createdAt!
+//        datePicker.date = workout.createdAt!
         view.addSubview(datePicker)
         NSLayoutConstraint.activate([
             datePicker.centerXAnchor.constraint(equalTo: view.centerXAnchor),

@@ -19,16 +19,16 @@ struct ProgressDetailView: View {
             return data.sets
         case .week:
             let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())!
-            return data.sets.filter { $0.exercise!.workout!.createdAt! >= oneWeekAgo }
+            return data.sets.filter { $0.exercise!.workout!.createdAt >= oneWeekAgo }
         case .month:
             let oneMonthAgo = Calendar.current.date(byAdding: .month, value: -1, to: Date())!
-            return data.sets.filter { $0.exercise!.workout!.createdAt! >= oneMonthAgo }
+            return data.sets.filter { $0.exercise!.workout!.createdAt >= oneMonthAgo }
         case .sixMonth:
             let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())!
-            return data.sets.filter { $0.exercise!.workout!.createdAt! >= sixMonthsAgo }
+            return data.sets.filter { $0.exercise!.workout!.createdAt >= sixMonthsAgo }
         case .year:
             let oneYearAgo = Calendar.current.date(byAdding: .year, value: -1, to: Date())!
-            return data.sets.filter { $0.exercise!.workout!.createdAt! >= oneYearAgo }
+            return data.sets.filter { $0.exercise!.workout!.createdAt >= oneYearAgo }
         }
     }
     
@@ -154,7 +154,7 @@ struct ProgressDetailViewCell: View {
                         .font(.headline)
                     
                     //"60lbs 3x5 Sep 20, 2023"
-                    Text("\(filteredData[i].exercise!.getExerciseSets().count)x\(filteredData[i].reps) \(filteredData[i].exercise!.name) at \(formatDateMonthDayYear(filteredData[i].exercise!.workout!.createdAt!))")
+                    Text("\(filteredData[i].exercise!.getExerciseSets().count)x\(filteredData[i].reps) \(filteredData[i].exercise!.name) at \(formatDateMonthDayYear(filteredData[i].exercise!.workout!.createdAt))")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .lineLimit(1)
