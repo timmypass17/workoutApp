@@ -178,6 +178,9 @@ extension LogViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let month = months[indexPath.section]
         guard let log = logs[month]?[indexPath.row] else { return }
+        let logWorkoutViewController = LogWorkoutViewController(log: log)
+        navigationController?.pushViewController(logWorkoutViewController, animated: true)
+
 //        let workoutDetailViewController = WorkoutDetailViewController(workoutModel: LogWorkoutModel(log: log))
 //        navigationController?.pushViewController(workoutDetailViewController, animated: true)
 
@@ -206,6 +209,16 @@ extension LogViewController: WorkoutDetailTableViewControllerDelegate {
     }
     
     func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didFinishWorkout workout: Workout) {
+    }
+
+    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didUpdateLog workout: Workout) {
+        // note: we could've optimize by updating the rows and sections of the workout but i got lazy so i just refetched data
+        updateUI()
+    }
+}
+
+extension LogViewController: StartWorkoutViewControllerDelegate {
+    func startWorkoutViewController(_ viewController: StartWorkoutViewController, didFinishWorkout workout: Workout) {
         if let section = months.firstIndex(where: { $0 == workout.monthKey }) {
             // If section exists, reload it
             logs[workout.monthKey, default: []].append(workout)
@@ -216,11 +229,6 @@ extension LogViewController: WorkoutDetailTableViewControllerDelegate {
             let section = months.firstIndex(where: { $0 == workout.monthKey })!
             tableView.insertSections(IndexSet(integer: section), with: .automatic)
         }
-    }
-
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didUpdateLog workout: Workout) {
-        // note: we could've optimize by updating the rows and sections of the workout but i got lazy so i just refetched data
-        updateUI()
     }
 }
 

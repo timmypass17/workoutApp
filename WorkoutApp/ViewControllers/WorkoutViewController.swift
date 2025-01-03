@@ -169,15 +169,15 @@ extension WorkoutViewController: UITableViewDataSource {
 extension WorkoutViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let template = templates[indexPath.row]
-        let workoutDetailViewController = WorkoutDetailViewController(workoutModel: StartWorkoutModel(template: template))
+        let startWorkoutViewController = StartWorkoutViewController(template: template)
         
         let logTableViewController = (tabBarController?.viewControllers?[1] as? UINavigationController)?.viewControllers[0] as! LogViewController
-        workoutDetailViewController.delegate = logTableViewController
+        startWorkoutViewController.delegate = logTableViewController
 
         let progressTableViewController = (tabBarController?.viewControllers?[2] as? UINavigationController)?.viewControllers[0] as! ProgressViewController
-        workoutDetailViewController.progressDelegate = progressTableViewController
+        startWorkoutViewController.progressDelegate = progressTableViewController
 
-        navigationController?.pushViewController(workoutDetailViewController, animated: true)
+        navigationController?.pushViewController(startWorkoutViewController, animated: true)
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {

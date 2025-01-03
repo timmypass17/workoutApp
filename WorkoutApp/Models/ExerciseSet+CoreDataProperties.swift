@@ -60,6 +60,30 @@ extension ExerciseSet {
         }
     }
     
+    var previousSet: ExerciseSet? {
+        let context = CoreDataStack.shared.mainContext
+        let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
+        let predicate = NSPredicate(format: "name_ == %@", exercise?.name ?? "")
+        let sortDescriptor = NSSortDescriptor(key: "workout.createdAt_", ascending: false)
+        request.predicate = predicate
+        request.sortDescriptors = [sortDescriptor]
+        request.fetchLimit = 1
+//        request.includesPendingChanges = false // don't include unsaved changes
+        
+        do {
+            guard let exercise: Exercise = try context.fetch(request).first else { return nil }
+            let sets = exercise.getExerciseSets()
+            if index < sets.count {
+                return sets[Int(index)]
+            } else {
+                return sets.last
+            }
+        } catch {
+            print("Error fetching previous exercise: \(error.localizedDescription)")
+        }
+        return nil
+    }
+    
     // Weight string formatted nicely
     var weightString: String {
         guard let doubleValue = Double(weight) else { return "" }
@@ -87,4 +111,13 @@ extension ExerciseSet : Identifiable {
     func getPrettyString() -> String {
         return "ExerciseSet(index: \(index), isComplete: \(isComplete), weight: \(weight), reps: \(reps))"
     }
+}
+
+func formatWeight(_ weight: Double, maxFractionDigits: Int = 2) -> String {
+    let isWholeNumber = weight.truncatingRemainder(dividingBy: 1) == 0
+    let numberFormatter = NumberFormatter()
+    numberFormatter.minimumFractionDigits = 0
+    numberFormatter.maximumFractionDigits = isWholeNumber ? 0 : maxFractionDigits
+    
+    return numberFormatter.string(from: NSNumber(value: weight)) ?? ""
 }

@@ -4,6 +4,9 @@
         <attribute name="name_" optional="YES" attributeType="String"/>
         <relationship name="exerciseSets" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="ExerciseSet" inverseName="exercise" inverseEntity="ExerciseSet"/>
         <relationship name="workout" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Workout" inverseName="exercises" inverseEntity="Workout"/>
+        <fetchIndex name="byNameIndex">
+            <fetchIndexElement property="name_" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="ExerciseSet" representedClassName="ExerciseSet" syncable="YES">
         <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
@@ -11,6 +14,9 @@
         <attribute name="reps_" optional="YES" attributeType="String"/>
         <attribute name="weight_" optional="YES" attributeType="String"/>
         <relationship name="exercise" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Exercise" inverseName="exerciseSets" inverseEntity="Exercise"/>
+        <fetchIndex name="byIndexIndex">
+            <fetchIndexElement property="index" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="Template" representedClassName="Template" syncable="YES">
         <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
@@ -29,5 +35,8 @@
         <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="title_" optional="YES" attributeType="String"/>
         <relationship name="exercises" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Exercise" inverseName="workout" inverseEntity="Exercise"/>
+        <fetchIndex name="byCreatedAtIndex">
+            <fetchIndexElement property="createdAt_" type="Binary" order="descending"/>
+        </fetchIndex>
     </entity>
 </model>

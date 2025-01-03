@@ -51,24 +51,24 @@ extension Exercise {
         return getExerciseSets()[index]
     }
     
-    func getPreviousExerciseDone() -> Exercise? {
-        let context = CoreDataStack.shared.mainContext
-        let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
-        let predicate = NSPredicate(format: "title_ == %@", name)
-        let sortDescriptor = NSSortDescriptor(key: "workout.createdAt_", ascending: false)
-        request.predicate = predicate
-        request.sortDescriptors = [sortDescriptor]
-        request.fetchLimit = 1
-        request.includesPendingChanges = false // don't include unsaved changes
-        
-        do {
-            let exercise: Exercise? = try context.fetch(request).first
-            return exercise
-        } catch {
-            print("Error fetching previous exercise: \(error.localizedDescription)")
-        }
-        return nil
-    }
+//    func getPreviousExerciseDone() -> Exercise? {
+//        let context = CoreDataStack.shared.mainContext
+//        let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
+//        let predicate = NSPredicate(format: "title_ == %@", name)
+//        let sortDescriptor = NSSortDescriptor(key: "workout.createdAt_", ascending: false)
+//        request.predicate = predicate
+//        request.sortDescriptors = [sortDescriptor]
+//        request.fetchLimit = 1
+//        request.includesPendingChanges = false // don't include unsaved changes
+//        
+//        do {
+//            let exercise: Exercise? = try context.fetch(request).first
+//            return exercise
+//        } catch {
+//            print("Error fetching previous exercise: \(error.localizedDescription)")
+//        }
+//        return nil
+//    }
 }
 
 // MARK: Generated accessors for exerciseSets

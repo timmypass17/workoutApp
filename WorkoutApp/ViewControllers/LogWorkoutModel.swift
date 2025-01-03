@@ -11,17 +11,19 @@ import UIKit
 
 //struct LogWorkoutModel: WorkoutModel {
 //    var workout: Workout
+//    var childContext: NSManagedObjectContext = CoreDataStack.shared.newBackgroundContext()
+//    var viewController: UIViewController?
 //    
 //    var primaryButtonText: String = "Save"
 //    
-//    func didTapPrimaryButton() -> UIAction {
-//        return UIAction { _ in
-//            
-//        }
-//    }
-//    
 //    init(log: Workout) {
 //        self.workout = log
+//    }
+//    
+//    func didTapPrimaryButton() -> UIAction {
+//        return UIAction { _ in
+//
+//        }
 //    }
 //
 //}

@@ -16,12 +16,6 @@ protocol WorkoutDetailTableViewControllerDelegate: AnyObject {
     func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didUpdateLog workout: Workout)
 }
 
-protocol WorkoutModel {
-    var workout: Workout { get }
-    var primaryButtonText: String { get }
-    func didTapPrimaryButton(_ viewController: UIViewController) -> UIAction
-}
-
 class WorkoutDetailViewController: UIViewController {
     
     private let tableView: UITableView = {
@@ -29,124 +23,15 @@ class WorkoutDetailViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
-    
-//    var workout: Workout
-    var timerButton: TimerBarButton?
         
-    let context = CoreDataStack.shared.mainContext
-//    let childContext: NSManagedObjectContext = CoreDataStack.shared.newBackgroundContext()
-
-    weak var delegate: WorkoutDetailTableViewControllerDelegate?
     weak var progressDelegate: WorkoutDetailTableViewControllerDelegate?
         
-    let workoutModel: WorkoutModel
-    
-    init(workoutModel: WorkoutModel) {
-        self.workoutModel = workoutModel
-        print(workoutModel.workout.printPrettyString())
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-//    enum State {
-//        case createWorkout(String)
-//        case updateWorkout(Workout)
-//        case startWorkout(Workout)
-//        case updateLog(Workout)
-//    }
-
-//    init(template: Template) {
-//        workout = Workout(context: childContext)
-//        workout.title = template.title
-//        workout.createdAt = .now
-//        
-//        for templateExercise in template.templateExercises {
-//            let exercise = Exercise(context: childContext)
-//            exercise.name = templateExercise.name
-//            exercise.workout = workout
-//            
-//            for i in 0..<templateExercise.sets {
-//                let exerciseSet = ExerciseSet(context: childContext)
-//                exerciseSet.isComplete = false
-//                exerciseSet.reps = ""
-//                exerciseSet.weight = ""
-//                exerciseSet.index = Int16(i)
-//                exerciseSet.exercise = exercise
-//                exercise.addToExerciseSets(exerciseSet)
-//            }
-//            
-//            workout.addToExercises(exercise)
-//        }
-//        
-//        super.init(nibName: nil, bundle: nil)
-//    }
-//    
-//    required init?(coder: NSCoder) {
-//        fatalError("init(coder:) has not been implemented")
-//    }
-    
-//    init(log: Workout) {
-//        super.init(nibName: nil, bundle: nil)
-//    }
-    
-    // TODO: Maybe use protocol instead of switch statements.
-//    init(_ state: State) {
-//        self.state = state
-//        childContext = CoreDataStack.shared.newBackgroundContext()
-////        childContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
-//
-//        switch state {
-//        case .createWorkout(let workoutName):
-//            workout = Workout(context: childContext)
-//            workout.title = workoutName
-//            workout.createdAt = nil // templates do not have dates
-//        case .updateWorkout(let template):
-//            workout = Workout.copy(workout: template, with: childContext)
-//            for exercise in workout.getExercises() {
-//                for set in exercise.getExerciseSets() {
-//                    set.isComplete = false
-//                    set.weight = ""
-//                    set.reps = ""
-//                }
-//            }
-//        case .startWorkout(let template):
-//            workout = Workout.copy(workout: template, with: childContext)
-//            workout.createdAt = .now
-//            for exercise in workout.getExercises() {
-//                for set in exercise.getExerciseSets() {
-//                    set.isComplete = false
-//                    set.weight = ""
-//                    set.reps = ""
-//                }
-//            }
-//        case .updateLog(let log):
-//            workout = Workout.copy(workout: log, with: childContext)   // make copy of log, then save new log and delete old log
-//        }
-//        
-//        // Load previous exercise's weights
-//        let exercises = workout.getExercises()
-//        for exercise in exercises {
-//            if let previousExercise = exercise.getPreviousExerciseDone() {
-//                previousExercises[exercise.name] = previousExercise.getExerciseSets().map { ($0.weightString, $0.reps) }
-//            }
-//        }
-//                
-//        super.init(style: .insetGrouped)
-//    }
-//    
-//    required init?(coder: NSCoder) {
-//        fatalError("init(coder:) has not been implemented")
-//    }
+    var workout: Workout!
+    let childContext = CoreDataStack.shared.newBackgroundContext()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("ViewDidLoad()")
-        workoutModel.workout.printPrettyString()
-        print(workoutModel.workout.managedObjectContext)
-        navigationItem.title = workoutModel.workout.title
+        navigationItem.title = workout.title
         navigationController?.navigationBar.prefersLargeTitles = true
         tableView.dataSource = self
         tableView.delegate = self
@@ -163,9 +48,7 @@ class WorkoutDetailViewController: UIViewController {
                                                selector: #selector(UITableView.reloadData),
                                                name: AccentColor.valueChangedNotification,
                                                object: nil)
-        
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: workoutModel.primaryButtonText, primaryAction: workoutModel.didTapPrimaryButton(self))
-                
+                        
 //        let footer = AddExerciseFooterView()
 //        footer.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 42)
 //        footer.delegate = self
@@ -174,249 +57,144 @@ class WorkoutDetailViewController: UIViewController {
         tableView.register(WorkoutDetailTableViewCell.self, forCellReuseIdentifier: WorkoutDetailTableViewCell.reuseIdentifier)
         tableView.register(AddSetTableViewCell.self, forCellReuseIdentifier: AddSetTableViewCell.reuseIdentifier)
     }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        // Back button pressed
-        if self.isMovingFromParent {
-            timerButton?.timer.stopTimer()  // timer runs in thread, leaving view doesn't get rid of timer
-        }
-    }
-    
-    func didTapFinishButton() -> UIAction {
-        return UIAction { _ in
-            if self.workoutModel.workout.isFinished {
-                self.showFinishAlert(title: "Workout Complete!", message: "Are you ready to finish your workout?")
-            } else {
-                self.showFinishAlert(title: "Finish Workout?", message: "Some weight or reps fields are still empty. Are you sure you want to finish your workout?")
-            }
-        }
-    }
-    
-    func showFinishAlert(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Confirm", style: .default) { _ in
-            self.didTapConfirmButton()
-        })
-        
-        
-        present(alert, animated: true, completion: nil)
-    }
-    
-    func didTapConfirmButton() {
-//        do {
-//            try childContext.save()
-//        } catch {
-//            print("Error saving reordered items: \(error)")
-//        }
-//        
-//        CoreDataStack.shared.saveContext()
-//        
-//        delegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
-//        progressDelegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
-//        Settings.shared.logBadgeValue += 1
-//        NotificationCenter.default.post(name: Settings.logBadgeValueChangedNotification, object: nil)
-//        navigationController?.popViewController(animated: true)
-    }
-    
-    func setupBarButton() {
-        let addEditButton: UIBarButtonItem
-        let buttonTitle: String = "Button Title"
-        let alertTitle: String = "Alert Title"
-//        switch state {
-//        case .createWorkout(_):
-//            buttonTitle = "Save"
-//            alertTitle = "Create Template?"
-//        case .updateWorkout(_):
-//            buttonTitle = "Save"
-//            alertTitle = "Save Changes?"
-//        case .startWorkout(_):
-//            buttonTitle = "Finish"
-//            alertTitle = "Finish Workout?"
-//        case .updateLog(_):
-//            buttonTitle = "Save"
-//            alertTitle = "Save Changes?"
-//        }
-        let action = UIAction { [self] _ in
-            timerButton?.timer.stopTimer()
-            var message = ""
-            if let elapsedTime = timerButton?.timer.elapsedTime {
-                let formatter = DateComponentsFormatter()
-                formatter.unitsStyle = .abbreviated
-                formatter.allowedUnits = [.hour, .minute, .second]
-                let timeString = formatter.string(from: elapsedTime)!
-                message =  "Your workout today at \(Date().formatted(date: .abbreviated, time: .omitted)) lasted \(timeString)"
-            }
-            
-            let alert = UIAlertController(title: alertTitle, message: message, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
-                self.timerButton?.timer.startTimer()
-            })
-            
-            alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [self] _ in
-                do {
-                    
-                    // Isolated Changes: Use child contexts for features like editing forms, where changes can be discarded without affecting the main context if the user cancels.
-
-                    // push changes to parent's context (parent will also need to save() aswell)
-//                    try childContext.save()
-                    
-//                    switch state {
-//                    case .createWorkout(_):
-//                        delegate?.workoutDetailTableViewController(self, didCreateWorkout: workout)
-//                    case .updateWorkout(let template):
-//                        // Delete old template
-//                        if let templateContext = template.managedObjectContext {
-//                            templateContext.delete(template)
-//                            try templateContext.save()
-//                            delegate?.workoutDetailTableViewController(self, didUpdateWorkout: workout)
-//                        }
-//                    case .startWorkout(_):
-//                        delegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
-//                        progressDelegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
-//                        Settings.shared.logBadgeValue += 1
-//                        NotificationCenter.default.post(name: Settings.logBadgeValueChangedNotification, object: nil)
-//                    case .updateLog(let log):
-//                        // Delete old log
-//                        if let logContext = log.managedObjectContext {
-//                            logContext.delete(log)
-//                            try logContext.save()
-//                        }
-//                        delegate?.workoutDetailTableViewController(self, didUpdateLog: workout)
-//                        progressDelegate?.workoutDetailTableViewController(self, didUpdateLog: workout)
-//                    }
-
-                    navigationController?.popViewController(animated: true)
-                } catch {
-                    print("Failed to save workout: \(error)")
-                }
-            }))
-            
-            self.present(alert, animated: true, completion: nil)
-        }
-        
-        addEditButton = UIBarButtonItem(title: buttonTitle, primaryAction: action)
-//        switch state {
-//        case .updateLog(_):
-//            let calendarAction = UIAction { [self] _ in
-//                let calendarViewController = CalendarViewController(workout: workout)
-//                let navigationController = UINavigationController(rootViewController: calendarViewController)
-//                if let sheet = navigationController.sheetPresentationController {
-//                    sheet.detents = [.custom(resolver: { context in
-//                        return self.view.frame.height * 0.6
-//                    })]
-//                }
-//                self.present(navigationController, animated: true)
-//            }
-//            let calendarButton = UIBarButtonItem(image: UIImage(systemName: "calendar"), primaryAction: calendarAction)
-//            navigationItem.rightBarButtonItems = [addEditButton, calendarButton]
-//        case .updateWorkout(_):
-//            let renameAction = UIAction { [self] _ in
-//                let alert = UIAlertController(title: "Rename Template", message: "Enter new name below", preferredStyle: .alert)
-//                
-//                alert.addTextField { textField in
-//                    textField.placeholder = "Ex. Push Day"
-//                    textField.autocapitalizationType = .sentences
-//                    let textChangedAction = UIAction { _ in
-//                        alert.actions[1].isEnabled = textField.text!.count > 0
-//                    }
-//                    textField.addAction(textChangedAction, for: .allEditingEvents)
-//                }
-//                
-//                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-//                alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { _ in
-//                    guard let templateName = alert.textFields?[0].text else { return }
-//                    print(templateName)
-//                    self.workout.title = templateName
-//                    self.navigationItem.title = "\(templateName) [Template]"
-//                }))
-//                
-//                self.present(alert, animated: true, completion: nil)
-//            }
-//            let renameButton = UIBarButtonItem(image: UIImage(systemName: "rectangle.and.pencil.and.ellipsis"), primaryAction: renameAction)
-//            navigationItem.rightBarButtonItems = [addEditButton, renameButton]
-//        case .startWorkout(_):
-//            // Timer
-//            navigationItem.rightBarButtonItems = [addEditButton]
-//            if Settings.shared.showTimer {
-//                timerButton = TimerBarButton()
-//                navigationItem.rightBarButtonItems?.append(timerButton!)
-//            }
-//        default:
-//            navigationItem.rightBarButtonItem = addEditButton
-//        }
-    }
-    
 }
 
 extension WorkoutDetailViewController: AddSetTableViewCellDelegate {
     func didTapAddSetButton(_ sender: AddSetTableViewCell) {
-//        guard let indexPath = tableView.indexPath(for: sender) else { return }
-//        
-//        let exercise = workoutModel.workout.getExercise(at: indexPath.section)
-//        let set = ExerciseSet(context: childContext)
-//        set.isComplete = false
-//        set.weight = ""
-//        set.reps = ""
-//        set.exercise = exercise
-//        exercise.addToExerciseSets(set)
-//        
-//        tableView.insertRows(at: [indexPath], with: .automatic)
+        guard let indexPath = tableView.indexPath(for: sender) else { return }
+        
+        let exercise = workout.getExercise(at: indexPath.section)
+        let set = ExerciseSet(context: childContext)
+        set.index = Int16(workout.getExercise(at: indexPath.section).getExerciseSets().count)
+        set.isComplete = false
+        set.weight = ""
+        set.reps = ""
+        set.exercise = exercise
+        exercise.addToExerciseSets(set)
+        
+        tableView.insertRows(at: [indexPath], with: .automatic)
     }
 }
 
 extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
-    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, nextButtonTapped: Bool) {
-//        if cell.weightTextField.isFirstResponder {
-//            cell.repsTextField.becomeFirstResponder()
-//        }
-//        else if cell.repsTextField.isFirstResponder {
-//            guard let indexPath = tableView.indexPath(for: cell) else { return }
-//            // Toggle checkmark
-//            if !cell.set.isComplete {
-//                cell.set.isComplete = true
-//                // If textfield is empty, use placeholder value
-//                if cell.weightTextField.text == "" {
-//                    cell.set.weight = cell.weightTextField.placeholder ?? "0"
-//                    cell.weightTextField.text = cell.weightTextField.placeholder
-//                }
-//                if cell.repsTextField.text == "" {
-//                    cell.set.reps = cell.repsTextField.placeholder ?? "0"
-//                    cell.repsTextField.text = cell.repsTextField.placeholder
-//                }
-//                if Settings.shared.enableHaptic {
-//                    let generator = UIImpactFeedbackGenerator(style: .heavy)
-//                    generator.impactOccurred()
-//                }
-//                tableView.reloadRows(at: [indexPath], with: .automatic)
-////                tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
-//            }
-//            // If last textfield, do nothing
-//            let exercisesCount = workout.getExercises().count
-//            if indexPath.section == exercisesCount - 1 &&
-//                indexPath.row == workout.getExercise(at: exercisesCount - 1).getExerciseSets().count - 1 {
-//                return
-//            }
-//            // Go to next row
-//            let nextIndexPath: IndexPath
-//            if indexPath.row < workout.getExercise(at: indexPath.section).getExerciseSets().count - 1 {
-//                nextIndexPath = IndexPath(row: indexPath.row + 1, section: indexPath.section)
-//            } else {
-//                // Go to next section
-//                nextIndexPath = IndexPath(row: 0, section: indexPath.section + 1)
-//            }
-//            let nextCell = tableView.cellForRow(at: nextIndexPath) as! WorkoutDetailTableViewCell
-//            nextCell.weightTextField.becomeFirstResponder()
-//        }
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapIncrementRepsButton: Bool) {
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
+        
+        let exercise = workout.getExercise(at: indexPath.section)
+        let set = exercise.getExerciseSets()[indexPath.row]
+        
+        let currentReps = Int(set.reps) ?? Int(cell.repsTextField.placeholder ?? "0") ?? 0
+        
+        let incrementedReps = currentReps + 1
+        set.reps = String(incrementedReps)
+        
+        cell.repsTextField.text = set.reps
+        
+        if Settings.shared.enableHaptic {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+        }
     }
     
-    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, previousButtonTapped: Bool) {
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapDecrementRepsButton: Bool) {
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
+        
+        let exercise = workout.getExercise(at: indexPath.section)
+        let set = exercise.getExerciseSets()[indexPath.row]
+        
+        let currentReps = Int(set.reps) ?? Int(cell.repsTextField.placeholder ?? "0") ?? 0
+        
+        let incrementedReps = currentReps - 1
+        set.reps = String(incrementedReps)
+        
+        cell.repsTextField.text = set.reps
+        
+        if Settings.shared.enableHaptic {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+        }
+    }
+    
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapIncrementWeightButton: Bool) {
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
+        
+        let exercise = workout.getExercise(at: indexPath.section)
+        let set = exercise.getExerciseSets()[indexPath.row]
+        
+        let currentWeight = Double(set.weight) ?? Double(cell.weightTextField.placeholder ?? "0") ?? 0
+        
+        let incrementedWeight = currentWeight + Settings.shared.weightIncrement
+        set.weight = formatWeight(incrementedWeight)
+        
+        cell.weightTextField.text = set.weight
+        
+        if Settings.shared.enableHaptic {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+        }
+    }
+    
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapDecrementWeightButton: Bool) {
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
+        
+        let exercise = workout.getExercise(at: indexPath.section)
+        let set = exercise.getExerciseSets()[indexPath.row]
+        
+        let currentWeight = Double(set.weight) ?? Double(cell.weightTextField.placeholder ?? "0") ?? 0
+        
+        let decrementedWeight = currentWeight - Settings.shared.weightIncrement
+        set.weight = formatWeight(decrementedWeight)
+        
+        cell.weightTextField.text = set.weight
+        
+        if Settings.shared.enableHaptic {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+        }
+    }
+    
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapNextButton: Bool) {
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
+        
+        if cell.weightTextField.isFirstResponder {
+            cell.repsTextField.becomeFirstResponder()
+            return
+        }
+        
+        if cell.repsTextField.isFirstResponder {
+            // Mark the current set as tapped
+            workoutDetailTableViewCell(cell, didTapSetButton: true)
+            
+            // Determine if this is the last set of the last exercise
+            let isLastExercise = indexPath.section == workout.getExercises().count - 1
+            let isLastSet = indexPath.row == workout.getExercise(at: indexPath.section).getExerciseSets().count - 1
+            
+            guard !(isLastExercise && isLastSet) else { return }
+            
+            // Calculate the next index path
+            let nextIndexPath: IndexPath
+            let setCount = workout.getExercise(at: indexPath.section).getExerciseSets().count
+            if indexPath.row + 1 < setCount {
+                // Move to the next set in the same exercise
+                nextIndexPath = IndexPath(row: indexPath.row + 1, section: indexPath.section)
+            } else {
+                // Move to the first set of the next exercise
+                nextIndexPath = IndexPath(row: 0, section: indexPath.section + 1)
+            }
+            
+            // Make the weight text field in the next cell the first responder
+            let nextCell = tableView.cellForRow(at: nextIndexPath) as! WorkoutDetailTableViewCell
+            nextCell.weightTextField.becomeFirstResponder()
+        }
+    }
+    
+    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapPreviousButton: Bool) {
         if cell.repsTextField.isFirstResponder {
             cell.weightTextField.becomeFirstResponder()
+            return
         }
-        else if cell.weightTextField.isFirstResponder {
+        
+        if cell.weightTextField.isFirstResponder {
             guard let indexPath = tableView.indexPath(for: cell) else { return }
             // If first textfield, do nothing
             if indexPath == IndexPath(row: 0, section: 0) {
@@ -424,77 +202,64 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
             }
             // Go to previous row
             let previousIndexPath: IndexPath
-            if indexPath.row > 0 {
+            if indexPath.row - 1 >= 0 {
+                // Go to previous set
                 previousIndexPath = IndexPath(row: indexPath.row - 1, section: indexPath.section)
             } else {
-                // Go to previous section
+                // Go to previous exercise
                 previousIndexPath = IndexPath(
-                    row: workoutModel.workout.getExercise(at: indexPath.section - 1).getExerciseSets().count - 1,
+                    row: workout.getExercise(at: indexPath.section - 1).getExerciseSets().count - 1,
                     section: indexPath.section - 1)
             }
+            
             let previousCell = tableView.cellForRow(at: previousIndexPath) as! WorkoutDetailTableViewCell
             previousCell.repsTextField.becomeFirstResponder()
         }
     }
-    
-    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didUpdateExerciseSet exerciseSet: ExerciseSet) {
-//        updateUI()
-    }
-    
-    func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapCheckmarkForSet exerciseSet: ExerciseSet) {
-        guard let indexPath = tableView.indexPath(for: cell) else { return }
-        tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
-//        updateUI()
-    }
-    
+
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapSetButton: Bool) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
-        let exerciseSet = workoutModel.workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row)
-        exerciseSet.isComplete = cell.setButton.isSelected
+        let exerciseSet = workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row)
+        exerciseSet.isComplete = didTapSetButton
         
-        if cell.weightTextField.text == "" {
+        if exerciseSet.weight.isEmpty {
             let weight = Float(cell.weightTextField.placeholder ?? "0") ?? 0.0
             exerciseSet.weight = String(format: "%g", weight)
+            cell.weightTextField.text = cell.weightTextField.placeholder
         }
-        if cell.repsTextField.text == "" {
+        
+        if exerciseSet.reps.isEmpty {
             let reps = Int(cell.repsTextField.placeholder ?? "0") ?? 0
             exerciseSet.reps = String(reps)
+            cell.repsTextField.text = cell.repsTextField.placeholder
         }
+        
         if Settings.shared.enableHaptic {
             let generator = UIImpactFeedbackGenerator(style: .heavy)
             generator.impactOccurred()
         }
         
-        var indexPaths: [IndexPath] = []
-        for row in 0..<workoutModel.workout.getExercise(at: indexPath.section).getExerciseSets().count {
-            indexPaths.append(IndexPath(row: row, section: indexPath.section))
+        // All cells in section have to be reloaded (checkmark is wierd if pressed randomly)
+        // - reloading tableview rows disisses keyboard, so just update set button manually
+        let indexPaths = (0..<workout.getExercise(at: indexPath.section).getExerciseSets().count)
+            .map { IndexPath(row: $0, section: indexPath.section)}
+        indexPaths.forEach {
+            let cell = tableView.cellForRow(at: IndexPath(row: $0.row, section: $0.section)) as! WorkoutDetailTableViewCell
+            cell.updateSetButton(exerciseSet: workout.getExercise(at: $0.section).getExerciseSet(at: $0.row))
         }
-        
-        tableView.reloadRows(at: indexPaths, with: .none)
-        
-        workoutModel.workout.printPrettyString()
     }
     
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, weightTextDidChange weightText: String) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
-        let exerciseSet = workoutModel.workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row)
+        let exerciseSet = workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row)
         
         exerciseSet.weight = weightText
         exerciseSet.isComplete = !exerciseSet.weight.isEmpty || !exerciseSet.reps.isEmpty
-
-        
-//        var indexPaths: [IndexPath] = []
-//        for row in 0..<workout.getExercise(at: indexPath.section).getExerciseSets().count {
-//            indexPaths.append(IndexPath(row: row, section: indexPath.section))
-//        }
-//        tableView.reloadRows(at: indexPaths, with: .none)
-//        
-//        cell.weightTextField.becomeFirstResponder() // reloading row dismisses keyboard
     }
     
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, repsTextDidChange repsText: String) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
-        let exerciseSet = workoutModel.workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row)
+        let exerciseSet = workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row)
         
         exerciseSet.reps = repsText
         exerciseSet.isComplete = !exerciseSet.weight.isEmpty || !exerciseSet.reps.isEmpty
@@ -550,7 +315,7 @@ extension WorkoutDetailViewController: ExercisesTableViewControllerDelegate {
 
 extension WorkoutDetailViewController: ExerciseHeaderViewDelegate {
     func exerciseHeaderView(_ sender: ExerciseHeaderView, didRenameExercise name: String, viewForHeaderInSection section: Int) {
-        let exercise = workoutModel.workout.getExercise(at: section)
+        let exercise = workout.getExercise(at: section)
         exercise.name = name
         tableView.reloadSections(IndexSet(integer: section), with: .automatic)
     }
@@ -563,25 +328,25 @@ extension String {
     }
 }
 
-extension Collection {
-    /// Returns the element at the specified index if it is within bounds, otherwise nil.
-    subscript (safe index: Index) -> Element? {
-        return indices.contains(index) ? self[index] : nil
-    }
-}
+//extension Collection {
+//    /// Returns the element at the specified index if it is within bounds, otherwise nil.
+//    subscript (safe index: Index) -> Element? {
+//        return indices.contains(index) ? self[index] : nil
+//    }
+//}
 
 extension WorkoutDetailViewController: UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return workoutModel.workout.getExercises().count
+        return workout.getExercises().count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return workoutModel.workout.getExercise(at: section).getExerciseSets().count + 1
+        return workout.getExercise(at: section).getExerciseSets().count + 1
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let exercise = workoutModel.workout.getExercise(at: indexPath.section)
+        let exercise = workout.getExercise(at: indexPath.section)
         let sets = exercise.getExerciseSets()
         
         let isAddSetButtonRow = indexPath.row == sets.count
@@ -607,7 +372,7 @@ extension WorkoutDetailViewController: UITableViewDataSource {
 extension WorkoutDetailViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let exercises = workoutModel.workout.getExercises()
+        let exercises = workout.getExercises()
         let header = ExerciseHeaderView(title: exercises[section].name, section: section)
         header.delegate = self
         header.editButton.isHidden = true
@@ -620,13 +385,13 @@ extension WorkoutDetailViewController: UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        let exercise = workoutModel.workout.getExercise(at: indexPath.section)
+        let exercise = workout.getExercise(at: indexPath.section)
         let exerciseSets = exercise.getExerciseSets()
         return indexPath.row != exerciseSets.count
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        let exercises = workoutModel.workout.getExercises()
+        let exercises = workout.getExercises()
         
         if (editingStyle == .delete) {
             exercises[indexPath.section].removeFromExerciseSets(at: indexPath.row)
@@ -645,6 +410,7 @@ extension WorkoutDetailViewController: UITableViewDelegate {
             var affectedIndexPaths: [IndexPath] = []
             for row in indexPath.row..<exercises[indexPath.section].getExerciseSets().count {
                 affectedIndexPaths.append(IndexPath(row: row, section: indexPath.section))
+                exercises[indexPath.section].getExerciseSets()[row].index = Int16(row)
             }
             
             tableView.reloadRows(at: affectedIndexPaths, with: .none)
