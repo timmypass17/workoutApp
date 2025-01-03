@@ -108,7 +108,10 @@ class WorkoutService {
         let month = months[indexPath.section]
         let logToRemove = logs[month, default: []].remove(at: indexPath.row)
         
-        context.delete(logToRemove)
+        // Can't delete objects in different context.
+        let objectInTargetContext = context.object(with: logToRemove.objectID)
+        context.delete(objectInTargetContext)
+
         do {
             try context.save()
             print("Deleted log successfully")
@@ -118,7 +121,8 @@ class WorkoutService {
     }
     
     func deleteWorkout(_ workout: Workout) {
-        context.delete(workout)
+        let objectInTargetContext = context.object(with: workout.objectID)
+        context.delete(objectInTargetContext)
         
         do {
             try context.save()

@@ -46,7 +46,7 @@ class LogViewController: UIViewController {
         let fetchedLogs: [Workout] = workoutService.fetchLogs()
         for log in fetchedLogs {
             logs[log.monthKey, default: []].append(log)
-            print(log.monthKey)
+            print(fetchedLogs.first?.managedObjectContext)
         }
     
         super.init(nibName: nil, bundle: nil)
@@ -219,6 +219,7 @@ extension LogViewController: WorkoutDetailTableViewControllerDelegate {
 
 extension LogViewController: StartWorkoutViewControllerDelegate {
     func startWorkoutViewController(_ viewController: StartWorkoutViewController, didFinishWorkout workout: Workout) {
+        print("didFinishWorkout: \(workout.managedObjectContext)")
         if let section = months.firstIndex(where: { $0 == workout.monthKey }) {
             // If section exists, reload it
             logs[workout.monthKey, default: []].append(workout)
