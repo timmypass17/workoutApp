@@ -99,6 +99,7 @@ class LogTableViewCell: UITableViewCell {
     }
     
     func update(with workout: Workout) {
+        workout.printPrettyString()
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "EEE"
         weekdayLabel.text = dateFormatter.string(from: workout.createdAt)

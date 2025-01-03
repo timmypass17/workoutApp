@@ -46,9 +46,8 @@ class LogViewController: UIViewController {
         let fetchedLogs: [Workout] = workoutService.fetchLogs()
         for log in fetchedLogs {
             logs[log.monthKey, default: []].append(log)
-            print(fetchedLogs.first?.managedObjectContext)
         }
-    
+        
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -179,22 +178,8 @@ extension LogViewController: UITableViewDelegate {
         let month = months[indexPath.section]
         guard let log = logs[month]?[indexPath.row] else { return }
         let logWorkoutViewController = LogWorkoutViewController(log: log)
+        logWorkoutViewController.delegate = self
         navigationController?.pushViewController(logWorkoutViewController, animated: true)
-
-//        let workoutDetailViewController = WorkoutDetailViewController(workoutModel: LogWorkoutModel(log: log))
-//        navigationController?.pushViewController(workoutDetailViewController, animated: true)
-
-        
-//        let month = sortedMonthYears[indexPath.section]
-//        guard let workouts = pastWorkouts[month] else { return }
-//        
-//        let workout = workouts[indexPath.row]
-//        let workoutDetailViewController = WorkoutDetailTableViewController(.updateLog(workout))
-//        workoutDetailViewController.delegate = self
-//        if let progressTableViewController = (tabBarController?.viewControllers?[2] as? UINavigationController)?.viewControllers[0] as? ProgressViewController {
-//            workoutDetailViewController.progressDelegate = progressTableViewController
-//        }
-//        navigationController?.pushViewController(workoutDetailViewController, animated: true)
     }
     
 }
@@ -219,7 +204,6 @@ extension LogViewController: WorkoutDetailTableViewControllerDelegate {
 
 extension LogViewController: StartWorkoutViewControllerDelegate {
     func startWorkoutViewController(_ viewController: StartWorkoutViewController, didFinishWorkout workout: Workout) {
-        print("didFinishWorkout: \(workout.managedObjectContext)")
         if let section = months.firstIndex(where: { $0 == workout.monthKey }) {
             // If section exists, reload it
             logs[workout.monthKey, default: []].append(workout)
@@ -229,6 +213,27 @@ extension LogViewController: StartWorkoutViewControllerDelegate {
             logs[workout.monthKey, default: []].append(workout)
             let section = months.firstIndex(where: { $0 == workout.monthKey })!
             tableView.insertSections(IndexSet(integer: section), with: .automatic)
+        }
+    }
+}
+
+
+extension LogViewController: LogWorkoutViewControllerDelegate {
+    func logWorkoutViewController(_ viewController: LogWorkoutViewController, didSaveWorkout workout: Workout) {
+        // TODO: Don't know why I can't find id
+        print(logs[workout.monthKey]?.count)
+        print("first object id: \(logs[workout.monthKey]!.first!.objectID)")
+        print("workout id: \(workout.objectID)")
+        
+        for (index, log) in logs[workout.monthKey]!.enumerated() {
+            print(index, log.objectID)
+        }
+        print(logs[workout.monthKey]?.firstIndex(where: { $0 == workout.objectID }))
+        
+        if let section = months.firstIndex(where: { $0 == workout.monthKey }),
+           let row = logs[workout.monthKey]?.firstIndex(where: { $0 == workout.objectID }) {
+            print("reload section: \(section)")
+            tableView.reloadRows(at: [IndexPath(row: row, section: section)], with: .automatic)
         }
     }
 }
