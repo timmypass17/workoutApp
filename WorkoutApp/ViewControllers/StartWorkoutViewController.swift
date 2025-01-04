@@ -30,8 +30,8 @@ class StartWorkoutViewController: WorkoutDetailViewController {
             for i in 0..<templateExercise.sets {
                 let exerciseSet = ExerciseSet(context: childContext)
                 exerciseSet.isComplete = false
-                exerciseSet.reps = ""
-                exerciseSet.weight = ""
+                exerciseSet.reps = -1
+                exerciseSet.weight = -1
                 exerciseSet.index = Int16(i)
                 exerciseSet.exercise = exercise
                 exercise.addToExerciseSets(exerciseSet)
@@ -76,11 +76,11 @@ class StartWorkoutViewController: WorkoutDetailViewController {
     func didTapConfirmButton() {
         for exercise in workout.getExercises() {
             for set in exercise.getExerciseSets() {
-                if set.weight.isEmpty {
-                    set.weight = "0"
+                if set.weight < 0 {
+                    set.weight = 0
                 }
-                if set.reps.isEmpty {
-                    set.reps = "0"
+                if set.reps < 0 {
+                    set.reps = 0
                 }
                 set.isComplete = true
             }

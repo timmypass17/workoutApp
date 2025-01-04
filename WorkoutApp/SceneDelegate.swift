@@ -42,6 +42,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         progressViewController.tabBarItem = UITabBarItem(title: "Progress", image: UIImage(systemName: "chart.bar.fill"), tag: 0)
         settingsViewController.tabBarItem = UITabBarItem(title: "Settings", image: UIImage(systemName: "gearshape.fill"), tag: 0)
         
+        progressViewController.loadViewIfNeeded()
 
         tabBarController.viewControllers = [workoutViewController, logViewController, progressViewController, settingsViewController].map { UINavigationController(rootViewController: $0) }
         

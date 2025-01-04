@@ -136,13 +136,13 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     func update(exerciseSet: ExerciseSet) {
         updateSetButton(exerciseSet: exerciseSet)
         
-        weightTextField.text = exerciseSet.weight
-        repsTextField.text = exerciseSet.reps
+        weightTextField.text = exerciseSet.weight >= 0 ? exerciseSet.weightString : ""
+        repsTextField.text = exerciseSet.reps >= 0 ? exerciseSet.repsString : ""
         
         if let previousSet = exerciseSet.previousSet {
-            weightTextField.placeholder = previousSet.weight
-            repsTextField.placeholder = previousSet.reps
-            previousLabel.text = previousSet.weight
+            weightTextField.placeholder = previousSet.weightString
+            repsTextField.placeholder = previousSet.repsString
+            previousLabel.text = previousSet.weightString
         } else {
             weightTextField.placeholder = "135"
             repsTextField.placeholder = "5"
@@ -184,24 +184,44 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         
     func didTapCloseButton() -> UIAction {
         return UIAction { _ in
+            if Settings.shared.enableHaptic {
+                let generator = UIImpactFeedbackGenerator(style: .light)
+                generator.impactOccurred()
+            }
+            
             self.endEditing(true)
         }
     }
         
     func didTapPreviousButton() -> UIAction {
         return UIAction { _ in
+            if Settings.shared.enableHaptic {
+                let generator = UIImpactFeedbackGenerator(style: .light)
+                generator.impactOccurred()
+            }
+            
             self.delegate?.workoutDetailTableViewCell(self, didTapPreviousButton: true)
         }
     }
     
     func didTapNextButton() -> UIAction {
         return UIAction { _ in
+            if Settings.shared.enableHaptic {
+                let generator = UIImpactFeedbackGenerator(style: .light)
+                generator.impactOccurred()
+            }
+            
             self.delegate?.workoutDetailTableViewCell(self, didTapNextButton: true)
         }
     }
     
     func didTapDecrementButton() -> UIAction {
         return UIAction { _ in
+            if Settings.shared.enableHaptic {
+                let generator = UIImpactFeedbackGenerator(style: .light)
+                generator.impactOccurred()
+            }
+            
             if self.weightTextField.isFirstResponder {
                 self.delegate?.workoutDetailTableViewCell(self, didTapDecrementWeightButton: true)
             } else if self.repsTextField.isFirstResponder {
@@ -212,6 +232,11 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     
     func didTapIncrementButton() -> UIAction {
         return UIAction { _ in
+            if Settings.shared.enableHaptic {
+                let generator = UIImpactFeedbackGenerator(style: .light)
+                generator.impactOccurred()
+            }
+            
             if self.weightTextField.isFirstResponder {
                 self.delegate?.workoutDetailTableViewCell(self, didTapIncrementWeightButton: true)
             } else if self.repsTextField.isFirstResponder {

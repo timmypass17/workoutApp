@@ -11,6 +11,8 @@ import Charts
 
 struct ProgressDetailView: View {
     @ObservedObject var data: ProgressData
+
+//    @ObservedObject var data: ProgressData
     @State private var selectedFilter: SelectedFilter = .all
 
     var filteredData: [ExerciseSet] {
@@ -39,7 +41,7 @@ struct ProgressDetailView: View {
                 
                 ProgressHeaderView(filteredData: filteredData)
 
-                ProgressChartView(filteredData: filteredData)
+//                ProgressChartView(filteredData: filteredData)
                 
                 Divider()
                     .padding(.bottom, 12)
@@ -167,33 +169,33 @@ struct ProgressDetailViewCell: View {
                     Text("-")
                         .foregroundColor(.secondary)
                 } else {
-                    let weight = Float(filteredData[i].weight)!
-                    let previousWeight = Float(filteredData[i + 1].weight)!
-                    let difference = weight - previousWeight
-                    Group {
-                        if difference > 0 {
-                            // More weight
-                            Text("+\(weightStringFormat(weight: difference)) \(weightUnit.rawValue)")
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 2)
-                                .background(Color(Settings.shared.accentColor.color), in: RoundedRectangle(cornerRadius: 4))
-                        } else if difference < 0 {
-                            // Less weight
-                            Text("\(weightStringFormat(weight: difference)) \(weightUnit.rawValue)")
-                                .foregroundStyle(colorScheme == .dark ? .white : .secondary)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 2)
-                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
-                        } else {
-                            // No weight gain
-                            Text("+0 \(weightUnit.rawValue)")
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 2)
-                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
-                        }
-                    }
+//                    let weight = Float(filteredData[i].weight)!
+//                    let previousWeight = Float(filteredData[i + 1].weight)!
+//                    let difference = weight - previousWeight
+//                    Group {
+//                        if difference > 0 {
+//                            // More weight
+//                            Text("+\(weightStringFormat(weight: difference)) \(weightUnit.rawValue)")
+//                                .foregroundStyle(.white)
+//                                .padding(.horizontal, 8)
+//                                .padding(.vertical, 2)
+//                                .background(Color(Settings.shared.accentColor.color), in: RoundedRectangle(cornerRadius: 4))
+//                        } else if difference < 0 {
+//                            // Less weight
+//                            Text("\(weightStringFormat(weight: difference)) \(weightUnit.rawValue)")
+//                                .foregroundStyle(colorScheme == .dark ? .white : .secondary)
+//                                .padding(.horizontal, 8)
+//                                .padding(.vertical, 2)
+//                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
+//                        } else {
+//                            // No weight gain
+//                            Text("+0 \(weightUnit.rawValue)")
+//                                .foregroundStyle(.white)
+//                                .padding(.horizontal, 8)
+//                                .padding(.vertical, 2)
+//                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
+//                        }
+//                    }
                 }
             }
             .padding()
@@ -204,20 +206,20 @@ struct ProgressDetailViewCell: View {
     }
 }
 
-struct ProgressChartView: View {
-    var filteredData: [ExerciseSet]
-
-    var body: some View {
-        Chart(filteredData) { exercise in
-            LineMark(x: .value("Time", exercise.exercise?.workout?.createdAt ?? Date()),
-                     y: .value("Beats Per Minute", Float(exercise.weight)!))
-            .symbol(Circle().strokeBorder(lineWidth: 2))
-            .symbolSize(CGSize(width: 6, height: 6))
-        }
-        .chartYScale(domain: .automatic(includesZero: false))
-        .frame(height: 300)
-    }
-}
+//struct ProgressChartView: View {
+//    var filteredData: [ExerciseSet]
+//
+//    var body: some View {
+//        Chart(filteredData) { exercise in
+//            LineMark(x: .value("Time", exercise.exercise?.workout?.createdAt ?? Date()),
+//                     y: .value("Beats Per Minute", Float(exercise.weight)!))
+//            .symbol(Circle().strokeBorder(lineWidth: 2))
+//            .symbolSize(CGSize(width: 6, height: 6))
+//        }
+//        .chartYScale(domain: .automatic(includesZero: false))
+//        .frame(height: 300)
+//    }
+//}
 
 
 enum SelectedFilter: String, CaseIterable, Identifiable {

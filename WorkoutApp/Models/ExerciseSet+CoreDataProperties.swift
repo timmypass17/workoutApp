@@ -18,8 +18,8 @@ extension ExerciseSet {
     }
 
     @NSManaged public var isComplete: Bool  // Bool have default value, no need for extra setters/getters
-    @NSManaged private var reps_: String?   // set to private cause we don't want to expose field to outside
-    @NSManaged private var weight_: String? // always in lbs (real weight)
+    @NSManaged public var reps: Int16   // set to private cause we don't want to expose field to outside
+    @NSManaged public var weight: Double // always in lbs (real weight)
     @NSManaged public var exercise: Exercise?
     @NSManaged public var index: Int16  // used to sort a list of workout
 
@@ -32,33 +32,41 @@ extension ExerciseSet {
         return self == currentSet
     }
     
-    var reps: String {
-        get {
-            return reps_ ?? "0"
-        }
-        set {
-            reps_ = newValue
-        }
+    var weightString: String {
+        return formatWeight(weight)
     }
     
-    var weight: String {
-        get {
-            if Settings.shared.weightUnit == .lbs {
-                return weight_ ?? "0"
-            } else {
-                // Convert lbs to kg
-                return convertToKg(lbs: weight_ ?? "0")
-            }
-        }
-        set {
-            if Settings.shared.weightUnit == .lbs {
-                weight_ = newValue
-            } else {
-                // Convert kg to lbs
-                weight_ = convertToLbs(kg: newValue)
-            }
-        }
+    var repsString: String {
+        return "\(reps)"
     }
+    
+//    var reps: String {
+//        get {
+//            return reps_ ?? "0"
+//        }
+//        set {
+//            reps_ = newValue
+//        }
+//    }
+    
+//    var weight: String {
+//        get {
+//            if Settings.shared.weightUnit == .lbs {
+//                return weight_ ?? "0"
+//            } else {
+//                // Convert lbs to kg
+//                return convertToKg(lbs: weight_ ?? "0")
+//            }
+//        }
+//        set {
+//            if Settings.shared.weightUnit == .lbs {
+//                weight_ = newValue
+//            } else {
+//                // Convert kg to lbs
+//                weight_ = convertToLbs(kg: newValue)
+//            }
+//        }
+//    }
     
     var previousSet: ExerciseSet? {
         let context = CoreDataStack.shared.mainContext
@@ -85,13 +93,14 @@ extension ExerciseSet {
     }
     
     // Weight string formatted nicely
-    var weightString: String {
-        guard let doubleValue = Double(weight) else { return "" }
-        let numberFormatter = NumberFormatter()
-        numberFormatter.minimumFractionDigits = 0
-        numberFormatter.maximumFractionDigits = doubleValue.truncatingRemainder(dividingBy: 1) == 0 ? 0 : 2
-        return numberFormatter.string(from: NSNumber(value: doubleValue)) ?? ""
-    }
+//    var weightString: String {
+//        return ""
+//        guard let doubleValue = Double(weight) else { return "" }
+//        let numberFormatter = NumberFormatter()
+//        numberFormatter.minimumFractionDigits = 0
+//        numberFormatter.maximumFractionDigits = doubleValue.truncatingRemainder(dividingBy: 1) == 0 ? 0 : 2
+//        return numberFormatter.string(from: NSNumber(value: doubleValue)) ?? ""
+//    }
     
     // Move this methods to Weight class or something (single responsibility)
     private func convertToKg(lbs: String) -> String {

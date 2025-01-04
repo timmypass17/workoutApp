@@ -45,8 +45,12 @@ extension Exercise {
     // returns best lift for that exercise session (not all)
     var maxWeight: Double? {
         let reps = getExerciseSets()
-            .compactMap { Double($0.weight) }
+            .compactMap { $0.weight }
         return reps.max() ?? 0
+    }
+    
+    var bestSet: ExerciseSet? {
+        return getExerciseSets().max { $0.weight < $1.weight }
     }
 
     func getExerciseSets() -> [ExerciseSet] {

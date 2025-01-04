@@ -9,6 +9,7 @@ import UIKit
 
 protocol LogViewControllerDelegate: AnyObject {
     func logViewController(_ viewController: LogViewController, didDeleteLog log: Workout)
+    func logViewController(_ viewController: LogViewController, didSaveLog log: Workout)
 }
 
 class LogViewController: UIViewController {
@@ -161,7 +162,6 @@ extension LogViewController: UITableViewDelegate {
         if (editingStyle == .delete) {
             let monthYear = monthYears[indexPath.section]
             let logToRemove = logs[monthYear, default: []].remove(at: indexPath.row)
-            delegate?.logViewController(self, didDeleteLog: logToRemove)
 
             // Can't delete objects in different context.
             let objectInTargetContext = context.object(with: logToRemove.objectID)
@@ -173,6 +173,8 @@ extension LogViewController: UITableViewDelegate {
             } catch {
                 print("Failed to delete workout: \(error)")
             }
+            
+            delegate?.logViewController(self, didDeleteLog: logToRemove)
             
             tableView.deleteRows(at: [indexPath], with: .automatic)
             
@@ -202,24 +204,6 @@ extension LogViewController: UITableViewDelegate {
     
 }
 
-extension LogViewController: WorkoutDetailTableViewControllerDelegate {
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didCreateWorkout workout: Workout) {
-        return
-    }
-    
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didUpdateWorkout workout: Workout) {
-        return
-    }
-    
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didFinishWorkout workout: Workout) {
-    }
-
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didUpdateLog workout: Workout) {
-        // note: we could've optimize by updating the rows and sections of the workout but i got lazy so i just refetched data
-        updateUI()
-    }
-}
-
 extension LogViewController: StartWorkoutViewControllerDelegate {
     func startWorkoutViewController(_ viewController: StartWorkoutViewController, didFinishWorkout workout: Workout) {
         if let section = monthYears.firstIndex(where: { $0 == workout.monthKey }) {
@@ -246,6 +230,7 @@ extension LogViewController: LogWorkoutViewControllerDelegate {
         
         logs[workout.monthKey]?[row] = workout
         tableView.reloadRows(at: [IndexPath(row: row, section: section)], with: .automatic)
+        delegate?.logViewController(self, didSaveLog: workout)
     }
 }
 

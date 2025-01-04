@@ -104,6 +104,28 @@ class WorkoutService {
         }
     }
     
+    // fetching exercise sets makes set.previousSet inconsistent?
+//    func fetchExerciseSets(exerciseName: String, limit: Int? = nil) -> [ExerciseSet] {
+//        let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
+//        let predicate = NSPredicate(format: "name_ == %@", exerciseName)
+//        let sortDescriptor = NSSortDescriptor(key: "workout.createdAt_", ascending: true)
+//        request.predicate = predicate
+//        request.sortDescriptors = [sortDescriptor]
+////        request.includesPendingChanges = false
+//        
+//        if let limit {
+//            request.fetchLimit = limit
+//        }
+//        
+//        do {
+//            let exercises: [Exercise] = try context.fetch(request)
+//            return exercises.compactMap { $0.bestSet }
+//        } catch {
+//            print("Failed to fetch unique exercise names: \(error.localizedDescription)")
+//            return []
+//        }
+//    }
+    
     func fetchMaxWeight(exerciseName: String) -> Double {
         let request = NSFetchRequest<NSDictionary>(entityName: "ExerciseSet")
         request.predicate = NSPredicate(format: "exercise.name_ == %@", exerciseName)
@@ -112,7 +134,7 @@ class WorkoutService {
         // weights are stored as string, so transform string as double
         let expressionDescription = NSExpressionDescription()
         expressionDescription.name = "maxWeight"
-        expressionDescription.expression = NSExpression(forFunction: "max:", arguments: [NSExpression(forKeyPath: "weight_")])
+        expressionDescription.expression = NSExpression(forFunction: "max:", arguments: [NSExpression(forKeyPath: "weight")])
         expressionDescription.expressionResultType = .doubleAttributeType
         
         request.propertiesToFetch = [expressionDescription]
@@ -147,7 +169,9 @@ class WorkoutService {
     
     func deleteTemplate(_ templates: inout [Template], at indexPath: IndexPath) {
         let templateToRemove = templates.remove(at: indexPath.row)
-        context.delete(templateToRemove)
+        
+        let objectInTargetContext = context.object(with: templateToRemove.objectID)
+        context.delete(objectInTargetContext)
         
         for (index, template) in templates.enumerated() {
             template.index = Int16(index)

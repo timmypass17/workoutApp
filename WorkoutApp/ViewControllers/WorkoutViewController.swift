@@ -226,31 +226,6 @@ extension WorkoutViewController: UITableViewDragDelegate {
     
 }
 
-extension WorkoutViewController: WorkoutDetailTableViewControllerDelegate {
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didCreateWorkout workout: Workout) {
-//        workout.index = Int16(workoutPlans.count)
-//        CoreDataStack.shared.saveContext()
-//        
-//        workoutPlans.append(workout)
-//        tableView.insertRows(at: [IndexPath(row: workoutPlans.count - 1, section: 0)], with: .automatic)
-//        contentUnavailableView.isHidden = !workoutPlans.isEmpty
-    }
-    
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didUpdateWorkout workout: Workout) {
-//        workout.printPrettyString()
-//        workoutPlans = workoutService.fetchWorkoutPlans()
-//        updateUI()
-    }
-    
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didFinishWorkout workout: Workout) {
-        return
-    }
-    
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didUpdateLog workout: Workout) {
-        return
-    }
-}
-
 extension WorkoutViewController: CreateWorkoutViewControllerDelegate {
     func createWorkoutViewController(_ viewController: CreateWorkoutViewController, didCreateWorkoutTemplate template: Template) {
         template.index = Int16(templates.count)

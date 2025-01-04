@@ -8,14 +8,6 @@
 import UIKit
 import CoreData
 
-// TODO: Split this delegate up, some classes don't implment some functionss
-protocol WorkoutDetailTableViewControllerDelegate: AnyObject {
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didCreateWorkout workout: Workout)
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didUpdateWorkout workout: Workout)
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didFinishWorkout workout: Workout)
-    func workoutDetailTableViewController(_ viewController: WorkoutDetailViewController, didUpdateLog workout: Workout)
-}
-
 class WorkoutDetailViewController: UIViewController {
     
     private let tableView: UITableView = {
@@ -33,7 +25,6 @@ class WorkoutDetailViewController: UIViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         tableView.dataSource = self
         tableView.delegate = self
-//        tableView.keyboardDismissMode = .onDrag
         view.addSubview(tableView)
 
         NSLayoutConstraint.activate([
@@ -80,6 +71,40 @@ class WorkoutDetailViewController: UIViewController {
     }
 }
 
+extension WorkoutDetailViewController: UITableViewDataSource {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return workout.getExercises().count
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return workout.getExercise(at: section).getExerciseSets().count + 1
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let exercise = workout.getExercise(at: indexPath.section)
+        let sets = exercise.getExerciseSets()
+        
+        let isAddSetButtonRow = indexPath.row == sets.count
+        if isAddSetButtonRow {
+            let cell = tableView.dequeueReusableCell(withIdentifier: AddSetTableViewCell.reuseIdentifier, for: indexPath) as! AddSetTableViewCell
+            cell.delegate = self
+            cell.selectionStyle = .none
+            return cell
+        } else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutDetailTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutDetailTableViewCell
+            let exerciseSet = sets[indexPath.row]
+            cell.delegate = self
+            
+            cell.update(exerciseSet: exerciseSet)
+            
+//            let previousWeights = previousExercises[exercise.name, default: []]
+//            cell.update(with: workout, for: indexPath, previousWeights: previousWeights)
+            return cell
+        }
+    }
+}
+
 extension WorkoutDetailViewController: AddSetTableViewCellDelegate {
     func didTapAddSetButton(_ sender: AddSetTableViewCell) {
         guard let indexPath = tableView.indexPath(for: sender) else { return }
@@ -88,8 +113,8 @@ extension WorkoutDetailViewController: AddSetTableViewCellDelegate {
         let set = ExerciseSet(context: childContext)
         set.index = Int16(workout.getExercise(at: indexPath.section).getExerciseSets().count)
         set.isComplete = false
-        set.weight = ""
-        set.reps = ""
+        set.weight = 0
+        set.reps = 0
         set.exercise = exercise
         exercise.addToExerciseSets(set)
         
@@ -104,17 +129,11 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         let exercise = workout.getExercise(at: indexPath.section)
         let set = exercise.getExerciseSets()[indexPath.row]
         
-        let currentReps = Int(set.reps) ?? Int(cell.repsTextField.placeholder ?? "0") ?? 0
-        
+        let currentReps = set.reps >= 0 ? Int(set.reps) : Int(set.previousSet?.reps ?? 0)
         let incrementedReps = currentReps + 1
-        set.reps = String(incrementedReps)
+        set.reps = Int16(incrementedReps)
         
-        cell.repsTextField.text = set.reps
-        
-        if Settings.shared.enableHaptic {
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
-        }
+        cell.repsTextField.text = set.repsString
     }
     
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapDecrementRepsButton: Bool) {
@@ -123,17 +142,12 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         let exercise = workout.getExercise(at: indexPath.section)
         let set = exercise.getExerciseSets()[indexPath.row]
         
-        let currentReps = Int(set.reps) ?? Int(cell.repsTextField.placeholder ?? "0") ?? 0
+        let currentReps = set.reps >= 0 ? Int(set.reps) : Int(set.previousSet?.reps ?? 0)
+
+        let decrementedReps = currentReps - 1
+        set.reps = Int16(decrementedReps)
         
-        let incrementedReps = currentReps - 1
-        set.reps = String(incrementedReps)
-        
-        cell.repsTextField.text = set.reps
-        
-        if Settings.shared.enableHaptic {
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
-        }
+        cell.repsTextField.text = set.repsString
     }
     
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapIncrementWeightButton: Bool) {
@@ -142,17 +156,12 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         let exercise = workout.getExercise(at: indexPath.section)
         let set = exercise.getExerciseSets()[indexPath.row]
         
-        let currentWeight = Double(set.weight) ?? Double(cell.weightTextField.placeholder ?? "0") ?? 0
-        
+        let currentWeight = set.weight >= 0 ? set.weight : set.previousSet?.weight ?? 0
+
         let incrementedWeight = currentWeight + Settings.shared.weightIncrement
-        set.weight = formatWeight(incrementedWeight)
+        set.weight = incrementedWeight
         
-        cell.weightTextField.text = set.weight
-        
-        if Settings.shared.enableHaptic {
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
-        }
+        cell.weightTextField.text = set.weightString
     }
     
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapDecrementWeightButton: Bool) {
@@ -161,17 +170,12 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         let exercise = workout.getExercise(at: indexPath.section)
         let set = exercise.getExerciseSets()[indexPath.row]
         
-        let currentWeight = Double(set.weight) ?? Double(cell.weightTextField.placeholder ?? "0") ?? 0
-        
+        let currentWeight = set.weight >= 0 ? set.weight : set.previousSet?.weight ?? 0
+
         let decrementedWeight = currentWeight - Settings.shared.weightIncrement
-        set.weight = formatWeight(decrementedWeight)
+        set.weight = decrementedWeight
         
-        cell.weightTextField.text = set.weight
-        
-        if Settings.shared.enableHaptic {
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
-        }
+        cell.weightTextField.text = set.weightString
     }
     
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapNextButton: Bool) {
@@ -243,15 +247,15 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         let exerciseSet = workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row)
         exerciseSet.isComplete = didTapSetButton
         
-        if exerciseSet.weight.isEmpty {
-            let weight = Float(cell.weightTextField.placeholder ?? "0") ?? 0.0
-            exerciseSet.weight = String(format: "%g", weight)
+        if exerciseSet.weight < 0 {
+            let weight = Double(cell.weightTextField.placeholder ?? "0") ?? 0.0
+            exerciseSet.weight = weight
             cell.weightTextField.text = cell.weightTextField.placeholder
         }
         
-        if exerciseSet.reps.isEmpty {
-            let reps = Int(cell.repsTextField.placeholder ?? "0") ?? 0
-            exerciseSet.reps = String(reps)
+        if exerciseSet.reps < 0 {
+            let reps = Int16(cell.repsTextField.placeholder ?? "0") ?? 0
+            exerciseSet.reps = reps
             cell.repsTextField.text = cell.repsTextField.placeholder
         }
         
@@ -274,16 +278,16 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         let exerciseSet = workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row)
         
-        exerciseSet.weight = weightText
-        exerciseSet.isComplete = !exerciseSet.weight.isEmpty || !exerciseSet.reps.isEmpty
+        exerciseSet.weight = Double(weightText) ?? 0
+//        exerciseSet.isComplete = !exerciseSet.weight.isEmpty || !exerciseSet.reps.isEmpty
     }
     
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, repsTextDidChange repsText: String) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         let exerciseSet = workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row)
         
-        exerciseSet.reps = repsText
-        exerciseSet.isComplete = !exerciseSet.weight.isEmpty || !exerciseSet.reps.isEmpty
+        exerciseSet.reps = Int16(repsText) ?? 0
+//        exerciseSet.isComplete = !exerciseSet.weight.isEmpty || !exerciseSet.reps.isEmpty
     }
 }
 
@@ -355,40 +359,6 @@ extension String {
 //        return indices.contains(index) ? self[index] : nil
 //    }
 //}
-
-extension WorkoutDetailViewController: UITableViewDataSource {
-    
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return workout.getExercises().count
-    }
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return workout.getExercise(at: section).getExerciseSets().count + 1
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let exercise = workout.getExercise(at: indexPath.section)
-        let sets = exercise.getExerciseSets()
-        
-        let isAddSetButtonRow = indexPath.row == sets.count
-        if isAddSetButtonRow {
-            let cell = tableView.dequeueReusableCell(withIdentifier: AddSetTableViewCell.reuseIdentifier, for: indexPath) as! AddSetTableViewCell
-            cell.delegate = self
-            cell.selectionStyle = .none
-            return cell
-        } else {
-            let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutDetailTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutDetailTableViewCell
-            let exerciseSet = sets[indexPath.row]
-            cell.delegate = self
-            
-            cell.update(exerciseSet: exerciseSet)
-            
-//            let previousWeights = previousExercises[exercise.name, default: []]
-//            cell.update(with: workout, for: indexPath, previousWeights: previousWeights)
-            return cell
-        }
-    }
-}
 
 extension WorkoutDetailViewController: UITableViewDelegate {
     
