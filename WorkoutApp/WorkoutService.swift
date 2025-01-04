@@ -87,6 +87,63 @@ class WorkoutService {
         }
     }
     
+    func fetchWeights(exerciseName: String) -> [Double] {
+        let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
+        let predicate = NSPredicate(format: "name_ == %@", exerciseName)
+        let sortDescriptor = NSSortDescriptor(key: "workout.createdAt_", ascending: true)
+        request.predicate = predicate
+        request.sortDescriptors = [sortDescriptor]
+        request.fetchLimit = 7
+        
+        do {
+            let exercises: [Exercise] = try context.fetch(request)
+            return exercises.compactMap { $0.maxWeight }
+        } catch {
+            print("Failed to fetch unique exercise names: \(error.localizedDescription)")
+            return []
+        }
+    }
+    
+    func fetchMaxWeight(exerciseName: String) -> Double {
+        let request = NSFetchRequest<NSDictionary>(entityName: "ExerciseSet")
+        request.predicate = NSPredicate(format: "exercise.name_ == %@", exerciseName)
+        request.resultType = .dictionaryResultType
+        
+        // weights are stored as string, so transform string as double
+        let expressionDescription = NSExpressionDescription()
+        expressionDescription.name = "maxWeight"
+        expressionDescription.expression = NSExpression(forFunction: "max:", arguments: [NSExpression(forKeyPath: "weight_")])
+        expressionDescription.expressionResultType = .doubleAttributeType
+        
+        request.propertiesToFetch = [expressionDescription]
+        
+        do {
+            if let result = try context.fetch(request).first,
+               let maxWeight = result["maxWeight"] as? Double {
+                return maxWeight
+            }
+        } catch {
+            print("Error fetching max weight: \(error)")
+        }
+        
+        return 0
+    }
+    
+    func fetchUniqueExerciseNames() -> [String] {
+        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "Exercise")
+        request.propertiesToFetch = ["name_"] // Fetch only the 'name_' property
+        request.resultType = .dictionaryResultType
+        request.returnsDistinctResults = true // Ensure only unique names are returned
+        
+        do {
+            let results = try context.fetch(request) as? [[String: Any]]
+            let uniqueNames = results?.compactMap { $0["name_"] as? String } ?? []
+            return uniqueNames.sorted()
+        } catch {
+            print("Failed to fetch unique exercise names: \(error.localizedDescription)")
+            return []
+        }
+    }
     
     func deleteTemplate(_ templates: inout [Template], at indexPath: IndexPath) {
         let templateToRemove = templates.remove(at: indexPath.row)

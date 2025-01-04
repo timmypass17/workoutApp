@@ -82,7 +82,7 @@ class WorkoutViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         if let selectedIndexPath = tableView.indexPathForSelectedRow {
-            tableView.reloadRows(at: [selectedIndexPath], with: .automatic)
+            tableView.deselectRow(at: selectedIndexPath, animated: true)
         }
     }
     

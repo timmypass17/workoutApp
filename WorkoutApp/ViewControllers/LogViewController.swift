@@ -8,7 +8,7 @@
 import UIKit
 
 protocol LogViewControllerDelegate: AnyObject {
-    func logViewController(_ viewController: LogViewController, didDeleteWorkout workout: Workout)
+    func logViewController(_ viewController: LogViewController, didDeleteLog log: Workout)
 }
 
 class LogViewController: UIViewController {
@@ -32,7 +32,7 @@ class LogViewController: UIViewController {
     }()
     
     var logs: [Date: [Workout]] = [:]
-    var months: [Date] {
+    var monthYears: [Date] {
         return logs.keys.sorted()
     }
 
@@ -85,7 +85,11 @@ class LogViewController: UIViewController {
         updateUI()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if let selectedIndexPath = tableView.indexPathForSelectedRow {
+            tableView.deselectRow(at: selectedIndexPath, animated: true)
+        }
         Settings.shared.logBadgeValue = 0
         NotificationCenter.default.post(name: Settings.logBadgeValueChangedNotification, object: nil)
     }
@@ -95,7 +99,8 @@ class LogViewController: UIViewController {
         navigationItem.title = "Log"
         tableView.register(LogTableViewCell.self, forCellReuseIdentifier: LogTableViewCell.reuseIdentifier)
         
-//        contentUnavailableView.isHidden = !pastWorkouts.isEmpty
+        contentUnavailableView.isHidden = !logs.isEmpty
+        
 //        pastWorkouts.removeAll()
 //        let workouts: [Workout] = workoutService.fetchLoggedWorkouts()
 //        for workout in workouts {
@@ -127,17 +132,17 @@ class LogViewController: UIViewController {
 extension LogViewController: UITableViewDataSource {
 
     func numberOfSections(in tableView: UITableView) -> Int {
-        return months.count
+        return monthYears.count
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let month = months[section]
+        let month = monthYears[section]
         return logs[month]?.count ?? 0
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: LogTableViewCell.reuseIdentifier, for: indexPath) as! LogTableViewCell
-        let month = months[indexPath.section]
+        let month = monthYears[indexPath.section]
         if let workout = logs[month]?[indexPath.row] {
             cell.update(with: workout)
         }
@@ -154,13 +159,26 @@ extension LogViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if (editingStyle == .delete) {
-            workoutService.deleteLog(&logs, at: indexPath)
+            let monthYear = monthYears[indexPath.section]
+            let logToRemove = logs[monthYear, default: []].remove(at: indexPath.row)
+            delegate?.logViewController(self, didDeleteLog: logToRemove)
+
+            // Can't delete objects in different context.
+            let objectInTargetContext = context.object(with: logToRemove.objectID)
+            context.delete(objectInTargetContext)
+
+            do {
+                try context.save()
+                print("Deleted log successfully")
+            } catch {
+                print("Failed to delete workout: \(error)")
+            }
+            
             tableView.deleteRows(at: [indexPath], with: .automatic)
             
-            let month = months[indexPath.section]
-            if logs[month, default: []].isEmpty {
+            if logs[monthYear, default: []].isEmpty {
                 // Delete section if necessary
-                logs[month] = nil
+                logs[monthYear] = nil
                 tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
             } else {
                 // Reloadds section header
@@ -170,12 +188,12 @@ extension LogViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let month = months[section]
+        let month = monthYears[section]
         return LogSectionHeaderView(title: getMonthYearString(from: month), workoutCount: logs[month]?.count ?? 0)
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let month = months[indexPath.section]
+        let month = monthYears[indexPath.section]
         guard let log = logs[month]?[indexPath.row] else { return }
         let logWorkoutViewController = LogWorkoutViewController(log: log)
         logWorkoutViewController.delegate = self
@@ -204,14 +222,14 @@ extension LogViewController: WorkoutDetailTableViewControllerDelegate {
 
 extension LogViewController: StartWorkoutViewControllerDelegate {
     func startWorkoutViewController(_ viewController: StartWorkoutViewController, didFinishWorkout workout: Workout) {
-        if let section = months.firstIndex(where: { $0 == workout.monthKey }) {
+        if let section = monthYears.firstIndex(where: { $0 == workout.monthKey }) {
             // If section exists, reload it
-            logs[workout.monthKey, default: []].append(workout)
+            logs[workout.monthKey, default: []].insert(workout, at: 0)
             tableView.reloadSections(IndexSet(integer: section), with: .automatic)
         } else {
             // Else, insert section
-            logs[workout.monthKey, default: []].append(workout)
-            let section = months.firstIndex(where: { $0 == workout.monthKey })!
+            logs[workout.monthKey, default: []].insert(workout, at: 0)
+            let section = monthYears.firstIndex(where: { $0 == workout.monthKey })!
             tableView.insertSections(IndexSet(integer: section), with: .automatic)
         }
     }
@@ -220,28 +238,15 @@ extension LogViewController: StartWorkoutViewControllerDelegate {
 
 extension LogViewController: LogWorkoutViewControllerDelegate {
     func logWorkoutViewController(_ viewController: LogWorkoutViewController, didSaveWorkout workout: Workout) {
-        // TODO: Don't know why I can't find id
-        print(logs[workout.monthKey]?.count)
-        print("first object id: \(logs[workout.monthKey]!.first!.objectID)")
-        print("workout id: \(workout.objectID)")
-        
-        for (index, log) in logs[workout.monthKey]!.enumerated() {
-            print(index, log.objectID)
+        guard let section = monthYears.firstIndex(where: { $0 == workout.monthKey }),
+           let row = logs[workout.monthKey]?.firstIndex(where: { $0.objectID == workout.objectID })
+        else {
+            return
         }
-        print(logs[workout.monthKey]?.firstIndex(where: { $0 == workout.objectID }))
         
-        if let section = months.firstIndex(where: { $0 == workout.monthKey }),
-           let row = logs[workout.monthKey]?.firstIndex(where: { $0 == workout.objectID }) {
-            print("reload section: \(section)")
-            tableView.reloadRows(at: [IndexPath(row: row, section: section)], with: .automatic)
-        }
+        logs[workout.monthKey]?[row] = workout
+        tableView.reloadRows(at: [IndexPath(row: row, section: section)], with: .automatic)
     }
-}
-
-var monthYearDateFormatter: DateFormatter {
-    let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "MMMM yyyy"
-    return dateFormatter
 }
 
 func getMonthYearString(from date: Date) -> String {

@@ -135,16 +135,18 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     
     func update(exerciseSet: ExerciseSet) {
         updateSetButton(exerciseSet: exerciseSet)
+        
         weightTextField.text = exerciseSet.weight
         repsTextField.text = exerciseSet.reps
-        previousLabel.text = "-"
         
         if let previousSet = exerciseSet.previousSet {
             weightTextField.placeholder = previousSet.weight
             repsTextField.placeholder = previousSet.reps
+            previousLabel.text = previousSet.weight
         } else {
             weightTextField.placeholder = "135"
             repsTextField.placeholder = "5"
+            previousLabel.text = "-"
         }
     }
     

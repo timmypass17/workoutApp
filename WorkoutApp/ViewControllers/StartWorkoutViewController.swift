@@ -13,7 +13,8 @@ protocol StartWorkoutViewControllerDelegate: AnyObject {
 
 class StartWorkoutViewController: WorkoutDetailViewController {
 
-    weak var delegate: StartWorkoutViewControllerDelegate?
+    weak var delegate: StartWorkoutViewControllerDelegate?          // log handles
+    weak var progressDelegate: StartWorkoutViewControllerDelegate?  // progress handles
 
     init(template: Template) {
         super.init(nibName: nil, bundle: nil)
@@ -73,6 +74,18 @@ class StartWorkoutViewController: WorkoutDetailViewController {
     }
     
     func didTapConfirmButton() {
+        for exercise in workout.getExercises() {
+            for set in exercise.getExerciseSets() {
+                if set.weight.isEmpty {
+                    set.weight = "0"
+                }
+                if set.reps.isEmpty {
+                    set.reps = "0"
+                }
+                set.isComplete = true
+            }
+        }
+        
         do {
             try childContext.save()
         } catch {
@@ -82,7 +95,7 @@ class StartWorkoutViewController: WorkoutDetailViewController {
         CoreDataStack.shared.saveContext()
 
         delegate?.startWorkoutViewController(self, didFinishWorkout: workout)
-        progressDelegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
+        progressDelegate?.startWorkoutViewController(self, didFinishWorkout: workout)
         Settings.shared.logBadgeValue += 1
         NotificationCenter.default.post(name: Settings.logBadgeValueChangedNotification, object: nil)
         navigationController?.popViewController(animated: true)

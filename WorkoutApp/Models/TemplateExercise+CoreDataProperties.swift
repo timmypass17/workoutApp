@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-
+// TODO: Replace core data fields as ints, so that we can get max easily. Check stackoverflow for ref
 extension TemplateExercise {
 
     @nonobjc public class func fetchRequest() -> NSFetchRequest<TemplateExercise> {

@@ -10,18 +10,53 @@ import Charts
 
 struct ProgressViewCell: View {
     static let reuseIdentifier = "ProgressCell"
-    @ObservedObject var data: ProgressData // automatically recreates views if data changes
+    @ObservedObject var recentData: ExerciseData
+//    @ObservedObject var data: ProgressData // automatically recreates views if data changes
     
     var body: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 4) {
-                ExerciseTitleView(title: data.name)
-                HighestWeightView(sets: data.sets)
+                HStack {
+                    Image(systemName: "dumbbell.fill")
+                        .foregroundColor(.accentColor)
+                    Text(recentData.name)
+                }
+                .font(.system(.headline, weight: .bold))
+                
+                VStack(alignment: .leading) {
+                    Text("Best: \(formatWeight(recentData.bestLift)) \(Settings.shared.weightUnit.rawValue)")
+                        .font(.subheadline)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(.regularMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                    
+                    HStack(alignment: .firstTextBaseline) {
+                        Text("Latest: \(formatWeight(recentData.latestLift)) \(Settings.shared.weightUnit.rawValue)")
+                            .foregroundColor(.secondary)
+                            .font(.caption)
+                    }
+                    
+                    Text("Updated: \(Date().formatted(date: .abbreviated, time: .omitted))")
+                        .foregroundColor(.secondary)
+                        .font(.caption2)
+
+                }
             }
             
             Spacer(minLength: 20)
-            ExerciseChartView(sets: data.sets)
-                .padding(8)
+            
+            Chart(Array(recentData.weights.enumerated()), id: \.0) { index, weight in
+                LineMark(
+                    x: .value("Position", index),
+                    y: .value("Weight", weight)
+                )
+                .symbol(Circle().strokeBorder(lineWidth: 2))
+                .symbolSize(CGSize(width: 6, height: 6))
+            }
+            .chartXAxis(.hidden)
+            .chartYScale(domain: .automatic(includesZero: false))
+            .padding(.vertical, 8)
         }
         .frame(height: 90)
     }
@@ -93,37 +128,14 @@ struct HighestWeightView: View {
 }
 
 struct ExerciseChartView: View {
-    var sets: [ExerciseSet]
-    
-    var latestSet: [ExerciseSet] {
-        // Get atleast 7 best set in each day
-        var res: [ExerciseSet] = []
-        var setsByDate: [Date: [ExerciseSet]] = [:]
-        for set in sets {
-            guard let createdAt = set.exercise?.workout?.createdAt else { continue }
-            setsByDate[createdAt, default: []].append(set)
-        }
-        let sortedDates = setsByDate.keys.sorted()
-        for date in sortedDates {
-            if res.count >= 7 {
-                break
-            }
-            guard let bestSet = setsByDate[date]?.max(by: { set, otherSet in
-                guard let weight = Float(set.weight),
-                      let otherWeight = Float(otherSet.weight) else { return false }
-                return weight < otherWeight
-            }) else { continue }
-            
-            res.append(bestSet)
-        }
-        return res
-    }
+    var weights: [Double]
     
     var body: some View {
-        // Show only 7 recent exercises (graph looks funny with 100s of plots)
-        Chart(latestSet) { set in
-            LineMark(x: .value("Position", latestSet.firstIndex { $0 == set } ?? 0),
-                     y: .value("Weight", Float(set.weight ) ?? 0.0))
+        Chart(Array(weights.enumerated()), id: \.0) { index, weight in
+            LineMark(
+                x: .value("Position", index),
+                y: .value("Weight", weight)
+            )
             .symbol(Circle().strokeBorder(lineWidth: 2))
             .symbolSize(CGSize(width: 6, height: 6))
         }

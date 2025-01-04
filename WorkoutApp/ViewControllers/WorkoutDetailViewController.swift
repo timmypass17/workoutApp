@@ -23,9 +23,7 @@ class WorkoutDetailViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
-        
-    weak var progressDelegate: WorkoutDetailTableViewControllerDelegate?
-        
+            
     var workout: Workout!
     let childContext = CoreDataStack.shared.newBackgroundContext()
     
