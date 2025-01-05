@@ -21,7 +21,7 @@ class CreateWorkoutViewController: UIViewController {
     }()
     
     let template: Template
-    let childContext: NSManagedObjectContext = CoreDataStack.shared.newBackgroundContext()
+    let childContext: NSManagedObjectContext = CoreDataStack.shared.newChildContext()
     weak var delegate: CreateWorkoutViewControllerDelegate?
     
     enum Section: Int, CaseIterable {

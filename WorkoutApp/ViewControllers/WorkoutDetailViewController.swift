@@ -17,7 +17,7 @@ class WorkoutDetailViewController: UIViewController {
     }()
             
     var workout: Workout!
-    let childContext = CoreDataStack.shared.newBackgroundContext()
+    let childContext = CoreDataStack.shared.newChildContext()
     
     override func viewDidLoad() {
         super.viewDidLoad()

@@ -46,7 +46,7 @@ struct ProgressViewCell: View {
             
             Spacer(minLength: 20)
             
-            Chart(Array(recentData.weights.enumerated()), id: \.0) { index, weight in
+            Chart(Array(recentData.exerciseSets.map { $0.weight }.enumerated()), id: \.0) { index, weight in
                 LineMark(
                     x: .value("Position", index),
                     y: .value("Weight", weight)

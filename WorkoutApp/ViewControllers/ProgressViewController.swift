@@ -32,18 +32,13 @@ class ProgressViewController: UIViewController {
     
     var exerciseData: [ExerciseData] = []
     let workoutService: WorkoutService
+//    weak var delegate: LogViewControllerDelegate?
 //    var data: [ProgressData]
     
     init(workoutService: WorkoutService) {
         self.workoutService = workoutService
-        let exerciseNames: [String] = workoutService.fetchUniqueExerciseNames()
-        for exerciseName in exerciseNames {
-            let weights: [Double] = workoutService.fetchWeights(exerciseName: exerciseName)
-            let bestLift: Double = workoutService.fetchMaxWeight(exerciseName: exerciseName)
-            exerciseData.append(ExerciseData(name: exerciseName, weights: weights, bestLift: bestLift, lastUpdated: .now, latestLift: weights.last ?? 0))
-        }
-        contentUnavailableView.isHidden = !exerciseData.isEmpty
         super.init(nibName: nil, bundle: nil)
+        updateData()
     }
     
     required init?(coder: NSCoder) {
@@ -72,33 +67,26 @@ class ProgressViewController: UIViewController {
             contentUnavailableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
         
-        NotificationCenter.default.addObserver(self,
-            selector: #selector(updateUI),
-            name: WeightType.valueChangedNotification, object: nil)
+//        NotificationCenter.default.addObserver(self,
+//            selector: #selector(updateUI),
+//            name: WeightType.valueChangedNotification, object: nil)
         
         
-        updateUI()
+//        updateUI()
     }
     
-    @objc func updateUI() {
-//        data = workoutService.fetchProgressData()
-//        switch Settings.shared.sortingPreference {
-//        case .alphabetically:
-//            data.sort { $0.name < $1.name }
-//        case .weight:
-//            break
-////            data.sort { data1, data2 in
-////                let weight1 = Float(data1.sets.max { Float($0.weight)! < Float($1.weight)! }!.weight)!
-////                let weight2 = Float(data2.sets.max { Float($0.weight)! < Float($1.weight)! }!.weight)!
-////                return weight1 > weight2
-////            }
-//        case .recent:
-//            data.sort { $0.sets.first?.exercise?.workout?.createdAt ?? Date() >  $1.sets.first?.exercise?.workout?.createdAt ?? Date() }
-//        }
-//        tableView.reloadData()
-////        tableView.backgroundView = EmptyLabel(text: "Your workout data will appear here")
-////        tableView.backgroundView?.isHidden = data.isEmpty ? false : true
-//        contentUnavailableView.isHidden = !data.isEmpty
+    func updateData() {
+        // Bug: Don't know why first save doesn't work
+        exerciseData.removeAll()
+        
+        let exerciseNames: [String] = workoutService.fetchUniqueExerciseNames()
+        for exerciseName in exerciseNames {
+            let exerciseSets: [ExerciseSet] = workoutService.fetchExerciseSets(exerciseName: exerciseName)
+            let bestLift: Double = workoutService.fetchMaxWeight(exerciseName: exerciseName)
+            exerciseData.append(ExerciseData(name: exerciseName, exerciseSets: exerciseSets, bestLift: bestLift, lastUpdated: .now, latestLift: exerciseSets.last?.weight ?? 0))
+        }
+        contentUnavailableView.isHidden = !exerciseData.isEmpty
+        tableView.reloadData()  // reload data not necessary for swiftui cell but sometimes doesnt work?
     }
     
 }
@@ -164,58 +152,54 @@ extension ProgressViewController: UITableViewDelegate {
 }
 
 extension ProgressViewController: LogViewControllerDelegate {
+    // TODO: Delegate function not being called sometime?
     func logViewController(_ viewController: LogViewController, didDeleteLog workout: Workout) {
-        exerciseData.removeAll()
-        
-        let exerciseNames: [String] = workoutService.fetchUniqueExerciseNames()
-        for exerciseName in exerciseNames {
-            let weights: [Double] = workoutService.fetchWeights(exerciseName: exerciseName)
-            let bestLift: Double = workoutService.fetchMaxWeight(exerciseName: exerciseName)
-            exerciseData.append(ExerciseData(name: exerciseName, weights: weights, bestLift: bestLift, lastUpdated: .now, latestLift: weights.last ?? 0))
-        }
-        contentUnavailableView.isHidden = !exerciseData.isEmpty
-        tableView.reloadData()  // reload data not necessary for swiftui cell but sometimes doesnt work? just use it
+        print("[ProgressVC] did delete")
+        updateData()
+//        // Bug: Don't know why first save doesn't work
+//        exerciseData.removeAll()
+//        
+//        let exerciseNames: [String] = workoutService.fetchUniqueExerciseNames()
+//        for exerciseName in exerciseNames {
+//            let exerciseSets: [ExerciseSet] = workoutService.fetchExerciseSets(exerciseName: exerciseName)
+//            let bestLift: Double = workoutService.fetchMaxWeight(exerciseName: exerciseName)
+//            exerciseData.append(ExerciseData(name: exerciseName, exerciseSets: exerciseSets, bestLift: bestLift, lastUpdated: .now, latestLift: exerciseSets.last?.weight ?? 0))
+//        }
+//        contentUnavailableView.isHidden = !exerciseData.isEmpty
+//        tableView.reloadData()  // reload data not necessary for swiftui cell but sometimes doesnt work?
     }
     
     func logViewController(_ viewController: LogViewController, didSaveLog log: Workout) {
-        // Bug: Don't know why first save doesn't work
-        exerciseData.removeAll()
-        
-        let exerciseNames: [String] = workoutService.fetchUniqueExerciseNames()
-        for exerciseName in exerciseNames {
-            let weights: [Double] = workoutService.fetchWeights(exerciseName: exerciseName)
-            let bestLift: Double = workoutService.fetchMaxWeight(exerciseName: exerciseName)
-            exerciseData.append(ExerciseData(name: exerciseName, weights: weights, bestLift: bestLift, lastUpdated: .now, latestLift: weights.last ?? 0))
-        }
-        contentUnavailableView.isHidden = !exerciseData.isEmpty
-        tableView.reloadData()  // reload data not necessary for swiftui cell but sometimes doesnt work?
+        print("[ProgressVC] did save")
+        updateData()
     }
 }
 
 extension ProgressViewController: StartWorkoutViewControllerDelegate {
     func startWorkoutViewController(_ viewController: StartWorkoutViewController, didFinishWorkout workout: Workout) {
-                
-        for exercise in workout.getExercises() {
-            if let row = exerciseData.firstIndex(where: { $0.name == exercise.name }) {
-                print("Updating existing row")
-                // Update existing row
-                exerciseData[row].weights.append(exercise.maxWeight ?? 0)
-                if exerciseData[row].weights.count > 7 {
-                    exerciseData[row].weights.remove(at: 0)
-                }
-                exerciseData[row].bestLift = max(exerciseData[row].bestLift, exercise.maxWeight ?? 0)
-                exerciseData[row].lastUpdated = workout.createdAt
-            } else {
-                // Init new row
-                print("Inserting new row")
-                let weights: [Double] = [exercise.maxWeight ?? 0]
-                let bestLift: Double = exercise.maxWeight ?? 0
-                exerciseData.append(ExerciseData(name: exercise.name, weights: weights, bestLift: bestLift, lastUpdated: .now, latestLift: exercise.maxWeight ?? 0))
-            }
-        }
-        
-        contentUnavailableView.isHidden = !exerciseData.isEmpty
-        tableView.reloadData()
+        updateData()
+//
+//        for exercise in workout.getExercises() {
+//            if let row = exerciseData.firstIndex(where: { $0.name == exercise.name }) {
+//                print("Updating existing row")
+//                // Update existing row
+//                exerciseData[row].weights.append(exercise.maxWeight ?? 0)
+//                if exerciseData[row].weights.count > 7 {
+//                    exerciseData[row].weights.remove(at: 0)
+//                }
+//                exerciseData[row].bestLift = max(exerciseData[row].bestLift, exercise.maxWeight ?? 0)
+//                exerciseData[row].lastUpdated = workout.createdAt
+//            } else {
+//                // Init new row
+//                print("Inserting new row")
+//                let weights: [Double] = [exercise.maxWeight ?? 0]
+//                let bestLift: Double = exercise.maxWeight ?? 0
+//                exerciseData.append(ExerciseData(name: exercise.name, weights: weights, bestLift: bestLift, lastUpdated: .now, latestLift: exercise.maxWeight ?? 0))
+//            }
+//        }
+//        
+//        contentUnavailableView.isHidden = !exerciseData.isEmpty
+//        tableView.reloadData()
     }
 }
 
@@ -236,20 +220,37 @@ class ProgressData: ObservableObject {
 
 class ExerciseData: ObservableObject {
     @Published var name: String
-    @Published var weights: [Double]
+    @Published var exerciseSets: [ExerciseSet]
     @Published var bestLift: Double
     @Published var lastUpdated: Date
     @Published var latestLift: Double
     
-//    var latestLift: Double {
-//        weights.last ?? 0
-//    }
-    
-    init(name: String, weights: [Double], bestLift: Double, lastUpdated: Date, latestLift: Double) {
+    init(name: String, exerciseSets: [ExerciseSet], bestLift: Double, lastUpdated: Date, latestLift: Double) {
         self.name = name
-        self.weights = weights
+        self.exerciseSets = exerciseSets
         self.bestLift = bestLift
         self.lastUpdated = lastUpdated
         self.latestLift = latestLift
     }
 }
+
+
+//class ExerciseData: ObservableObject {
+//    @Published var name: String
+//    @Published var weights: [Double]
+//    @Published var bestLift: Double
+//    @Published var lastUpdated: Date
+//    @Published var latestLift: Double
+//    
+////    var latestLift: Double {
+////        weights.last ?? 0
+////    }
+//    
+//    init(name: String, weights: [Double], bestLift: Double, lastUpdated: Date, latestLift: Double) {
+//        self.name = name
+//        self.weights = weights
+//        self.bestLift = bestLift
+//        self.lastUpdated = lastUpdated
+//        self.latestLift = latestLift
+//    }
+//}

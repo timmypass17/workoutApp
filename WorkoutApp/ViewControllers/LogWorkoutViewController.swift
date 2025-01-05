@@ -13,7 +13,7 @@ protocol LogWorkoutViewControllerDelegate: AnyObject {
 
 class LogWorkoutViewController: WorkoutDetailViewController {
 
-    weak var delegate: LogWorkoutViewControllerDelegate?
+    weak var delegate: LogWorkoutViewControllerDelegate?    // log handles
 
     init(log: Workout) {
         super.init(nibName: nil, bundle: nil)
@@ -21,7 +21,6 @@ class LogWorkoutViewController: WorkoutDetailViewController {
         // - Allows you to work with object in child context, and discard any changes if needed or save changes to main context
         let objectInNewContext = childContext.object(with: log.objectID) as! Workout
         self.workout = objectInNewContext
-        workout.printPrettyString()
     }
     
     @MainActor required init?(coder: NSCoder) {
@@ -46,11 +45,14 @@ class LogWorkoutViewController: WorkoutDetailViewController {
 
             CoreDataStack.shared.saveContext()
             
-            workout.printPrettyString()
+            print("child context: \(childContext)")
+            print("main context: \(CoreDataStack.shared.mainContext)")
+            print("workout context: \(workout.managedObjectContext)")
+            
+//            workout.printPrettyString()
             self.delegate?.logWorkoutViewController(self, didSaveWorkout: workout)
             
             // TODO: Update progress, on delete log update progress
-//            progressDelegate?.workoutDetailTableViewController(self, didFinishWorkout: workout)
             navigationController?.popViewController(animated: true)
         }
     }

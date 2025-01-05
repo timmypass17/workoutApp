@@ -28,6 +28,9 @@ class CoreDataStack {
     
     // Main context for use on the main thread
     lazy var mainContext: NSManagedObjectContext = {
+        // To ensure that changes saved in a background or child context are automatically reflected in the main contex
+        // - This reduces the need for manually merging changes after saving the child or background context.
+        //  context.automaticallyMergesChangesFromParent = true
         return self.persistentContainer.viewContext
     }()
     
@@ -44,8 +47,14 @@ class CoreDataStack {
         }
     }
     
-    // Background context for heavy operations
-    func newBackgroundContext() -> NSManagedObjectContext {
-        return persistentContainer.newBackgroundContext()
+    // work on temporary changes in isolation and commit them to the parent
+    func newChildContext() -> NSManagedObjectContext {
+        let childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        childContext.parent = mainContext
+        return childContext
+        
+        // this doesn't work
+//        return persistentContainer.newBackgroundContext()
     }
+    
 }

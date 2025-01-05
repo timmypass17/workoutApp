@@ -105,26 +105,26 @@ class WorkoutService {
     }
     
     // fetching exercise sets makes set.previousSet inconsistent?
-//    func fetchExerciseSets(exerciseName: String, limit: Int? = nil) -> [ExerciseSet] {
-//        let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
-//        let predicate = NSPredicate(format: "name_ == %@", exerciseName)
-//        let sortDescriptor = NSSortDescriptor(key: "workout.createdAt_", ascending: true)
-//        request.predicate = predicate
-//        request.sortDescriptors = [sortDescriptor]
-////        request.includesPendingChanges = false
-//        
-//        if let limit {
-//            request.fetchLimit = limit
-//        }
-//        
-//        do {
-//            let exercises: [Exercise] = try context.fetch(request)
-//            return exercises.compactMap { $0.bestSet }
-//        } catch {
-//            print("Failed to fetch unique exercise names: \(error.localizedDescription)")
-//            return []
-//        }
-//    }
+    func fetchExerciseSets(exerciseName: String, limit: Int? = nil) -> [ExerciseSet] {
+        let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
+        let predicate = NSPredicate(format: "name_ == %@", exerciseName)
+        let sortDescriptor = NSSortDescriptor(key: "workout.createdAt_", ascending: true)
+        request.predicate = predicate
+        request.sortDescriptors = [sortDescriptor]
+//        request.includesPendingChanges = false
+        
+        if let limit {
+            request.fetchLimit = limit
+        }
+        
+        do {
+            let exercises: [Exercise] = try context.fetch(request)
+            return exercises.compactMap { $0.bestSet }
+        } catch {
+            print("Failed to fetch unique exercise names: \(error.localizedDescription)")
+            return []
+        }
+    }
     
     func fetchMaxWeight(exerciseName: String) -> Double {
         let request = NSFetchRequest<NSDictionary>(entityName: "ExerciseSet")

@@ -38,7 +38,6 @@ class LogViewController: UIViewController {
     }
 
     let workoutService: WorkoutService
-    let context = CoreDataStack.shared.mainContext
     weak var delegate: LogViewControllerDelegate?
     
     init(workoutService: WorkoutService) {
@@ -102,6 +101,7 @@ class LogViewController: UIViewController {
         
         contentUnavailableView.isHidden = !logs.isEmpty
         
+        
 //        pastWorkouts.removeAll()
 //        let workouts: [Workout] = workoutService.fetchLoggedWorkouts()
 //        for workout in workouts {
@@ -162,13 +162,13 @@ extension LogViewController: UITableViewDelegate {
         if (editingStyle == .delete) {
             let monthYear = monthYears[indexPath.section]
             let logToRemove = logs[monthYear, default: []].remove(at: indexPath.row)
-
+            
             // Can't delete objects in different context.
-            let objectInTargetContext = context.object(with: logToRemove.objectID)
-            context.delete(objectInTargetContext)
+            let objectInTargetContext = CoreDataStack.shared.mainContext.object(with: logToRemove.objectID)
+            CoreDataStack.shared.mainContext.delete(objectInTargetContext)
 
             do {
-                try context.save()
+                try CoreDataStack.shared.mainContext.save()
                 print("Deleted log successfully")
             } catch {
                 print("Failed to delete workout: \(error)")
@@ -186,6 +186,8 @@ extension LogViewController: UITableViewDelegate {
                 // Reloadds section header
                 tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
             }
+            
+            contentUnavailableView.isHidden = !logs.isEmpty
         }
     }
     
@@ -199,6 +201,9 @@ extension LogViewController: UITableViewDelegate {
         guard let log = logs[month]?[indexPath.row] else { return }
         let logWorkoutViewController = LogWorkoutViewController(log: log)
         logWorkoutViewController.delegate = self
+        
+//        let progressTableViewController = (tabBarController?.viewControllers?[2] as? UINavigationController)?.viewControllers[0] as! ProgressViewController
+//        logWorkoutViewController.progressDelegate = progressTableViewController
         navigationController?.pushViewController(logWorkoutViewController, animated: true)
     }
     
@@ -206,31 +211,48 @@ extension LogViewController: UITableViewDelegate {
 
 extension LogViewController: StartWorkoutViewControllerDelegate {
     func startWorkoutViewController(_ viewController: StartWorkoutViewController, didFinishWorkout workout: Workout) {
-        if let section = monthYears.firstIndex(where: { $0 == workout.monthKey }) {
+        // important: get workout in main context
+        let mainContextWorkout = CoreDataStack.shared.mainContext.object(with: workout.objectID) as! Workout
+        if let section = monthYears.firstIndex(where: { $0 == mainContextWorkout.monthKey }) {
             // If section exists, reload it
-            logs[workout.monthKey, default: []].insert(workout, at: 0)
+            logs[mainContextWorkout.monthKey, default: []].insert(mainContextWorkout, at: 0)
             tableView.reloadSections(IndexSet(integer: section), with: .automatic)
         } else {
             // Else, insert section
-            logs[workout.monthKey, default: []].insert(workout, at: 0)
-            let section = monthYears.firstIndex(where: { $0 == workout.monthKey })!
+            logs[mainContextWorkout.monthKey, default: []].insert(mainContextWorkout, at: 0)
+            let section = monthYears.firstIndex(where: { $0 == mainContextWorkout.monthKey })!
             tableView.insertSections(IndexSet(integer: section), with: .automatic)
         }
+        contentUnavailableView.isHidden = !logs.isEmpty
     }
 }
 
 
 extension LogViewController: LogWorkoutViewControllerDelegate {
     func logWorkoutViewController(_ viewController: LogWorkoutViewController, didSaveWorkout workout: Workout) {
-        guard let section = monthYears.firstIndex(where: { $0 == workout.monthKey }),
-           let row = logs[workout.monthKey]?.firstIndex(where: { $0.objectID == workout.objectID })
+        // important: get log in main context (log that was save still has child context)
+        let mainContextWorkout = CoreDataStack.shared.mainContext.object(with: workout.objectID) as! Workout
+        print("new workout context: \(mainContextWorkout.managedObjectContext)")
+        
+        guard let section = monthYears.firstIndex(where: { $0 == mainContextWorkout.monthKey }),
+           let row = logs[workout.monthKey]?.firstIndex(where: { $0.objectID == mainContextWorkout.objectID })
         else {
+            print("guard")
+            print(monthYears.count)
+            for log in logs[workout.monthKey]! {
+                print(log.id)
+            }
+            print("workout object id: \(mainContextWorkout.objectID)")
             return
         }
         
-        logs[workout.monthKey]?[row] = workout
+        print("log object id: \(logs[workout.monthKey]!.first!.objectID)")
+        print("workout object id: \(mainContextWorkout.objectID)")
+
+        logs[workout.monthKey]?[row] = mainContextWorkout
         tableView.reloadRows(at: [IndexPath(row: row, section: section)], with: .automatic)
-        delegate?.logViewController(self, didSaveLog: workout)
+        delegate?.logViewController(self, didSaveLog: mainContextWorkout)  // progress
+
     }
 }
 
