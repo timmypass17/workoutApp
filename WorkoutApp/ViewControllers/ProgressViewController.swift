@@ -32,13 +32,11 @@ class ProgressViewController: UIViewController {
     
     var exerciseData: [ExerciseData] = []
     let workoutService: WorkoutService
-//    weak var delegate: LogViewControllerDelegate?
-//    var data: [ProgressData]
-    
+
     init(workoutService: WorkoutService) {
         self.workoutService = workoutService
         super.init(nibName: nil, bundle: nil)
-        updateData()
+//        updateData()
     }
     
     required init?(coder: NSCoder) {
@@ -52,7 +50,7 @@ class ProgressViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: ProgressViewCell.reuseIdentifier)
-//        setupSortMenu()
+        setupSortMenu()
         
         view.addSubview(tableView)
         view.addSubview(contentUnavailableView)
@@ -72,11 +70,17 @@ class ProgressViewController: UIViewController {
 //            name: WeightType.valueChangedNotification, object: nil)
         
         
-//        updateUI()
+        updateData()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if let selectedIndexPath = tableView.indexPathForSelectedRow {
+            tableView.deselectRow(at: selectedIndexPath, animated: true)
+        }
     }
     
     func updateData() {
-        // Bug: Don't know why first save doesn't work
         exerciseData.removeAll()
         
         let exerciseNames: [String] = workoutService.fetchUniqueExerciseNames()
@@ -85,10 +89,45 @@ class ProgressViewController: UIViewController {
             let bestLift: Double = workoutService.fetchMaxWeight(exerciseName: exerciseName)
             exerciseData.append(ExerciseData(name: exerciseName, exerciseSets: exerciseSets, bestLift: bestLift, lastUpdated: .now, latestLift: exerciseSets.last?.weight ?? 0))
         }
+        
+        switch Settings.shared.sortingPreference {
+        case .alphabetically:
+            self.exerciseData.sort { $0.name < $1.name }
+        case .weight:
+            self.exerciseData.sort { $0.bestLift > $1.bestLift }
+        case .recent:
+            self.exerciseData.sort { $0.lastUpdated > $1.lastUpdated }
+        }
+        
         contentUnavailableView.isHidden = !exerciseData.isEmpty
-        tableView.reloadData()  // reload data not necessary for swiftui cell but sometimes doesnt work?
+        tableView.reloadData()
     }
     
+    
+    func setupSortMenu() {
+        let menuItems: [UIAction] = [
+                UIAction(title: "Alphabetical (A-Z)", image: UIImage(systemName: "a.square.fill")) { _ in
+                    print("alpha")
+                    self.exerciseData.sort { $0.name < $1.name }
+                    self.tableView.reloadData()
+                    Settings.shared.sortingPreference = .alphabetically
+                },
+                UIAction(title: "Weight", image: UIImage(systemName: "scalemass.fill")) { _ in
+                    self.exerciseData.sort { $0.bestLift > $1.bestLift }
+                    self.tableView.reloadData()
+                    Settings.shared.sortingPreference = .weight
+                },
+                UIAction(title: "Recently Updated", image: UIImage(systemName: "clock")) { _ in
+                    self.exerciseData.sort { $0.lastUpdated > $1.lastUpdated }
+                    self.tableView.reloadData()
+                    Settings.shared.sortingPreference = .recent
+                }
+        ]
+
+        let sortMenu = UIMenu(title: "Sort By", image: nil, identifier: nil, options: [], children: menuItems)
+
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "line.3.horizontal.decrease"), menu: sortMenu)
+    }
 }
 
 extension ProgressViewController: UITableViewDataSource {
@@ -105,7 +144,7 @@ extension ProgressViewController: UITableViewDataSource {
         let data = exerciseData[indexPath.row]
         
         cell.contentConfiguration = UIHostingConfiguration {
-            ProgressViewCell(recentData: data) // SwiftUI cell
+            ProgressViewCell(recentData: data)
         }
         
         return cell
@@ -115,62 +154,25 @@ extension ProgressViewController: UITableViewDataSource {
 extension ProgressViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return !exerciseData.isEmpty ? "Exercises" : nil
+        return exerciseData.isEmpty ? nil : "Exercises"
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        let data = exerciseData[indexPath.row]
-//        let progressDetailView = ProgressDetailView(data: data)
-//        let hostingController = UIHostingController(rootView: progressDetailView) // uihostingcontroller is a view controller (that contains swiftui view)
-//        hostingController.navigationItem.title = data.name // set title here, wierd delay if setting in swiftui
-//        navigationController?.pushViewController(hostingController, animated: true)
-//        
-//        let progressData = data[indexPath.row]
-//        // Filter data by best set per day
-//        var res: [ExerciseSet] = []
-//        var setsByDate: [Date: [ExerciseSet]] = [:]
-//        for set in progressData.sets {
-//            guard let createdAt = set.exercise?.workout?.createdAt else { continue }
-//            setsByDate[createdAt, default: []].append(set)
-//        }
-//        let sortedDates = setsByDate.keys.sorted(by: >)  // descending
-//        for date in sortedDates {
-//            guard let bestSet = setsByDate[date]?.max(by: { set, otherSet in
-//                guard let weight = Float(set.weight),
-//                      let otherWeight = Float(otherSet.weight) else { return false }
-//                return weight < otherWeight
-//            }) else { continue }
-//            
-//            res.append(bestSet)
-//        }
-//        let filteredData = ProgressData(name: progressData.name, sets: res)
-//        let progressDetailView = ProgressDetailView(data: filteredData) // swiftui view
-//        let hostingController = UIHostingController(rootView: progressDetailView) // uihostingcontroller is a view controller (that contains swiftui view)
-//        hostingController.navigationItem.title = progressData.name // set title here, wierd delay if setting in swiftui
-//        navigationController?.pushViewController(hostingController, animated: true)
+        let data = exerciseData[indexPath.row]
+        data.exerciseSets = workoutService.fetchExerciseSets(exerciseName: data.name, ascending: false)
+        let progressDetailView = ProgressDetailView(data: data)
+        let hostingController = UIHostingController(rootView: progressDetailView)
+        hostingController.navigationItem.title = data.name
+        navigationController?.pushViewController(hostingController, animated: true)
     }
 }
 
 extension ProgressViewController: LogViewControllerDelegate {
-    // TODO: Delegate function not being called sometime?
     func logViewController(_ viewController: LogViewController, didDeleteLog workout: Workout) {
-        print("[ProgressVC] did delete")
         updateData()
-//        // Bug: Don't know why first save doesn't work
-//        exerciseData.removeAll()
-//        
-//        let exerciseNames: [String] = workoutService.fetchUniqueExerciseNames()
-//        for exerciseName in exerciseNames {
-//            let exerciseSets: [ExerciseSet] = workoutService.fetchExerciseSets(exerciseName: exerciseName)
-//            let bestLift: Double = workoutService.fetchMaxWeight(exerciseName: exerciseName)
-//            exerciseData.append(ExerciseData(name: exerciseName, exerciseSets: exerciseSets, bestLift: bestLift, lastUpdated: .now, latestLift: exerciseSets.last?.weight ?? 0))
-//        }
-//        contentUnavailableView.isHidden = !exerciseData.isEmpty
-//        tableView.reloadData()  // reload data not necessary for swiftui cell but sometimes doesnt work?
     }
     
     func logViewController(_ viewController: LogViewController, didSaveLog log: Workout) {
-        print("[ProgressVC] did save")
         updateData()
     }
 }
@@ -178,79 +180,5 @@ extension ProgressViewController: LogViewControllerDelegate {
 extension ProgressViewController: StartWorkoutViewControllerDelegate {
     func startWorkoutViewController(_ viewController: StartWorkoutViewController, didFinishWorkout workout: Workout) {
         updateData()
-//
-//        for exercise in workout.getExercises() {
-//            if let row = exerciseData.firstIndex(where: { $0.name == exercise.name }) {
-//                print("Updating existing row")
-//                // Update existing row
-//                exerciseData[row].weights.append(exercise.maxWeight ?? 0)
-//                if exerciseData[row].weights.count > 7 {
-//                    exerciseData[row].weights.remove(at: 0)
-//                }
-//                exerciseData[row].bestLift = max(exerciseData[row].bestLift, exercise.maxWeight ?? 0)
-//                exerciseData[row].lastUpdated = workout.createdAt
-//            } else {
-//                // Init new row
-//                print("Inserting new row")
-//                let weights: [Double] = [exercise.maxWeight ?? 0]
-//                let bestLift: Double = exercise.maxWeight ?? 0
-//                exerciseData.append(ExerciseData(name: exercise.name, weights: weights, bestLift: bestLift, lastUpdated: .now, latestLift: exercise.maxWeight ?? 0))
-//            }
-//        }
-//        
-//        contentUnavailableView.isHidden = !exerciseData.isEmpty
-//        tableView.reloadData()
     }
 }
-
-
-enum ProgressError: Error {
-    case missingCreatedAt
-}
-
-class ProgressData: ObservableObject {
-    @Published var name: String
-    @Published var sets: [ExerciseSet]
-    
-    init(name: String, sets: [ExerciseSet]) {
-        self.name = name
-        self.sets = sets
-    }
-}
-
-class ExerciseData: ObservableObject {
-    @Published var name: String
-    @Published var exerciseSets: [ExerciseSet]
-    @Published var bestLift: Double
-    @Published var lastUpdated: Date
-    @Published var latestLift: Double
-    
-    init(name: String, exerciseSets: [ExerciseSet], bestLift: Double, lastUpdated: Date, latestLift: Double) {
-        self.name = name
-        self.exerciseSets = exerciseSets
-        self.bestLift = bestLift
-        self.lastUpdated = lastUpdated
-        self.latestLift = latestLift
-    }
-}
-
-
-//class ExerciseData: ObservableObject {
-//    @Published var name: String
-//    @Published var weights: [Double]
-//    @Published var bestLift: Double
-//    @Published var lastUpdated: Date
-//    @Published var latestLift: Double
-//    
-////    var latestLift: Double {
-////        weights.last ?? 0
-////    }
-//    
-//    init(name: String, weights: [Double], bestLift: Double, lastUpdated: Date, latestLift: Double) {
-//        self.name = name
-//        self.weights = weights
-//        self.bestLift = bestLift
-//        self.lastUpdated = lastUpdated
-//        self.latestLift = latestLift
-//    }
-//}

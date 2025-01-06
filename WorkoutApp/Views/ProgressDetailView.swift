@@ -10,27 +10,25 @@ import Charts
 
 
 struct ProgressDetailView: View {
-    @ObservedObject var data: ProgressData
-
-//    @ObservedObject var data: ProgressData
+    @ObservedObject var data: ExerciseData
     @State private var selectedFilter: SelectedFilter = .all
 
     var filteredData: [ExerciseSet] {
         switch selectedFilter {
         case .all:
-            return data.sets
+            return data.exerciseSets
         case .week:
             let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())!
-            return data.sets.filter { $0.exercise!.workout!.createdAt >= oneWeekAgo }
+            return data.exerciseSets.filter { $0.exercise!.workout!.createdAt >= oneWeekAgo }
         case .month:
             let oneMonthAgo = Calendar.current.date(byAdding: .month, value: -1, to: Date())!
-            return data.sets.filter { $0.exercise!.workout!.createdAt >= oneMonthAgo }
+            return data.exerciseSets.filter { $0.exercise!.workout!.createdAt >= oneMonthAgo }
         case .sixMonth:
             let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())!
-            return data.sets.filter { $0.exercise!.workout!.createdAt >= sixMonthsAgo }
+            return data.exerciseSets.filter { $0.exercise!.workout!.createdAt >= sixMonthsAgo }
         case .year:
             let oneYearAgo = Calendar.current.date(byAdding: .year, value: -1, to: Date())!
-            return data.sets.filter { $0.exercise!.workout!.createdAt >= oneYearAgo }
+            return data.exerciseSets.filter { $0.exercise!.workout!.createdAt >= oneYearAgo }
         }
     }
     
@@ -41,7 +39,7 @@ struct ProgressDetailView: View {
                 
                 ProgressHeaderView(filteredData: filteredData)
 
-//                ProgressChartView(filteredData: filteredData)
+                ProgressChartView(filteredData: filteredData)
                 
                 Divider()
                     .padding(.bottom, 12)
@@ -72,13 +70,12 @@ struct ProgressHeaderView: View {
     var filteredData: [ExerciseSet]
     
     var personalRecordWeight: String {
-        return filteredData
-            .max { Float($0.weight) ?? 0.0 < Float($1.weight) ?? 0.0 }?.weightString ?? "-"
+        return filteredData.max { $0.weight < $1.weight }?.weightString ?? "-"
     }
     
     var dateRangeString: String {
-        let startDate = filteredData.last?.exercise!.workout!.createdAt ?? Date()
-        let endDate = filteredData.first?.exercise!.workout!.createdAt ?? Date()
+        let startDate = filteredData.last?.exercise?.workout?.createdAt ?? Date()
+        let endDate = filteredData.first?.exercise?.workout?.createdAt ?? Date()
         return "\(formatDateMonthDayYear(startDate)) - \(formatDateMonthDayYear(endDate))"
     }
     
@@ -118,18 +115,19 @@ struct ProgressListView: View {
                 
                 Spacer()
                 
-                Text("\(filteredData.count) \(footerSecondaryText)".uppercased())
+                Text("\(filteredData.count) \(footerSecondaryText)")
             }
             .foregroundColor(.secondary)
             .font(.caption)
-            .padding(.bottom, 4)
+            .padding(.bottom, 6)
+            .padding(.horizontal, 12)
             
             LazyVStack(spacing: 0) {
                 ForEach(Array(filteredData.enumerated()), id: \.offset) { i, exercise in
                     ProgressDetailViewCell(filteredData: filteredData, i: i, exercise: exercise)
                 }
             }
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
+            .background(Color(UIColor.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 8))
         }
     }
 }
@@ -169,33 +167,34 @@ struct ProgressDetailViewCell: View {
                     Text("-")
                         .foregroundColor(.secondary)
                 } else {
-//                    let weight = Float(filteredData[i].weight)!
-//                    let previousWeight = Float(filteredData[i + 1].weight)!
-//                    let difference = weight - previousWeight
-//                    Group {
-//                        if difference > 0 {
-//                            // More weight
-//                            Text("+\(weightStringFormat(weight: difference)) \(weightUnit.rawValue)")
-//                                .foregroundStyle(.white)
-//                                .padding(.horizontal, 8)
-//                                .padding(.vertical, 2)
-//                                .background(Color(Settings.shared.accentColor.color), in: RoundedRectangle(cornerRadius: 4))
-//                        } else if difference < 0 {
-//                            // Less weight
-//                            Text("\(weightStringFormat(weight: difference)) \(weightUnit.rawValue)")
-//                                .foregroundStyle(colorScheme == .dark ? .white : .secondary)
-//                                .padding(.horizontal, 8)
-//                                .padding(.vertical, 2)
-//                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
-//                        } else {
-//                            // No weight gain
-//                            Text("+0 \(weightUnit.rawValue)")
-//                                .foregroundStyle(.white)
-//                                .padding(.horizontal, 8)
-//                                .padding(.vertical, 2)
-//                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
-//                        }
-//                    }
+                    let weight = filteredData[i].weight
+                    let previousWeight = filteredData[i + 1].weight
+                    let difference = weight - previousWeight
+                    
+                    Group {
+                        if difference > 0 {
+                            // More weight
+                            Text("+\(formatWeight(difference)) \(weightUnit.rawValue)")
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .background(Color(Settings.shared.accentColor.color), in: RoundedRectangle(cornerRadius: 4))
+                        } else if difference < 0 {
+                            // Less weight
+                            Text("\(formatWeight(difference)) \(weightUnit.rawValue)")
+                                .foregroundStyle(colorScheme == .dark ? .white : .secondary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
+                        } else {
+                            // No weight gain
+                            Text("+0 \(weightUnit.rawValue)")
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
+                        }
+                    }
                 }
             }
             .padding()
@@ -206,20 +205,23 @@ struct ProgressDetailViewCell: View {
     }
 }
 
-//struct ProgressChartView: View {
-//    var filteredData: [ExerciseSet]
-//
-//    var body: some View {
-//        Chart(filteredData) { exercise in
-//            LineMark(x: .value("Time", exercise.exercise?.workout?.createdAt ?? Date()),
-//                     y: .value("Beats Per Minute", Float(exercise.weight)!))
-//            .symbol(Circle().strokeBorder(lineWidth: 2))
-//            .symbolSize(CGSize(width: 6, height: 6))
-//        }
-//        .chartYScale(domain: .automatic(includesZero: false))
-//        .frame(height: 300)
-//    }
-//}
+struct ProgressChartView: View {
+    var filteredData: [ExerciseSet]
+
+    
+    var body: some View {
+        Chart(filteredData) { exercise in
+            LineMark(
+                x: .value("Date", exercise.exercise?.workout?.createdAt ?? Date(), unit: .weekOfMonth),
+                y: .value("Weight", exercise.weight)
+            )
+            .symbol(Circle().strokeBorder(lineWidth: 2))
+            .symbolSize(CGSize(width: 6, height: 6))
+        }
+        .chartYScale(domain: .automatic(includesZero: false))
+        .frame(height: 300)
+    }
+}
 
 
 enum SelectedFilter: String, CaseIterable, Identifiable {

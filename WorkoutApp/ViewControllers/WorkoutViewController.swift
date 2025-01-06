@@ -93,7 +93,7 @@ class WorkoutViewController: UIViewController {
     
     private func didTapAddButton() -> UIAction {
         return UIAction { _ in
-            let createWorkoutViewController = CreateWorkoutViewController()
+            let createWorkoutViewController = CreateTemplateViewController()
             createWorkoutViewController.delegate = self
             let vc = UINavigationController(rootViewController: createWorkoutViewController)
             self.present(vc, animated: true)
@@ -153,11 +153,6 @@ extension WorkoutViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//        let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutTableViewCell
-//        let workout = workoutPlans[indexPath.row]
-//        cell.update(with: workout)
-//        return cell
-        
         let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutTableViewCell
         let template = templates[indexPath.row]
         cell.update(template: template)
@@ -193,41 +188,41 @@ extension WorkoutViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-//        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
-//            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "square.and.pencil")) { [self] _ in
-//                let template = workoutPlans[indexPath.row]
-//                let workoutDetailTableViewController = WorkoutDetailTableViewController(.updateWorkout(template))
-//                workoutDetailTableViewController.delegate = self
-//                navigationController?.pushViewController(workoutDetailTableViewController, animated: true)
-//            }
-//
-//            let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-//                self.showDeleteAlert(indexPath: indexPath)
-//            }
-//            return UIMenu(title: "", children: [editAction, deleteAction])
-//        })
-        return nil
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
+            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "square.and.pencil")) { [self] _ in
+                let template = templates[indexPath.row]
+                let editTemplateViewController = EditTemplateViewController(template: template)
+                editTemplateViewController.delegate = self
+                let vc = UINavigationController(rootViewController: editTemplateViewController)
+                self.present(vc, animated: true)
+            }
+
+            let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                self.showDeleteAlert(indexPath: indexPath)
+            }
+            return UIMenu(title: "", children: [editAction, deleteAction])
+        })
     }
 }
 
 //
 extension WorkoutViewController: UITableViewDragDelegate {
     func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-//        let dragItem = UIDragItem(itemProvider: NSItemProvider())
-//        dragItem.localObject = workoutPlans[indexPath.row]
-//        return [dragItem]
-        return []
+        let dragItem = UIDragItem(itemProvider: NSItemProvider())
+        dragItem.localObject = templates[indexPath.row]
+        return [dragItem]
+//        return []
     }
     
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-//        guard sourceIndexPath != destinationIndexPath else { return  }
-//        workoutService.reorderWorkouts(&workoutPlans, moveWorkoutAt: sourceIndexPath, to: destinationIndexPath)
+        guard sourceIndexPath != destinationIndexPath else { return  }
+        workoutService.reorderTemplates(&templates, moveWorkoutAt: sourceIndexPath, to: destinationIndexPath)
     }
     
 }
 
-extension WorkoutViewController: CreateWorkoutViewControllerDelegate {
-    func createWorkoutViewController(_ viewController: CreateWorkoutViewController, didCreateWorkoutTemplate template: Template) {
+extension WorkoutViewController: CreateTemplateViewControllerDelegate {
+    func createTemplateViewController(_ viewController: CreateTemplateViewController, didCreateTemplate template: Template) {
         template.index = Int16(templates.count)
         
         // Important: Make sure u finish modifying child object before saving or else additional changes wont be persisted to core data when saving main context
@@ -235,12 +230,35 @@ extension WorkoutViewController: CreateWorkoutViewControllerDelegate {
         do {
             try viewController.childContext.save()
         } catch {
-            print("Error saving reordered items: \(error)")
+            print("Error creating template: \(error)")
         }
         
         CoreDataStack.shared.saveContext()
-        templates.append(template)
+        
+        let templateInMainContext = context.object(with: template.objectID) as! Template
+        
+        templates.append(templateInMainContext)
         tableView.insertRows(at: [IndexPath(row: templates.count - 1, section: 0)], with: .automatic)
         contentUnavailableView.isHidden = !templates.isEmpty
+    }
+}
+
+extension WorkoutViewController: EditTemplateViewControllerDelegate {
+    func editTemplateViewController(_ viewController: EditTemplateViewController, didUpdateTemplate template: Template) {
+        do {
+            try viewController.childContext.save()
+        } catch {
+            print("Error updating template: \(error)")
+        }
+        
+        CoreDataStack.shared.saveContext()
+        
+        let templateInMainContext = context.object(with: template.objectID) as! Template
+        
+        // note: templateInMainContext.objectID is same as template.objectID (unique across context)
+        if let row = templates.firstIndex(where: { $0.objectID == template.objectID }) {
+            templates[row] = templateInMainContext
+            tableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .automatic)
+        }
     }
 }

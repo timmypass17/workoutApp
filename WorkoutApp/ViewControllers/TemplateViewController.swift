@@ -8,11 +8,11 @@
 import UIKit
 import CoreData
 
-protocol CreateWorkoutViewControllerDelegate: AnyObject {
-    func createWorkoutViewController(_ viewController: CreateWorkoutViewController, didCreateWorkoutTemplate template: Template)
-}
+//protocol CreateWorkoutViewControllerDelegate: AnyObject {
+//    func createWorkoutViewController(_ viewController: TemplateViewController, didCreateWorkoutTemplate template: Template)
+//}
 
-class CreateWorkoutViewController: UIViewController {
+class TemplateViewController: UIViewController {
     
     private let tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
@@ -20,17 +20,12 @@ class CreateWorkoutViewController: UIViewController {
         return tableView
     }()
     
-    let template: Template
-    let childContext: NSManagedObjectContext = CoreDataStack.shared.newChildContext()
-    weak var delegate: CreateWorkoutViewControllerDelegate?
-    
-    enum Section: Int, CaseIterable {
-        case title, exercises
-    }
-    
-    init() {
-        template = Template(context: childContext)
-        template.title = "" // requires value (optional means something else in core data)
+    var template: Template
+    let childContext: NSManagedObjectContext
+
+    init(template: Template, childContext: NSManagedObjectContext) {
+        self.template = template
+        self.childContext = childContext
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -38,9 +33,12 @@ class CreateWorkoutViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    enum Section: Int, CaseIterable {
+        case title, exercises
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "Create Workout"
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(TemplateTitleTableViewCell.self, forCellReuseIdentifier: TemplateTitleTableViewCell.reuseIdentifier)
@@ -48,7 +46,7 @@ class CreateWorkoutViewController: UIViewController {
         tableView.register(AddTemplateExerciseTableViewCell.self, forCellReuseIdentifier: AddTemplateExerciseTableViewCell.reuseIdentifier)
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: didTapCancelButton())
-        navigationItem.rightBarButtonItems = [UIBarButtonItem(systemItem: .save, primaryAction: didTapSaveButton()), editButtonItem]
+        navigationItem.rightBarButtonItems = [editButtonItem]
 
         view.addSubview(tableView)
 
@@ -58,8 +56,6 @@ class CreateWorkoutViewController: UIViewController {
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
-        
-        updateSaveButton()
     }
     
     override func setEditing(_ editing: Bool, animated: Bool) {
@@ -76,17 +72,9 @@ class CreateWorkoutViewController: UIViewController {
             self.dismiss(animated: true)
         }
     }
-    
-    func didTapSaveButton() -> UIAction {
-        return UIAction { [weak self] _ in
-            guard let self else { return }
-            delegate?.createWorkoutViewController(self, didCreateWorkoutTemplate: template)
-            self.dismiss(animated: true)
-        }
-    }
 }
 
-extension CreateWorkoutViewController: UITableViewDataSource {
+extension TemplateViewController: UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
         return Section.allCases.count
@@ -137,7 +125,7 @@ extension CreateWorkoutViewController: UITableViewDataSource {
     }
 }
 
-extension CreateWorkoutViewController: UITableViewDelegate {
+extension TemplateViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let isAddButtonRow = indexPath.row == template.templateExercises.count
         guard let section = Section(rawValue: indexPath.section),
@@ -221,7 +209,7 @@ extension CreateWorkoutViewController: UITableViewDelegate {
 }
 
 
-extension CreateWorkoutViewController: AddExerciseDetailViewControllerDelegate {
+extension TemplateViewController: AddExerciseDetailViewControllerDelegate {
     func addExerciseDetailViewControllerDelegate(_ viewController: AddExerciseDetailViewController, didAddExercise exercise: String, sets: Int, reps: Int) {
         print("Added \(exercise) \(sets) x \(reps)")
         let sampleExercise = TemplateExercise(context: childContext)
@@ -241,7 +229,7 @@ extension CreateWorkoutViewController: AddExerciseDetailViewControllerDelegate {
 
 }
 
-extension CreateWorkoutViewController: EditExerciseDetailViewControllerDelegate {
+extension TemplateViewController: EditExerciseDetailViewControllerDelegate {
     func editExerciseDetailViewControllerDelegate(_ viewController: EditExerciseDetailViewController, didUpdateExercise exercise: String, sets: Int, reps: Int) {
         guard let selectedIndexPath = tableView.indexPathForSelectedRow else { return }
         let exercise = template.templateExercises[selectedIndexPath.row]
@@ -258,7 +246,7 @@ extension CreateWorkoutViewController: EditExerciseDetailViewControllerDelegate 
     }
 }
 
-extension CreateWorkoutViewController: TemplateTitleTableViewCellDelegate {
+extension TemplateViewController: TemplateTitleTableViewCellDelegate {
     func templateTitleTableViewCell(_ cell: TemplateTitleTableViewCell, titleTextFieldDidChange title: String) {
         template.title = title
         updateSaveButton()
