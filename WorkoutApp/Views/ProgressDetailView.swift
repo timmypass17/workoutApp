@@ -212,7 +212,7 @@ struct ProgressChartView: View {
     var body: some View {
         Chart(filteredData) { exercise in
             LineMark(
-                x: .value("Date", exercise.exercise?.workout?.createdAt ?? Date(), unit: .weekOfMonth),
+                x: .value("Date", exercise.exercise?.workout?.createdAt ?? Date(), unit: .day),
                 y: .value("Weight", exercise.weight)
             )
             .symbol(Circle().strokeBorder(lineWidth: 2))

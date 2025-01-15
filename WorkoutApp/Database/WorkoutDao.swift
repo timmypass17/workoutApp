@@ -1,21 +1,20 @@
 //
-//  WorkoutService.swift
-//  WorkoutApp
+//  WorkoutDao.swift
+//  BuiltDiff
 //
-//  Created by Timmy Nguyen on 1/25/24.
+//  Created by Timmy Nguyen on 1/14/25.
 //
 
 import Foundation
 import CoreData
-import UIKit
 
-class WorkoutService {
+class WorkoutDao: WorkoutDaoProtocol {
+    
     private let context: NSManagedObjectContext
 
     init(context: NSManagedObjectContext) {
         self.context = context
     }
-    
     
     func fetchTemplates() -> [Template] {
         let request: NSFetchRequest<Template> = Template.fetchRequest()
@@ -25,21 +24,6 @@ class WorkoutService {
             let templates = try context.fetch(request)
             print("Fetched \(templates.count) templates")
             return templates
-        } catch {
-            print("Error fetching workouts: \(error.localizedDescription)")
-            return []
-        }
-    }
-        
-        
-    func fetchWorkoutPlans() -> [Workout] {
-        let request: NSFetchRequest<Workout> = Workout.fetchRequest()
-        request.predicate = NSPredicate(format: "createdAt_ == nil")
-        request.sortDescriptors = [NSSortDescriptor(key: "index", ascending: true)]
-        
-        do {
-            let workoutPlans = try context.fetch(request)
-            return workoutPlans
         } catch {
             print("Error fetching workouts: \(error.localizedDescription)")
             return []
@@ -61,50 +45,24 @@ class WorkoutService {
         }
     }
     
-//    / Get exercise data  from Core Data.
-//    / - The sets within each exercise are sorted by date (oldest to recent).
-//    / - Returns: List of exercise progress data
-//    func fetchProgressData() -> [ProgressData] {
-//        var data: [String : [ExerciseSet]] = [:]
-//        let request: NSFetchRequest<ExerciseSet> = ExerciseSet.fetchRequest()
-//        let predicate = NSPredicate(format: "exercise.workout.createdAt_ != nil")
-//        let sortDescriptor = NSSortDescriptor(key: "exercise.workout.createdAt_", ascending: true)
-//        request.predicate = predicate
-//        request.sortDescriptors = [sortDescriptor]
-//        
-//        do {
-//            let exerciseSets: [ExerciseSet] = try context.fetch(request)
-//            for set in exerciseSets {
-//                guard let name = set.exercise?.name else { continue }
-//                data[name, default: []].append(set)
-//            }
-//            return data
-//                .map { ProgressData(name: $0.key, sets: $0.value) }
-//                .sorted(by: { $0.name < $1.name})
-//        } catch {
-//            print("Error fetching logs: \(error.localizedDescription)")
-//            return []
-//        }
-//    }
-    
-    func fetchWeights(exerciseName: String) -> [Double] {
-        let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
-        let predicate = NSPredicate(format: "name_ == %@", exerciseName)
-        let sortDescriptor = NSSortDescriptor(key: "workout.createdAt_", ascending: true)
-        request.predicate = predicate
-        request.sortDescriptors = [sortDescriptor]
-        request.fetchLimit = 7
+    func fetchExerciseNames() -> [String] {
+        // TODO: fetch from templateExercises instead? much smaller data set
+        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "Exercise")
+        request.propertiesToFetch = ["name_"] // Fetch only the 'name_' property
+        request.resultType = .dictionaryResultType
+        request.returnsDistinctResults = true // Ensure only unique names are returned
         
         do {
-            let exercises: [Exercise] = try context.fetch(request)
-            return exercises.compactMap { $0.maxWeight }
+            let results = try context.fetch(request) as? [[String: Any]]
+            let uniqueNames = results?.compactMap { $0["name_"] as? String } ?? []
+            print("Fetched \(uniqueNames.count) exercises")
+            return uniqueNames.sorted()
         } catch {
             print("Failed to fetch unique exercise names: \(error.localizedDescription)")
             return []
         }
     }
     
-    // fetching exercise sets makes set.previousSet inconsistent?
     func fetchExerciseSets(exerciseName: String, limit: Int? = nil, ascending: Bool = true) -> [ExerciseSet] {
         let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
         let predicate = NSPredicate(format: "name_ == %@", exerciseName)
@@ -125,7 +83,7 @@ class WorkoutService {
         }
     }
     
-    func fetchMaxWeight(exerciseName: String) -> Double {
+    func fetchPR(exerciseName: String) -> Double {
         let request = NSFetchRequest<NSDictionary>(entityName: "ExerciseSet")
         request.predicate = NSPredicate(format: "exercise.name_ == %@", exerciseName)
         request.resultType = .dictionaryResultType
@@ -149,37 +107,28 @@ class WorkoutService {
         
         return 0
     }
+
     
-    func fetchUniqueExerciseNames() -> [String] {
-        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "Exercise")
-        request.propertiesToFetch = ["name_"] // Fetch only the 'name_' property
-        request.resultType = .dictionaryResultType
-        request.returnsDistinctResults = true // Ensure only unique names are returned
-        
-        do {
-            let results = try context.fetch(request) as? [[String: Any]]
-            let uniqueNames = results?.compactMap { $0["name_"] as? String } ?? []
-            return uniqueNames.sorted()
-        } catch {
-            print("Failed to fetch unique exercise names: \(error.localizedDescription)")
-            return []
-        }
-    }
-    
-    func deleteTemplate(_ templates: inout [Template], at indexPath: IndexPath) {
-        let templateToRemove = templates.remove(at: indexPath.row)
-        
-        let objectInTargetContext = context.object(with: templateToRemove.objectID)
+    func deleteTemplate(_ template: Template) {
+        let objectInTargetContext = context.object(with: template.objectID)
         context.delete(objectInTargetContext)
-        
-        for (index, template) in templates.enumerated() {
-            template.index = Int16(index)
-        }
 
         do {
             try context.save()
         } catch {
             print("Failed to delete template: \(error)")
+        }
+    }
+    
+    func deleteLog(_ log: Workout) {
+        let objectInTargetContext = context.object(with: log.objectID)
+        context.delete(objectInTargetContext)
+
+        do {
+            try context.save()
+            print("Deleted log successfully")
+        } catch {
+            print("Failed to delete workout: \(error)")
         }
     }
     
@@ -211,21 +160,17 @@ class WorkoutService {
         }
     }
     
-    func reorderTemplates(_ templates: inout [Template], moveWorkoutAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        guard sourceIndexPath != destinationIndexPath else { return }
-        
-        let workoutToMove = templates.remove(at: sourceIndexPath.row)
-        templates.insert(workoutToMove, at: destinationIndexPath.row)
-        
-        for (index, workout) in templates.enumerated() {
-            workout.index = Int16(index)
+    func updateTemplatesPositions(_ templates: inout [Template]) {
+        for (index, template) in templates.enumerated() {
+            template.index = Int16(index)
         }
-        
+
         do {
+            // TODO: Use CoreDataStack.shared.save()?
             try context.save()
-            print("save: \(context)")
         } catch {
-            print("Error saving reordering: \(error)")
+            print("Failed to reorder template: \(error)")
         }
     }
+    
 }

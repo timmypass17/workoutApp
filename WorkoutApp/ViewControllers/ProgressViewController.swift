@@ -83,10 +83,10 @@ class ProgressViewController: UIViewController {
     func updateData() {
         exerciseData.removeAll()
         
-        let exerciseNames: [String] = workoutService.fetchUniqueExerciseNames()
+        let exerciseNames: [String] = workoutService.fetchExerciseNames()
         for exerciseName in exerciseNames {
             let exerciseSets: [ExerciseSet] = workoutService.fetchExerciseSets(exerciseName: exerciseName)
-            let bestLift: Double = workoutService.fetchMaxWeight(exerciseName: exerciseName)
+            let bestLift: Double = workoutService.fetchPR(exerciseName: exerciseName)
             exerciseData.append(ExerciseData(name: exerciseName, exerciseSets: exerciseSets, bestLift: bestLift, lastUpdated: .now, latestLift: exerciseSets.last?.weight ?? 0))
         }
         
@@ -159,8 +159,9 @@ extension ProgressViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let data = exerciseData[indexPath.row]
-        data.exerciseSets = workoutService.fetchExerciseSets(exerciseName: data.name, ascending: false)
-        let progressDetailView = ProgressDetailView(data: data)
+        let allSets = workoutService.fetchExerciseSets(exerciseName: data.name, ascending: false)
+        let allExerciseData = ExerciseData(name: data.name, exerciseSets: allSets, bestLift: data.bestLift, lastUpdated: data.lastUpdated, latestLift: data.latestLift)
+        let progressDetailView = ProgressDetailView(data: allExerciseData)
         let hostingController = UIHostingController(rootView: progressDetailView)
         hostingController.navigationItem.title = data.name
         navigationController?.pushViewController(hostingController, animated: true)

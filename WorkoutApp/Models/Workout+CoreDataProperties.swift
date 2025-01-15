@@ -58,7 +58,7 @@ extension Workout {
         for exercise in exercises {
             let sets = exercise.getExerciseSets()
             for set in sets {
-                if set.weight == 0 || set.reps == 0 {
+                if set.weight < 0 || set.reps < 0 {
                     return false
                 }
             }

@@ -113,8 +113,8 @@ extension WorkoutDetailViewController: AddSetTableViewCellDelegate {
         let set = ExerciseSet(context: childContext)
         set.index = Int16(workout.getExercise(at: indexPath.section).getExerciseSets().count)
         set.isComplete = false
-        set.weight = 0
-        set.reps = 0
+        set.weight = -1
+        set.reps = -1
         set.exercise = exercise
         exercise.addToExerciseSets(set)
         
@@ -131,7 +131,7 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         
         let currentReps = set.reps >= 0 ? Int(set.reps) : Int(set.previousSet?.reps ?? 0)
         let incrementedReps = currentReps + 1
-        set.reps = Int16(incrementedReps)
+        set.reps = max(Int16(incrementedReps), Int16.max)
         
         cell.repsTextField.text = set.repsString
     }
@@ -144,7 +144,7 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         
         let currentReps = set.reps >= 0 ? Int(set.reps) : Int(set.previousSet?.reps ?? 0)
 
-        let decrementedReps = currentReps - 1
+        let decrementedReps = max(currentReps - 1, 0)
         set.reps = Int16(decrementedReps)
         
         cell.repsTextField.text = set.repsString
@@ -172,7 +172,7 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         
         let currentWeight = set.weight >= 0 ? set.weight : set.previousSet?.weight ?? 0
 
-        let decrementedWeight = currentWeight - Settings.shared.weightIncrement
+        let decrementedWeight = max(currentWeight - Settings.shared.weightIncrement, 0)
         set.weight = decrementedWeight
         
         cell.weightTextField.text = set.weightString
@@ -278,7 +278,11 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         let exerciseSet = workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row)
         
-        exerciseSet.weight = Double(weightText) ?? 0
+        if weightText.isEmpty {
+            exerciseSet.weight = -1
+        } else {
+            exerciseSet.weight = Double(weightText) ?? 0
+        }
 //        exerciseSet.isComplete = !exerciseSet.weight.isEmpty || !exerciseSet.reps.isEmpty
     }
     
@@ -286,7 +290,12 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         let exerciseSet = workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row)
         
-        exerciseSet.reps = Int16(repsText) ?? 0
+        if repsText.isEmpty {
+            exerciseSet.reps = -1
+        } else {
+            exerciseSet.reps = Int16(repsText) ?? 0
+        }
+        
 //        exerciseSet.isComplete = !exerciseSet.weight.isEmpty || !exerciseSet.reps.isEmpty
     }
 }

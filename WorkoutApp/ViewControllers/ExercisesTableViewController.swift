@@ -24,7 +24,7 @@ class ExercisesTableViewController: UIViewController {
         let exercises: [String]
     }
 
-    static let allExercises = ["Bench Press", "Squat", "Deadlift"]
+    static let allExercises = ["Squat", "Bench Press", "Pull Ups", "Deadlift", "Barbell Row", "Shoulder Press"]
     
     var selectedExercises: [String] = []
     

@@ -7,12 +7,16 @@
 
 import UIKit
 
+protocol CalendarViewControllerDelegate: AnyObject {
+    func calendarViewControllerDelegate(_ viewController: CalendarViewController, didSelectDate date: Date)
+}
+
 class CalendarViewController: UIViewController {
-    var workout: Workout
-    let context = CoreDataStack.shared.mainContext
+    var initialDate: Date
+    weak var delegate: CalendarViewControllerDelegate?
     
-    init(workout: Workout) {
-        self.workout = workout
+    init(date: Date) {
+        self.initialDate = date
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -32,18 +36,11 @@ class CalendarViewController: UIViewController {
         super.viewDidLoad()
         title = "Select Date & Time"
         view.backgroundColor = .systemBackground
-        let cancelAction = UIAction { _ in
-            self.navigationController?.dismiss(animated: true)
-        }
-        let doneAction = UIAction { [self] _ in
-            workout.createdAt = datePicker.date
-            navigationController?.dismiss(animated: true)
-        }
+        datePicker.date = initialDate
 
-        navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: cancelAction)
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Confirm", primaryAction: doneAction)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: didTapCancelButton())
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Save", primaryAction: didTapSaveButton())
 
-//        datePicker.date = workout.createdAt!
         view.addSubview(datePicker)
         NSLayoutConstraint.activate([
             datePicker.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -51,4 +48,16 @@ class CalendarViewController: UIViewController {
         ])
     }
     
+    func didTapCancelButton() -> UIAction {
+        return UIAction { _ in
+            self.navigationController?.dismiss(animated: true)
+        }
+    }
+    
+    func didTapSaveButton() -> UIAction {
+        return UIAction { _ in
+            self.delegate?.calendarViewControllerDelegate(self, didSelectDate: self.datePicker.date)
+            self.navigationController?.dismiss(animated: true)
+        }
+    }
 }

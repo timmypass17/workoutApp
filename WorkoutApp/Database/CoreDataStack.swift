@@ -52,9 +52,6 @@ class CoreDataStack {
         let childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         childContext.parent = mainContext
         return childContext
-        
-        // this doesn't work
-//        return persistentContainer.newBackgroundContext()
     }
     
 }
