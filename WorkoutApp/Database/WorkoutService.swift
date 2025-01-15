@@ -17,46 +17,87 @@ class WorkoutService {
         self.workoutDao = workoutDao
     }
     
-    func fetchTemplates() -> [Template] {
-        return workoutDao.fetchTemplates()
+    func fetchTemplates() async -> [Template] {
+        do {
+            return try await workoutDao.fetchTemplates()
+        } catch {
+            return []
+        }
     }
     
-    func fetchLogs() -> [Workout] {
-        return workoutDao.fetchLogs()
+    func fetchLogs() async -> [Workout] {
+        do {
+            return try await workoutDao.fetchLogs()
+        } catch {
+            return []
+        }
     }
     
-    func fetchExerciseSets(exerciseName: String, limit: Int? = nil, ascending: Bool = true) -> [ExerciseSet] {
-        return workoutDao.fetchExerciseSets(exerciseName: exerciseName, limit: limit, ascending: ascending)
+    func fetchExerciseNames() async -> [String] {
+        do {
+            return try await workoutDao.fetchExerciseNames()
+        } catch {
+            return []
+        }
     }
     
-    func fetchPR(exerciseName: String) -> Double {
-        return workoutDao.fetchPR(exerciseName: exerciseName)
+    func fetchExerciseSets(exerciseName: String, limit: Int? = nil, ascending: Bool = true) async -> [ExerciseSet] {
+        do {
+            return try await workoutDao.fetchExerciseSets(exerciseName: exerciseName, limit: limit, ascending: ascending)
+        } catch {
+            return []
+        }
     }
     
-    func fetchExerciseNames() -> [String] {
-        return workoutDao.fetchExerciseNames()
+    func fetchPR(exerciseName: String) async -> Double {
+        do {
+            return try await workoutDao.fetchPR(exerciseName: exerciseName)
+        } catch {
+            return 0.0
+        }
     }
     
-    func deleteTemplate(_ templates: inout [Template], at indexPath: IndexPath) {
-        let templateToRemove = templates.remove(at: indexPath.row)
-        workoutDao.deleteTemplate(templateToRemove)
-        workoutDao.updateTemplatesPositions(&templates)
+    // had to remove inout, so just make copy and modify that copy
+    // itself cant use inout, but within it can use inout?
+    func deleteTemplate(_ templates: [Template], at indexPath: IndexPath) async -> [Template] {
+        do {
+            var updatedTemplates = templates
+            let templateToRemove = updatedTemplates.remove(at: indexPath.row)
+            try await workoutDao.deleteTemplate(templateToRemove)
+            try await workoutDao.updateTemplatesPositions(updatedTemplates)
+            return updatedTemplates
+        } catch {
+            print("error deleting template: \(error)")
+            return templates
+        }
     }
     
-    func deleteLog(_ logs: inout [Date: [Workout]], at indexPath: IndexPath) {
-        let months = logs.keys.sorted()
-        let month = months[indexPath.section]
-        let logToRemove = logs[month, default: []].remove(at: indexPath.row)
-        
-        workoutDao.deleteLog(logToRemove)
+    func deleteLog(_ logs: [Date: [Workout]], at indexPath: IndexPath) async -> [Date: [Workout]] {
+        do {
+            var updatedLogs = logs
+            let months = logs.keys.sorted()
+            let month = months[indexPath.section]
+            let logToRemove = updatedLogs[month, default: []].remove(at: indexPath.row)
+            try await workoutDao.deleteLog(logToRemove)
+            return updatedLogs
+        } catch {
+            print("error deleting template: \(error)")
+            return logs
+        }
     }
     
-    func reorderTemplates(_ templates: inout [Template], moveWorkoutAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        guard sourceIndexPath != destinationIndexPath else { return }
-        
-        let workoutToMove = templates.remove(at: sourceIndexPath.row)
-        templates.insert(workoutToMove, at: destinationIndexPath.row)
-        
-        workoutDao.updateTemplatesPositions(&templates)
+    func reorderTemplates(_ templates: [Template], moveWorkoutAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) async -> [Template] {
+        guard sourceIndexPath != destinationIndexPath else { return templates }
+        var updatedTemplates = templates
+        let workoutToMove = updatedTemplates.remove(at: sourceIndexPath.row)
+        updatedTemplates.insert(workoutToMove, at: destinationIndexPath.row)
+                
+        do {
+            try await workoutDao.updateTemplatesPositions(updatedTemplates)
+            return updatedTemplates
+        } catch {
+            print("Error reordering templates: \(error)")
+            return templates
+        }
     }
 }

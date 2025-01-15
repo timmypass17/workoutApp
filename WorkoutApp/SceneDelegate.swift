@@ -32,6 +32,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let workoutDao = WorkoutDao(context: CoreDataStack.shared.mainContext)
         let workoutService = WorkoutService(workoutDao: workoutDao)
+        
         let workoutViewController = WorkoutViewController(workoutService: workoutService)
         let logViewController = LogViewController(workoutService: workoutService)
         let progressViewController = ProgressViewController(workoutService: workoutService)

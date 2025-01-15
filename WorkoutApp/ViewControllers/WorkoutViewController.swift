@@ -7,6 +7,7 @@
 
 import UIKit
 
+
 class WorkoutViewController: UIViewController {
     
     private let tableView: UITableView = {
@@ -37,8 +38,6 @@ class WorkoutViewController: UIViewController {
     
     init(workoutService: WorkoutService) {
         self.workoutService = workoutService
-//        workoutPlans = workoutService.fetchWorkoutPlans()
-        templates = workoutService.fetchTemplates()
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -75,8 +74,11 @@ class WorkoutViewController: UIViewController {
         NotificationCenter.default.addObserver(tableView,
                                                selector: #selector(UITableView.reloadData),
                                                name: AccentColor.valueChangedNotification, object: nil)
-        
-        updateUI()
+                
+        Task {
+            templates = await workoutService.fetchTemplates()
+            updateUI()
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -125,16 +127,19 @@ class WorkoutViewController: UIViewController {
 //        self.present(alert, animated: true, completion: nil)
     }
     
+    
     func showDeleteAlert(indexPath: IndexPath) {
         let template = templates[indexPath.row]
         let alert = UIAlertController(title: "Delete Template?", message: "Are you sure you want to delete \"\(template.title)\"", preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Remove", style: .destructive) { [weak self] _ in
-            guard let self else { return }
-            workoutService.deleteTemplate(&templates, at: indexPath)
-            tableView.deleteRows(at: [indexPath], with: .automatic)
-            contentUnavailableView.isHidden = !templates.isEmpty
+            Task {
+                guard let self else { return }
+                self.templates = await self.workoutService.deleteTemplate(self.templates, at: indexPath)
+                self.tableView.deleteRows(at: [indexPath], with: .automatic)
+                self.contentUnavailableView.isHidden = !self.templates.isEmpty
+            }
         })
         
         self.present(alert, animated: true, completion: nil)
@@ -216,7 +221,9 @@ extension WorkoutViewController: UITableViewDragDelegate {
     
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
         guard sourceIndexPath != destinationIndexPath else { return  }
-        workoutService.reorderTemplates(&templates, moveWorkoutAt: sourceIndexPath, to: destinationIndexPath)
+        Task {
+            templates = await workoutService.reorderTemplates(templates, moveWorkoutAt: sourceIndexPath, to: destinationIndexPath)
+        }
     }
     
 }

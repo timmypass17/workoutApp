@@ -8,62 +8,60 @@
 import Foundation
 import CoreData
 
+// read on main context, write on background context
 class WorkoutDao: WorkoutDaoProtocol {
     
-    private let context: NSManagedObjectContext
+    private let context: NSManagedObjectContext // main context
 
     init(context: NSManagedObjectContext) {
         self.context = context
     }
     
-    func fetchTemplates() -> [Template] {
+    func fetchTemplates() async throws -> [Template] {
         let request: NSFetchRequest<Template> = Template.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "index", ascending: true)]
         
-        do {
-            let templates = try context.fetch(request)
-            print("Fetched \(templates.count) templates")
-            return templates
-        } catch {
-            print("Error fetching workouts: \(error.localizedDescription)")
-            return []
+        let templates = try await context.perform {
+            let results = try self.context.fetch(request)
+            print("Fetched \(results.count) templates")
+            return results
         }
+        
+        return templates
     }
     
-    func fetchLogs() -> [Workout] {
+    func fetchLogs() async throws -> [Workout] {
         let request: NSFetchRequest<Workout> = Workout.fetchRequest()
         let sortDescriptor = NSSortDescriptor(key: "createdAt_", ascending: false)
         request.sortDescriptors = [sortDescriptor]
         
-        do {
-            let logs = try context.fetch(request)
+        let logs = try await context.perform {
+            let logs = try self.context.fetch(request)
             print("Fetched \(logs.count) logs")
             return logs
-        } catch {
-            print("Error fetching logs: \(error.localizedDescription)")
-            return []
         }
+        
+        return logs
     }
     
-    func fetchExerciseNames() -> [String] {
+    func fetchExerciseNames() async throws -> [String] {
         // TODO: fetch from templateExercises instead? much smaller data set
         let request = NSFetchRequest<NSFetchRequestResult>(entityName: "Exercise")
         request.propertiesToFetch = ["name_"] // Fetch only the 'name_' property
         request.resultType = .dictionaryResultType
         request.returnsDistinctResults = true // Ensure only unique names are returned
         
-        do {
-            let results = try context.fetch(request) as? [[String: Any]]
+        let exerciseNames = try await context.perform {
+            let results = try self.context.fetch(request) as? [[String: Any]]
             let uniqueNames = results?.compactMap { $0["name_"] as? String } ?? []
             print("Fetched \(uniqueNames.count) exercises")
             return uniqueNames.sorted()
-        } catch {
-            print("Failed to fetch unique exercise names: \(error.localizedDescription)")
-            return []
         }
+        
+        return exerciseNames
     }
     
-    func fetchExerciseSets(exerciseName: String, limit: Int? = nil, ascending: Bool = true) -> [ExerciseSet] {
+    func fetchExerciseSets(exerciseName: String, limit: Int? = nil, ascending: Bool = true) async throws -> [ExerciseSet] {
         let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
         let predicate = NSPredicate(format: "name_ == %@", exerciseName)
         let sortDescriptor = NSSortDescriptor(key: "workout.createdAt_", ascending: ascending)
@@ -74,16 +72,15 @@ class WorkoutDao: WorkoutDaoProtocol {
             request.fetchLimit = limit
         }
         
-        do {
-            let exercises: [Exercise] = try context.fetch(request)
+        let exerciseSets = try await context.perform {
+            let exercises: [Exercise] = try self.context.fetch(request)
             return exercises.compactMap { $0.bestSet }
-        } catch {
-            print("Failed to fetch unique exercise names: \(error.localizedDescription)")
-            return []
         }
+        
+        return exerciseSets
     }
     
-    func fetchPR(exerciseName: String) -> Double {
+    func fetchPR(exerciseName: String) async throws -> Double {
         let request = NSFetchRequest<NSDictionary>(entityName: "ExerciseSet")
         request.predicate = NSPredicate(format: "exercise.name_ == %@", exerciseName)
         request.resultType = .dictionaryResultType
@@ -96,81 +93,59 @@ class WorkoutDao: WorkoutDaoProtocol {
         
         request.propertiesToFetch = [expressionDescription]
         
-        do {
-            if let result = try context.fetch(request).first,
-               let maxWeight = result["maxWeight"] as? Double {
-                return maxWeight
+        let bestLift = try await context.perform {
+            guard let result = try self.context.fetch(request).first,
+                  let maxWeight = result["maxWeight"] as? Double
+            else {
+                return 0.0
             }
-        } catch {
-            print("Error fetching max weight: \(error)")
+            return maxWeight
         }
         
-        return 0
-    }
-
-    
-    func deleteTemplate(_ template: Template) {
-        let objectInTargetContext = context.object(with: template.objectID)
-        context.delete(objectInTargetContext)
-
-        do {
-            try context.save()
-        } catch {
-            print("Failed to delete template: \(error)")
-        }
+        return bestLift
     }
     
-    func deleteLog(_ log: Workout) {
-        let objectInTargetContext = context.object(with: log.objectID)
-        context.delete(objectInTargetContext)
-
-        do {
-            try context.save()
-            print("Deleted log successfully")
-        } catch {
-            print("Failed to delete workout: \(error)")
-        }
-    }
-    
-    func deleteLog(_ logs: inout [Date: [Workout]], at indexPath: IndexPath) {
-        let months = logs.keys.sorted()
-        let month = months[indexPath.section]
-        let logToRemove = logs[month, default: []].remove(at: indexPath.row)
+    // existingObject vs object
+    func deleteTemplate(_ template: Template) async throws {
+        let backgroundContext = CoreDataStack.shared.newBackgroundContext()
         
-        // Can't delete objects in different context.
-        let objectInTargetContext = context.object(with: logToRemove.objectID)
-        context.delete(objectInTargetContext)
-
-        do {
-            try context.save()
-            print("Deleted log successfully")
-        } catch {
-            print("Failed to delete workout: \(error)")
+        try await backgroundContext.perform {
+            // Fetch the object in the background context
+            let objectInContext = try backgroundContext.existingObject(with: template.objectID)
+            backgroundContext.delete(objectInContext)
+            
+            try backgroundContext.save()
         }
     }
     
-    func deleteWorkout(_ workout: Workout) {
-        let objectInTargetContext = context.object(with: workout.objectID)
-        context.delete(objectInTargetContext)
+    func deleteLog(_ log: Workout) async throws {
+        let backgroundContext = CoreDataStack.shared.newBackgroundContext()
+
+        try await backgroundContext.perform {
+            let objectInContext = try backgroundContext.existingObject(with: log.objectID)
+            backgroundContext.delete(objectInContext)
+            
+            try backgroundContext.save()
+        }
+    }
+    
+    func updateTemplatesPositions(_ templates: [Template]) async throws {
+        let backgroundContext = CoreDataStack.shared.newBackgroundContext()
         
-        do {
-            try context.save()
-        } catch {
-            print("Failed to delete workout: \(error)")
-        }
-    }
-    
-    func updateTemplatesPositions(_ templates: inout [Template]) {
-        for (index, template) in templates.enumerated() {
-            template.index = Int16(index)
-        }
-
-        do {
-            // TODO: Use CoreDataStack.shared.save()?
-            try context.save()
-        } catch {
-            print("Failed to reorder template: \(error)")
+        try await backgroundContext.perform {
+            for (index, template) in templates.enumerated() {
+                let objectInContext = try backgroundContext.existingObject(with: template.objectID) as! Template
+                objectInContext.index = Int16(index)
+            }
+            
+            try backgroundContext.save()
         }
     }
     
 }
+
+// note: Core Data objects are tied to the context they belong to. Cant modify objects in different context.
+//          - Fetch Objects in the Target Context using existingObject(with:) or object(with:)
+// Core Data objects are not thread-safe, so it’s essential to use the appropriate context and threading practices to avoid crashes or inconsistent data. Using perform {} or performAndWait {} ensures that all Core Data operations are executed on the correct thread associated with the NSManagedObjectContext
+// Why use perform {}? - used to ensure thread safety. Core Data contexts are not thread-safe.You cannot access or mutate objects in a context from a thread other than the one it was created on. The perform method schedules the block of code to execute on the queue associated with the context, ensuring thread safety. Operations like fetching, saving, or modifying managed objects must be done within the context's queue to avoid undefined behavior or crashes.
+

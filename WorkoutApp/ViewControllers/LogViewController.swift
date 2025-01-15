@@ -42,12 +42,6 @@ class LogViewController: UIViewController {
     
     init(workoutService: WorkoutService) {
         self.workoutService = workoutService
-        // Sort workouts by month/year
-        let fetchedLogs: [Workout] = workoutService.fetchLogs()
-        for log in fetchedLogs {
-            logs[log.monthKey, default: []].append(log)
-        }
-        
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -62,6 +56,10 @@ class LogViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.title = "Log"
+        tableView.register(LogTableViewCell.self, forCellReuseIdentifier: LogTableViewCell.reuseIdentifier)
+        
         NotificationCenter.default.addObserver(tableView,
             selector: #selector(UITableView.reloadData),
             name: WeightType.valueChangedNotification, object: nil)
@@ -82,7 +80,15 @@ class LogViewController: UIViewController {
             contentUnavailableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
         
-        updateUI()
+        Task {
+            // Sort workouts by month/year
+            let fetchedLogs: [Workout] = await workoutService.fetchLogs()
+            for log in fetchedLogs {
+                logs[log.monthKey, default: []].append(log)
+            }
+            updateUI()
+            tableView.reloadData()
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -95,10 +101,6 @@ class LogViewController: UIViewController {
     }
     
     func updateUI() {
-        navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.title = "Log"
-        tableView.register(LogTableViewCell.self, forCellReuseIdentifier: LogTableViewCell.reuseIdentifier)
-        
         contentUnavailableView.isHidden = !logs.isEmpty
         
         
@@ -160,24 +162,26 @@ extension LogViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if (editingStyle == .delete) {
-            let monthYear = monthYears[indexPath.section]
-            let logToRemove = logs[monthYear, default: []][indexPath.row]
-            workoutService.deleteLog(&logs, at: indexPath)
-            
-            delegate?.logViewController(self, didDeleteLog: logToRemove)
-            
-            tableView.deleteRows(at: [indexPath], with: .automatic)
-            
-            if logs[monthYear, default: []].isEmpty {
-                // Delete section if necessary
-                logs[monthYear] = nil
-                tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
-            } else {
-                // Reloadds section header
-                tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
+            Task {
+                let monthYear = monthYears[indexPath.section]
+                let logToRemove = logs[monthYear, default: []][indexPath.row]
+                self.logs = await workoutService.deleteLog(logs, at: indexPath)
+                
+                delegate?.logViewController(self, didDeleteLog: logToRemove)
+                
+                tableView.deleteRows(at: [indexPath], with: .automatic)
+                
+                if logs[monthYear, default: []].isEmpty {
+                    // Delete section if necessary
+                    logs[monthYear] = nil
+                    tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
+                } else {
+                    // Reloadds section header
+                    tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
+                }
+                
+                contentUnavailableView.isHidden = !logs.isEmpty
             }
-            
-            contentUnavailableView.isHidden = !logs.isEmpty
         }
     }
     
