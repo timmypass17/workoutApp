@@ -15,8 +15,8 @@ class LogDetailViewController: WorkoutDetailViewController {
 
     weak var delegate: LogDetailViewControllerDelegate?    // log handles
 
-    init(log: Workout) {
-        super.init(nibName: nil, bundle: nil)
+    init(log: Workout, workoutService: WorkoutService) {
+        super.init(workoutService: workoutService)
         // Use the objectID to fetch the object in the child context
         // - Allows you to work with object in child context, and discard any changes if needed or save changes to main context
         let objectInNewContext = childContext.object(with: log.objectID) as! Workout

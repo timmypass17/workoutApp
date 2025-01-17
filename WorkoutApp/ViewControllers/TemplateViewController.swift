@@ -22,10 +22,12 @@ class TemplateViewController: UIViewController {
     
     var template: Template
     let childContext: NSManagedObjectContext
+    let workoutService: WorkoutService
 
-    init(template: Template, childContext: NSManagedObjectContext) {
+    init(template: Template, childContext: NSManagedObjectContext, workoutService: WorkoutService) {
         self.template = template
         self.childContext = childContext
+        self.workoutService = workoutService
         super.init(nibName: nil, bundle: nil)
     }
     

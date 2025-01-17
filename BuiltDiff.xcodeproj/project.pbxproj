@@ -3,15 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		321F97052B740B5E00AB15B7 /* ProgressViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 321F97042B740B5E00AB15B7 /* ProgressViewCell.swift */; };
 		322040F72B83F03D004D7CB1 /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 322040F62B83F03D004D7CB1 /* SettingsTableViewController.swift */; };
 		322040F92B840B4F004D7CB1 /* SettingsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 322040F82B840B4F004D7CB1 /* SettingsTableViewCell.swift */; };
-		323015CD2D25DA620055A040 /* StartWorkoutModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 323015CC2D25DA620055A040 /* StartWorkoutModel.swift */; };
-		323015CF2D25DB650055A040 /* LogWorkoutModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 323015CE2D25DB650055A040 /* LogWorkoutModel.swift */; };
 		323015D12D25EDFA0055A040 /* StartWorkoutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 323015D02D25EDFA0055A040 /* StartWorkoutViewController.swift */; };
 		323015D32D2708520055A040 /* LogDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 323015D22D2708520055A040 /* LogDetailViewController.swift */; };
 		323148A62B50CAEA00F598A2 /* WorkoutDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 323148A52B50CAEA00F598A2 /* WorkoutDetailViewController.swift */; };
@@ -66,12 +64,20 @@
 		32E3A1982B8C0865001FD86B /* PrivacyTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32E3A1972B8C0865001FD86B /* PrivacyTableViewController.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		32D0A3FD2D384FEA00C9F803 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 32A2936F2B42073B00122166 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 32A293762B42073B00122166;
+			remoteInfo = BuiltDiff;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		321F97042B740B5E00AB15B7 /* ProgressViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressViewCell.swift; sourceTree = "<group>"; };
 		322040F62B83F03D004D7CB1 /* SettingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
 		322040F82B840B4F004D7CB1 /* SettingsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTableViewCell.swift; sourceTree = "<group>"; };
-		323015CC2D25DA620055A040 /* StartWorkoutModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartWorkoutModel.swift; sourceTree = "<group>"; };
-		323015CE2D25DB650055A040 /* LogWorkoutModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWorkoutModel.swift; sourceTree = "<group>"; };
 		323015D02D25EDFA0055A040 /* StartWorkoutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartWorkoutViewController.swift; sourceTree = "<group>"; };
 		323015D22D2708520055A040 /* LogDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDetailViewController.swift; sourceTree = "<group>"; };
 		323148A52B50CAEA00F598A2 /* WorkoutDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailViewController.swift; sourceTree = "<group>"; };
@@ -114,6 +120,7 @@
 		32BF97962D21D36E0004FA47 /* ExerciseDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailViewController.swift; sourceTree = "<group>"; };
 		32BF97982D2204D50004FA47 /* EditExerciseDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditExerciseDetailViewController.swift; sourceTree = "<group>"; };
 		32BF979A2D2205DD0004FA47 /* AddExerciseDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddExerciseDetailViewController.swift; sourceTree = "<group>"; };
+		32D0A3F92D384FEA00C9F803 /* BuiltDiffTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BuiltDiffTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		32D8461D2B5F06260046F0D2 /* Workout+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Workout+CoreDataClass.swift"; sourceTree = "<group>"; };
 		32D8461E2B5F06260046F0D2 /* Workout+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Workout+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		32D8461F2B5F06260046F0D2 /* Exercise+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Exercise+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -128,8 +135,19 @@
 		32E3A1972B8C0865001FD86B /* PrivacyTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyTableViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		32D0A3FA2D384FEA00C9F803 /* BuiltDiffTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = BuiltDiffTests; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		32A293742B42073B00122166 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		32D0A3F62D384FEA00C9F803 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -154,6 +172,7 @@
 			isa = PBXGroup;
 			children = (
 				32A293792B42073B00122166 /* WorkoutApp */,
+				32D0A3FA2D384FEA00C9F803 /* BuiltDiffTests */,
 				32A293782B42073B00122166 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -162,6 +181,7 @@
 			isa = PBXGroup;
 			children = (
 				32A293772B42073B00122166 /* BuiltDiff.app */,
+				32D0A3F92D384FEA00C9F803 /* BuiltDiffTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -217,8 +237,6 @@
 				32BF97962D21D36E0004FA47 /* ExerciseDetailViewController.swift */,
 				32BF97982D2204D50004FA47 /* EditExerciseDetailViewController.swift */,
 				32BF979A2D2205DD0004FA47 /* AddExerciseDetailViewController.swift */,
-				323015CC2D25DA620055A040 /* StartWorkoutModel.swift */,
-				323015CE2D25DB650055A040 /* LogWorkoutModel.swift */,
 				323015D02D25EDFA0055A040 /* StartWorkoutViewController.swift */,
 				323015D22D2708520055A040 /* LogDetailViewController.swift */,
 				327181EB2D2B1C4900DDA1F3 /* CreateTemplateViewController.swift */,
@@ -280,6 +298,29 @@
 			productReference = 32A293772B42073B00122166 /* BuiltDiff.app */;
 			productType = "com.apple.product-type.application";
 		};
+		32D0A3F82D384FEA00C9F803 /* BuiltDiffTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 32D0A4012D384FEA00C9F803 /* Build configuration list for PBXNativeTarget "BuiltDiffTests" */;
+			buildPhases = (
+				32D0A3F52D384FEA00C9F803 /* Sources */,
+				32D0A3F62D384FEA00C9F803 /* Frameworks */,
+				32D0A3F72D384FEA00C9F803 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				32D0A3FE2D384FEA00C9F803 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				32D0A3FA2D384FEA00C9F803 /* BuiltDiffTests */,
+			);
+			name = BuiltDiffTests;
+			packageProductDependencies = (
+			);
+			productName = BuiltDiffTests;
+			productReference = 32D0A3F92D384FEA00C9F803 /* BuiltDiffTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -287,11 +328,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1500;
+				LastSwiftUpdateCheck = 1610;
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					32A293762B42073B00122166 = {
 						CreatedOnToolsVersion = 15.0.1;
+					};
+					32D0A3F82D384FEA00C9F803 = {
+						CreatedOnToolsVersion = 16.1;
+						TestTargetID = 32A293762B42073B00122166;
 					};
 				};
 			};
@@ -309,6 +354,7 @@
 			projectRoot = "";
 			targets = (
 				32A293762B42073B00122166 /* BuiltDiff */,
+				32D0A3F82D384FEA00C9F803 /* BuiltDiffTests */,
 			);
 		};
 /* End PBXProject section */
@@ -320,6 +366,13 @@
 			files = (
 				32A2938A2B42073C00122166 /* LaunchScreen.storyboard in Resources */,
 				32A293872B42073C00122166 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		32D0A3F72D384FEA00C9F803 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -342,11 +395,9 @@
 				32D846272B5F06260046F0D2 /* ExerciseSet+CoreDataClass.swift in Sources */,
 				32D8462C2B6305CF0046F0D2 /* WorkoutService.swift in Sources */,
 				32E3A1962B894FC3001FD86B /* AccentColorTableViewController.swift in Sources */,
-				323015CD2D25DA620055A040 /* StartWorkoutModel.swift in Sources */,
 				327181EC2D2B1C4900DDA1F3 /* CreateTemplateViewController.swift in Sources */,
 				3253BD1E2D37335B003F5A4A /* WorkoutDaoProtocol.swift in Sources */,
 				323148BE2B51BF1A00F598A2 /* AddSetTableViewCell.swift in Sources */,
-				323015CF2D25DB650055A040 /* LogWorkoutModel.swift in Sources */,
 				32BF978D2D20C8F20004FA47 /* TemplateTitleTableViewCell.swift in Sources */,
 				32D846242B5F06260046F0D2 /* Workout+CoreDataProperties.swift in Sources */,
 				32BF976D2D1CC7070004FA47 /* ProgressViewController.swift in Sources */,
@@ -388,7 +439,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		32D0A3F52D384FEA00C9F803 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		32D0A3FE2D384FEA00C9F803 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 32A293762B42073B00122166 /* BuiltDiff */;
+			targetProxy = 32D0A3FD2D384FEA00C9F803 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		32A293882B42073C00122166 /* LaunchScreen.storyboard */ = {
@@ -579,6 +645,44 @@
 			};
 			name = Release;
 		};
+		32D0A3FF2D384FEA00C9F803 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8KHAQ7W8KV;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.timmynguyen.BuiltDiffTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BuiltDiff.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BuiltDiff";
+			};
+			name = Debug;
+		};
+		32D0A4002D384FEA00C9F803 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8KHAQ7W8KV;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.timmynguyen.BuiltDiffTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BuiltDiff.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BuiltDiff";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -596,6 +700,15 @@
 			buildConfigurations = (
 				32A2938F2B42073C00122166 /* Debug */,
 				32A293902B42073C00122166 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		32D0A4012D384FEA00C9F803 /* Build configuration list for PBXNativeTarget "BuiltDiffTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				32D0A3FF2D384FEA00C9F803 /* Debug */,
+				32D0A4002D384FEA00C9F803 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

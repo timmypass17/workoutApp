@@ -11,10 +11,44 @@ import CoreData
 // read on main context, write on background context
 class WorkoutDao: WorkoutDaoProtocol {
     
-    private let context: NSManagedObjectContext // main context
+    private let context: NSManagedObjectContext // reads
+    private let backgroundContext: NSManagedObjectContext // writes (long)
 
-    init(context: NSManagedObjectContext) {
+    init(context: NSManagedObjectContext, backgroundContext: NSManagedObjectContext) {
         self.context = context
+        self.backgroundContext = backgroundContext
+    }
+    
+    func createTemplate(childContext: NSManagedObjectContext) -> Template {
+        let newTemplate = Template(context: childContext)
+        newTemplate.title = ""
+        return newTemplate
+    }
+    
+    func createWorkout(template: Template, childContext: NSManagedObjectContext) -> Workout {
+        let workout = Workout(context: childContext)
+        workout.title = template.title
+        workout.createdAt = .now
+        
+        for templateExercise in template.templateExercises {
+            let exercise = Exercise(context: childContext)
+            exercise.name = templateExercise.name
+            exercise.workout = workout
+            
+            for i in 0..<templateExercise.sets {
+                let exerciseSet = ExerciseSet(context: childContext)
+                exerciseSet.isComplete = false
+                exerciseSet.reps = -1
+                exerciseSet.weight = -1
+                exerciseSet.index = Int16(i)
+                exerciseSet.exercise = exercise
+                exercise.addToExerciseSets(exerciseSet)
+            }
+            
+            workout.addToExercises(exercise)
+        }
+        
+        return workout
     }
     
     func fetchTemplates() async throws -> [Template] {
@@ -61,6 +95,7 @@ class WorkoutDao: WorkoutDaoProtocol {
         return exerciseNames
     }
     
+    // note: fetches best set for each workout session. not individual sets
     func fetchExerciseSets(exerciseName: String, limit: Int? = nil, ascending: Bool = true) async throws -> [ExerciseSet] {
         let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
         let predicate = NSPredicate(format: "name_ == %@", exerciseName)
@@ -107,39 +142,48 @@ class WorkoutDao: WorkoutDaoProtocol {
     
     // existingObject vs object
     func deleteTemplate(_ template: Template) async throws {
-        let backgroundContext = CoreDataStack.shared.newBackgroundContext()
+//        let backgroundContext = CoreDataStack.shared.newBackgroundContext()
         
         try await backgroundContext.perform {
             // Fetch the object in the background context
-            let objectInContext = try backgroundContext.existingObject(with: template.objectID)
-            backgroundContext.delete(objectInContext)
+            let objectInContext = try self.backgroundContext.existingObject(with: template.objectID)
+            self.backgroundContext.delete(objectInContext)
             
-            try backgroundContext.save()
+            try self.backgroundContext.save()
         }
     }
     
     func deleteLog(_ log: Workout) async throws {
-        let backgroundContext = CoreDataStack.shared.newBackgroundContext()
+//        let backgroundContext = CoreDataStack.shared.newBackgroundContext()
 
         try await backgroundContext.perform {
-            let objectInContext = try backgroundContext.existingObject(with: log.objectID)
-            backgroundContext.delete(objectInContext)
+            let objectInContext = try self.backgroundContext.existingObject(with: log.objectID)
+            self.backgroundContext.delete(objectInContext)
             
-            try backgroundContext.save()
+            try self.backgroundContext.save()
         }
     }
     
     func updateTemplatesPositions(_ templates: [Template]) async throws {
-        let backgroundContext = CoreDataStack.shared.newBackgroundContext()
+//        let backgroundContext = CoreDataStack.shared.newBackgroundContext()
         
         try await backgroundContext.perform {
             for (index, template) in templates.enumerated() {
-                let objectInContext = try backgroundContext.existingObject(with: template.objectID) as! Template
+                let objectInContext = try self.backgroundContext.existingObject(with: template.objectID) as! Template
                 objectInContext.index = Int16(index)
             }
             
-            try backgroundContext.save()
+            try self.backgroundContext.save()
         }
+        
+//        try await context.perform {
+//            for (index, template) in templates.enumerated() {
+////                let objectInContext = try backgroundContext.existingObject(with: template.objectID) as! Template
+//                template.index = Int16(index)
+//            }
+//            
+//            try self.context.save()
+//        }
     }
     
 }
@@ -148,4 +192,3 @@ class WorkoutDao: WorkoutDaoProtocol {
 //          - Fetch Objects in the Target Context using existingObject(with:) or object(with:)
 // Core Data objects are not thread-safe, so it’s essential to use the appropriate context and threading practices to avoid crashes or inconsistent data. Using perform {} or performAndWait {} ensures that all Core Data operations are executed on the correct thread associated with the NSManagedObjectContext
 // Why use perform {}? - used to ensure thread safety. Core Data contexts are not thread-safe.You cannot access or mutate objects in a context from a thread other than the one it was created on. The perform method schedules the block of code to execute on the queue associated with the context, ensuring thread safety. Operations like fetching, saving, or modifying managed objects must be done within the context's queue to avoid undefined behavior or crashes.
-

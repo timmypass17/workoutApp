@@ -16,29 +16,9 @@ class StartWorkoutViewController: WorkoutDetailViewController {
     weak var delegate: StartWorkoutViewControllerDelegate?          // log handles
     weak var progressDelegate: StartWorkoutViewControllerDelegate?  // progress handles
 
-    init(template: Template) {
-        super.init(nibName: nil, bundle: nil)
-        workout = Workout(context: childContext)
-        workout.title = template.title
-        workout.createdAt = .now
-        
-        for templateExercise in template.templateExercises {
-            let exercise = Exercise(context: childContext)
-            exercise.name = templateExercise.name
-            exercise.workout = workout
-            
-            for i in 0..<templateExercise.sets {
-                let exerciseSet = ExerciseSet(context: childContext)
-                exerciseSet.isComplete = false
-                exerciseSet.reps = -1
-                exerciseSet.weight = -1
-                exerciseSet.index = Int16(i)
-                exerciseSet.exercise = exercise
-                exercise.addToExerciseSets(exerciseSet)
-            }
-            
-            workout.addToExercises(exercise)
-        }
+    init(template: Template, workoutService: WorkoutService) {
+        super.init(workoutService: workoutService)
+        workout = workoutService.createWorkout(template: template, childContext: childContext)
     }
     
     @MainActor required init?(coder: NSCoder) {

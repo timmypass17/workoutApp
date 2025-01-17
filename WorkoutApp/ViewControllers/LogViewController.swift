@@ -193,7 +193,7 @@ extension LogViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let month = monthYears[indexPath.section]
         guard let log = logs[month]?[indexPath.row] else { return }
-        let logWorkoutViewController = LogDetailViewController(log: log)
+        let logWorkoutViewController = LogDetailViewController(log: log, workoutService: workoutService)
         logWorkoutViewController.delegate = self
         
 //        let progressTableViewController = (tabBarController?.viewControllers?[2] as? UINavigationController)?.viewControllers[0] as! ProgressViewController

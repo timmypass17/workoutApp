@@ -30,7 +30,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let tabBarController = UITabBarController()
 
-        let workoutDao = WorkoutDao(context: CoreDataStack.shared.mainContext)
+        let workoutDao = WorkoutDao(context: CoreDataStack.shared.mainContext, backgroundContext: CoreDataStack.shared.newBackgroundContext())
         let workoutService = WorkoutService(workoutDao: workoutDao)
         
         let workoutViewController = WorkoutViewController(workoutService: workoutService)

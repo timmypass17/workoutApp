@@ -30,7 +30,7 @@ extension Template {
     }
     
     var templateExercises: [TemplateExercise] {
-        return templateExercises_?.array as! [TemplateExercise]
+        return templateExercises_?.array as? [TemplateExercise] ?? []
     }
 }
 

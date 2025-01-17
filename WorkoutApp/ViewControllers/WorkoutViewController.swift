@@ -95,7 +95,7 @@ class WorkoutViewController: UIViewController {
     
     private func didTapAddButton() -> UIAction {
         return UIAction { _ in
-            let createWorkoutViewController = CreateTemplateViewController()
+            let createWorkoutViewController = CreateTemplateViewController(workoutService: self.workoutService)
             createWorkoutViewController.delegate = self
             let vc = UINavigationController(rootViewController: createWorkoutViewController)
             self.present(vc, animated: true)
@@ -169,7 +169,7 @@ extension WorkoutViewController: UITableViewDataSource {
 extension WorkoutViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let template = templates[indexPath.row]
-        let startWorkoutViewController = StartWorkoutViewController(template: template)
+        let startWorkoutViewController = StartWorkoutViewController(template: template, workoutService: workoutService)
         
         let logTableViewController = (tabBarController?.viewControllers?[1] as? UINavigationController)?.viewControllers[0] as! LogViewController
         startWorkoutViewController.delegate = logTableViewController
@@ -196,7 +196,7 @@ extension WorkoutViewController: UITableViewDelegate {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
             let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "square.and.pencil")) { [self] _ in
                 let template = templates[indexPath.row]
-                let editTemplateViewController = EditTemplateViewController(template: template)
+                let editTemplateViewController = EditTemplateViewController(template: template, workoutService: workoutService)
                 editTemplateViewController.delegate = self
                 let vc = UINavigationController(rootViewController: editTemplateViewController)
                 self.present(vc, animated: true)

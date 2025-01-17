@@ -6,9 +6,13 @@
 //
 
 import Foundation
+import CoreData
 
+// TODO: Test all these
 protocol WorkoutDaoProtocol {
-    func fetchTemplates() async throws -> [Template] 
+    func createTemplate(childContext: NSManagedObjectContext) -> Template
+    func createWorkout(template: Template, childContext: NSManagedObjectContext) -> Workout
+    func fetchTemplates() async throws -> [Template]
     func fetchLogs() async throws -> [Workout]
     func fetchExerciseNames() async throws -> [String]
     func fetchExerciseSets(exerciseName: String, limit: Int?, ascending: Bool) async throws -> [ExerciseSet]

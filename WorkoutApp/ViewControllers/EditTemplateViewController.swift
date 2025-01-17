@@ -15,10 +15,10 @@ class EditTemplateViewController: TemplateViewController {
 
     weak var delegate: EditTemplateViewControllerDelegate?
 
-    init(template: Template) {
+    init(template: Template, workoutService: WorkoutService) {
         let childContext = CoreDataStack.shared.newChildContext()
         let objectInNewContext = childContext.object(with: template.objectID) as! Template
-        super.init(template: objectInNewContext, childContext: childContext)
+        super.init(template: objectInNewContext, childContext: childContext, workoutService: workoutService)
     }
     
     @MainActor required init?(coder: NSCoder) {

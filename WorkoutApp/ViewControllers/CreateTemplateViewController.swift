@@ -15,11 +15,10 @@ class CreateTemplateViewController: TemplateViewController {
 
     weak var delegate: CreateTemplateViewControllerDelegate?
 
-    init() {
+    init(workoutService: WorkoutService) {
         let childContext = CoreDataStack.shared.newChildContext()
-        let newTemplate = Template(context: childContext)
-        newTemplate.title = ""
-        super.init(template: newTemplate, childContext: childContext)
+        let newTemplate = workoutService.createTemplate(childContext: childContext)
+        super.init(template: newTemplate, childContext: childContext, workoutService: workoutService)
     }
     
     @MainActor required init?(coder: NSCoder) {

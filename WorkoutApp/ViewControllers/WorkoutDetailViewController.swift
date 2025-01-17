@@ -18,6 +18,16 @@ class WorkoutDetailViewController: UIViewController {
             
     var workout: Workout!
     let childContext = CoreDataStack.shared.newChildContext()
+    let workoutService: WorkoutService
+    
+    init(workoutService: WorkoutService) {
+        self.workoutService = workoutService
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()

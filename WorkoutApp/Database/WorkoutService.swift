@@ -17,6 +17,14 @@ class WorkoutService {
         self.workoutDao = workoutDao
     }
     
+    func createTemplate(childContext: NSManagedObjectContext) -> Template {
+        workoutDao.createTemplate(childContext: childContext)
+    }
+    
+    func createWorkout(template: Template, childContext: NSManagedObjectContext) -> Workout {
+        workoutDao.createWorkout(template: template, childContext: childContext)
+    }
+    
     func fetchTemplates() async -> [Template] {
         do {
             return try await workoutDao.fetchTemplates()
@@ -101,3 +109,6 @@ class WorkoutService {
         }
     }
 }
+
+// Core data testing:
+// The solution is to create a Core Data stack subclass that uses an in-memory store rather than the current SQLite store. Because an in-memory store isn’t persisted to disk, when the test finishes executing, the in-memory store releases its data.
