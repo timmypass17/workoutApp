@@ -24,23 +24,35 @@ class ExercisesTableViewController: UIViewController {
         let exercises: [String]
     }
 
-    static let allExercises = ["Squat", "Bench Press", "Pull Ups", "Deadlift", "Barbell Row", "Shoulder Press"]
+    var exercises: [String] = []
     
     var selectedExercises: [String] = []
     
-    var sections: [Section] = {
-        let groupedDictionary = Dictionary(grouping: allExercises, by: { String($0.prefix(1)) })
-        let keys = groupedDictionary.keys.sorted()
-        return keys.map { Section(letter: $0, exercises: groupedDictionary[$0]!.sorted()) }
-    }()
+    var sections: [Section] = []
     
     var searchController = UISearchController(searchResultsController: nil)
+    
+    let workoutService: WorkoutService
     weak var delegate: AddExerciseDetailViewControllerDelegate?
 
+    init(workoutService: WorkoutService) {
+        self.workoutService = workoutService
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "Exercises"
-
+        
+        exercises = workoutService.loadExercises(from: "exercises")
+        let groupedDictionary = Dictionary(grouping: exercises, by: { String($0.prefix(1)) })
+        let keys = groupedDictionary.keys.sorted()
+        sections = keys.map { Section(letter: $0, exercises: groupedDictionary[$0]!.sorted()) }
+        
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "ExerciseCell")
@@ -139,7 +151,7 @@ extension ExercisesTableViewController: UISearchResultsUpdating {
         
         if let searchText = searchController.searchBar.text, !searchText.isEmpty {
             // Filter the allExercises array based on the search text
-            let filteredExercises = ExercisesTableViewController.allExercises.filter { $0.localizedCaseInsensitiveContains(searchText) }
+            let filteredExercises = exercises.filter { $0.localizedCaseInsensitiveContains(searchText) }
 
             // Update the sections with the filtered exercises
             let groupedDictionary = Dictionary(grouping: filteredExercises, by: { String($0.prefix(1)) })
@@ -147,7 +159,7 @@ extension ExercisesTableViewController: UISearchResultsUpdating {
             sections = keys.map { Section(letter: $0, exercises: groupedDictionary[$0]!.sorted()) }
         } else {
             // If the search text is empty, show all exercises
-            let groupedDictionary = Dictionary(grouping: ExercisesTableViewController.allExercises, by: { String($0.prefix(1)) })
+            let groupedDictionary = Dictionary(grouping: exercises, by: { String($0.prefix(1)) })
             let keys = groupedDictionary.keys.sorted()
             sections = keys.map { Section(letter: $0, exercises: groupedDictionary[$0]!.sorted()) }
         }

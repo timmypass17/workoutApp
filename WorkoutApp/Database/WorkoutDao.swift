@@ -8,6 +8,7 @@
 import Foundation
 import CoreData
 
+// Data Access Object (DAO): Responsible for directly interacting with database (Core Data) and provides a simple API interface
 // read on main context, write on background context
 class WorkoutDao: WorkoutDaoProtocol {
     
@@ -165,8 +166,6 @@ class WorkoutDao: WorkoutDaoProtocol {
     }
     
     func updateTemplatesPositions(_ templates: [Template]) async throws {
-//        let backgroundContext = CoreDataStack.shared.newBackgroundContext()
-        
         try await backgroundContext.perform {
             for (index, template) in templates.enumerated() {
                 let objectInContext = try self.backgroundContext.existingObject(with: template.objectID) as! Template
@@ -175,15 +174,13 @@ class WorkoutDao: WorkoutDaoProtocol {
             
             try self.backgroundContext.save()
         }
+    }
+    
+    func loadExercises(from fileName: String) -> [String] {
+        guard let url = Bundle.main.url(forResource: fileName, withExtension: "txt"),
+              let content = try? String(contentsOf: url) else { return [] }
         
-//        try await context.perform {
-//            for (index, template) in templates.enumerated() {
-////                let objectInContext = try backgroundContext.existingObject(with: template.objectID) as! Template
-//                template.index = Int16(index)
-//            }
-//            
-//            try self.context.save()
-//        }
+        return content.components(separatedBy: "\n").filter { !$0.isEmpty }
     }
     
 }

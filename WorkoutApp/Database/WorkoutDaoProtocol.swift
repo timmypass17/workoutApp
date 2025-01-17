@@ -8,7 +8,6 @@
 import Foundation
 import CoreData
 
-// TODO: Test all these
 protocol WorkoutDaoProtocol {
     func createTemplate(childContext: NSManagedObjectContext) -> Template
     func createWorkout(template: Template, childContext: NSManagedObjectContext) -> Workout
@@ -20,4 +19,5 @@ protocol WorkoutDaoProtocol {
     func deleteTemplate(_ template: Template) async throws
     func deleteLog(_ log: Workout) async throws
     func updateTemplatesPositions(_ templates: [Template]) async throws
+    func loadExercises(from fileName: String) -> [String]
 }

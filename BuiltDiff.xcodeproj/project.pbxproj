@@ -50,6 +50,7 @@
 		32BF97972D21D36E0004FA47 /* ExerciseDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF97962D21D36E0004FA47 /* ExerciseDetailViewController.swift */; };
 		32BF97992D2204D50004FA47 /* EditExerciseDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF97982D2204D50004FA47 /* EditExerciseDetailViewController.swift */; };
 		32BF979B2D2205DD0004FA47 /* AddExerciseDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF979A2D2205DD0004FA47 /* AddExerciseDetailViewController.swift */; };
+		32D0A40B2D3B058900C9F803 /* exercises.txt in Resources */ = {isa = PBXBuildFile; fileRef = 32D0A40A2D3B058300C9F803 /* exercises.txt */; };
 		32D846232B5F06260046F0D2 /* Workout+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D8461D2B5F06260046F0D2 /* Workout+CoreDataClass.swift */; };
 		32D846242B5F06260046F0D2 /* Workout+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D8461E2B5F06260046F0D2 /* Workout+CoreDataProperties.swift */; };
 		32D846252B5F06260046F0D2 /* Exercise+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D8461F2B5F06260046F0D2 /* Exercise+CoreDataClass.swift */; };
@@ -121,6 +122,7 @@
 		32BF97982D2204D50004FA47 /* EditExerciseDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditExerciseDetailViewController.swift; sourceTree = "<group>"; };
 		32BF979A2D2205DD0004FA47 /* AddExerciseDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddExerciseDetailViewController.swift; sourceTree = "<group>"; };
 		32D0A3F92D384FEA00C9F803 /* BuiltDiffTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BuiltDiffTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		32D0A40A2D3B058300C9F803 /* exercises.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = exercises.txt; sourceTree = "<group>"; };
 		32D8461D2B5F06260046F0D2 /* Workout+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Workout+CoreDataClass.swift"; sourceTree = "<group>"; };
 		32D8461E2B5F06260046F0D2 /* Workout+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Workout+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		32D8461F2B5F06260046F0D2 /* Exercise+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Exercise+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 		3253BD1A2D373042003F5A4A /* Database */ = {
 			isa = PBXGroup;
 			children = (
+				32D0A40A2D3B058300C9F803 /* exercises.txt */,
 				32D8462B2B6305CF0046F0D2 /* WorkoutService.swift */,
 				32BF976E2D1CD06A0004FA47 /* CoreDataStack.swift */,
 				3253BD1B2D3731F4003F5A4A /* WorkoutDao.swift */,
@@ -365,6 +368,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				32A2938A2B42073C00122166 /* LaunchScreen.storyboard in Resources */,
+				32D0A40B2D3B058900C9F803 /* exercises.txt in Resources */,
 				32A293872B42073C00122166 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

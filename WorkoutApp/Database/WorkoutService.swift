@@ -108,6 +108,11 @@ class WorkoutService {
             return templates
         }
     }
+    
+    func loadExercises(from fileName: String) -> [String] {
+        return workoutDao.loadExercises(from: fileName)
+    }
+    
 }
 
 // Core data testing:

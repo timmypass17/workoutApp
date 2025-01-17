@@ -136,7 +136,7 @@ extension TemplateViewController: UITableViewDelegate {
         
         if isAddButtonRow {
             tableView.deselectRow(at: indexPath, animated: true)
-            let exercisesTableViewController = ExercisesTableViewController()
+            let exercisesTableViewController = ExercisesTableViewController(workoutService: workoutService)
             exercisesTableViewController.delegate = self
             let vc = UINavigationController(rootViewController: exercisesTableViewController)
             self.present(vc, animated: true)

@@ -312,7 +312,7 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
 
 extension WorkoutDetailViewController: AddExerciseFooterViewDelegate {
     func didTapAddExerciseButton(_ sender: UIButton) {
-        let exercisesTableViewController = ExercisesTableViewController()
+        let exercisesTableViewController = ExercisesTableViewController(workoutService: workoutService)
         exercisesTableViewController.delegate = self
         self.present(UINavigationController(rootViewController: exercisesTableViewController), animated: true, completion: nil)
     }
