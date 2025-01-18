@@ -60,7 +60,7 @@ class ExercisesTableViewController: UIViewController {
 
         // Top bar buttons
         navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: didTapCancelButton())
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Custom", primaryAction: didTapAddButton())
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Custom", primaryAction: didTapCustomButton())
         
         // Search bar
         searchController.searchResultsUpdater = self
@@ -84,10 +84,43 @@ class ExercisesTableViewController: UIViewController {
         }
     }
     
-    private func didTapAddButton() -> UIAction {
+    private func didTapCustomButton() -> UIAction {
         return UIAction { _ in
-            
+            self.showNewExerciseAlert()
         }
+    }
+    
+    func showNewExerciseAlert() {
+        let alert = UIAlertController(title: "Add Exercise", message: "Enter exercise name below", preferredStyle: .alert)
+        
+        alert.addTextField { textField in
+            textField.placeholder = "Ex. Bench Press"
+            textField.autocapitalizationType = .sentences
+            let textChangedAction = UIAction { _ in
+                alert.actions[1].isEnabled = textField.text!.count > 0
+            }
+            textField.addAction(textChangedAction, for: .allEditingEvents)
+        }
+        
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { _ in
+            guard let exercise = alert.textFields?[0].text else { return }
+            self.presentAddExerciseViewController(exerciseName: exercise)
+        }))
+        
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    func presentAddExerciseViewController(exerciseName: String) {
+        let exerciseDetailViewController = AddExerciseDetailViewController(exercise: exerciseName)
+        exerciseDetailViewController.delegate = self
+        let vc = UINavigationController(rootViewController: exerciseDetailViewController)
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.medium()]
+        }
+        
+        present(vc, animated: true)
     }
 }
 
@@ -114,21 +147,16 @@ extension ExercisesTableViewController: UITableViewDataSource {
         return cell
     }
     
+    
 }
 
 extension ExercisesTableViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let exercise = sections[indexPath.section].exercises[indexPath.row]
-        let exerciseDetailViewController = AddExerciseDetailViewController(exercise: exercise)
-        exerciseDetailViewController.delegate = self
-        let vc = UINavigationController(rootViewController: exerciseDetailViewController)
-        if let sheet = vc.sheetPresentationController {
-            sheet.detents = [.medium()]
-        }
-        
-        present(vc, animated: true)
+        presentAddExerciseViewController(exerciseName: exercise)
     }
+    
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
         let exercise = sections[indexPath.section].exercises[indexPath.row]
