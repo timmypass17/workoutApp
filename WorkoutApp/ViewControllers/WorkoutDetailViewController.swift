@@ -141,7 +141,7 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         
         let currentReps = set.reps >= 0 ? Int(set.reps) : Int(set.previousSet?.reps ?? 0)
         let incrementedReps = currentReps + 1
-        set.reps = max(Int16(incrementedReps), Int16.max)
+        set.reps = min(Int16(incrementedReps), Int16.max)
         
         cell.repsTextField.text = set.repsString
     }
