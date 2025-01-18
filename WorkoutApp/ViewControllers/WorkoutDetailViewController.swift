@@ -166,12 +166,16 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         let exercise = workout.getExercise(at: indexPath.section)
         let set = exercise.getExerciseSets()[indexPath.row]
         
-        let currentWeight = set.weight >= 0 ? set.weight : set.previousSet?.weight ?? 0
-
+        // Get set's weight (always stored as lbs)
+        let currentWeightInLbs = set.weight >= 0 ? set.weight : set.previousSet?.weight ?? 0
+        // Convert weight to kg (if needed)
+        let currentWeight = Settings.shared.weightUnit == .lbs ? currentWeightInLbs : currentWeightInLbs.lbsToKg
+        // Apply increment
         let incrementedWeight = currentWeight + Settings.shared.weightIncrement
-        set.weight = incrementedWeight
+        // Convert incremented weight back to lbs (if needed). note: Don't store kg weight value
+        set.weight = Settings.shared.weightUnit == .lbs ? incrementedWeight : incrementedWeight.kgToLbs
         
-        cell.weightTextField.text = set.weightString
+        cell.weightTextField.text = Settings.shared.weightUnit == .lbs ? set.weight.lbsString : set.weight.kgString
     }
     
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapDecrementWeightButton: Bool) {
@@ -180,12 +184,12 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         let exercise = workout.getExercise(at: indexPath.section)
         let set = exercise.getExerciseSets()[indexPath.row]
         
-        let currentWeight = set.weight >= 0 ? set.weight : set.previousSet?.weight ?? 0
-
-        let decrementedWeight = max(currentWeight - Settings.shared.weightIncrement, 0)
-        set.weight = decrementedWeight
+        let currentWeightInLbs = set.weight >= 0 ? set.weight : set.previousSet?.weight ?? 0
+        let currentWeight = Settings.shared.weightUnit == .lbs ? currentWeightInLbs : currentWeightInLbs.lbsToKg
+        let decrementedWeight = currentWeight - Settings.shared.weightIncrement
+        set.weight = Settings.shared.weightUnit == .lbs ? decrementedWeight : decrementedWeight.kgToLbs
         
-        cell.weightTextField.text = set.weightString
+        cell.weightTextField.text = Settings.shared.weightUnit == .lbs ? set.weight.lbsString : set.weight.kgString
     }
     
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapNextButton: Bool) {
@@ -259,7 +263,7 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         
         if exerciseSet.weight < 0 {
             let weight = Double(cell.weightTextField.placeholder ?? "0") ?? 0.0
-            exerciseSet.weight = weight
+            exerciseSet.weight = Settings.shared.weightUnit == .lbs ? weight: weight.kgToLbs
             cell.weightTextField.text = cell.weightTextField.placeholder
         }
         
@@ -291,7 +295,8 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         if weightText.isEmpty {
             exerciseSet.weight = -1
         } else {
-            exerciseSet.weight = Double(weightText) ?? 0
+            exerciseSet.weight = Settings.shared.weightUnit == .lbs ? Double(weightText) ?? 0 : Double(weightText)?.kgToLbs ?? 0
+            print(exerciseSet.weight)
         }
 //        exerciseSet.isComplete = !exerciseSet.weight.isEmpty || !exerciseSet.reps.isEmpty
     }

@@ -136,15 +136,20 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     func update(exerciseSet: ExerciseSet) {
         updateSetButton(exerciseSet: exerciseSet)
         
-        weightTextField.text = exerciseSet.weight >= 0 ? exerciseSet.weightString : ""
+        if exerciseSet.weight >= 0 {
+            weightTextField.text = Settings.shared.weightUnit == .lbs ? exerciseSet.weight.lbsString : exerciseSet.weight.kgString
+        } else {
+            weightTextField.text = ""
+        }
+        
         repsTextField.text = exerciseSet.reps >= 0 ? exerciseSet.repsString : ""
         
         if let previousSet = exerciseSet.previousSet {
-            weightTextField.placeholder = previousSet.weightString
+            weightTextField.placeholder = Settings.shared.weightUnit == .lbs ? previousSet.weight.lbsString : previousSet.weight.kgString
             repsTextField.placeholder = previousSet.repsString
-            previousLabel.text = previousSet.weightString
+            previousLabel.text = Settings.shared.weightUnit == .lbs ? previousSet.weight.lbsString : previousSet.weight.kgString
         } else {
-            weightTextField.placeholder = "135"
+            weightTextField.placeholder = Settings.shared.weightUnit == .lbs ? "45" : "20"
             repsTextField.placeholder = "5"
             previousLabel.text = "-"
         }

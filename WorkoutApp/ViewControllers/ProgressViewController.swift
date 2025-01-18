@@ -65,10 +65,10 @@ class ProgressViewController: UIViewController {
             contentUnavailableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
         
-//        NotificationCenter.default.addObserver(self,
-//            selector: #selector(updateUI),
-//            name: WeightType.valueChangedNotification, object: nil)
-        
+        NotificationCenter.default.addObserver(tableView,
+                                               selector: #selector(UITableView.reloadData),
+                                               name: WeightType.valueChangedNotification, object: nil
+        )
         
         updateData()
     }
@@ -88,6 +88,7 @@ class ProgressViewController: UIViewController {
             for exerciseName in exerciseNames {
                 let exerciseSets: [ExerciseSet] = await workoutService.fetchExerciseSets(exerciseName: exerciseName)
                 let bestLift: Double = await workoutService.fetchPR(exerciseName: exerciseName)
+                
                 exerciseData.append(ExerciseData(name: exerciseName, exerciseSets: exerciseSets, bestLift: bestLift, lastUpdated: .now, latestLift: exerciseSets.last?.weight ?? 0))
             }
             
@@ -163,6 +164,14 @@ extension ProgressViewController: UITableViewDelegate {
         Task {
             let data = exerciseData[indexPath.row]
             let allSets = await workoutService.fetchExerciseSets(exerciseName: data.name, ascending: false)
+            allSets.forEach { set in
+                if Settings.shared.weightUnit == .lbs {
+                    set.weight = set.weight.lbs
+                } else {
+                    set.weight = set.weight.lbsToKg
+                }
+            }
+            
             let allExerciseData = ExerciseData(name: data.name, exerciseSets: allSets, bestLift: data.bestLift, lastUpdated: data.lastUpdated, latestLift: data.latestLift)
             let progressDetailView = ProgressDetailView(data: allExerciseData)
             let hostingController = UIHostingController(rootView: progressDetailView)

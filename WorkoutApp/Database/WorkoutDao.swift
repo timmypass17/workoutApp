@@ -135,6 +135,7 @@ class WorkoutDao: WorkoutDaoProtocol {
             else {
                 return 0.0
             }
+            
             return maxWeight
         }
         
@@ -183,6 +184,32 @@ class WorkoutDao: WorkoutDaoProtocol {
         return content.components(separatedBy: "\n").filter { !$0.isEmpty }
     }
     
+}
+
+extension Double {
+    
+    // note: every weight is stored as lbs
+    
+    var lbs: Double {
+        return self
+    }
+    
+    var lbsToKg: Double {
+        // lbs -> kg
+        return self * 0.45359237
+    }
+    
+    var kgToLbs: Double {
+        return self * 2.2046226218
+    }
+    
+    var lbsString: String {
+        return formatWeight(lbs)
+    }
+    
+    var kgString: String {
+        return formatWeight(lbsToKg)
+    }
 }
 
 // note: Core Data objects are tied to the context they belong to. Cant modify objects in different context.
