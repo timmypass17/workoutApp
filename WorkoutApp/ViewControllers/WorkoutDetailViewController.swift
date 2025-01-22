@@ -140,7 +140,15 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         let exercise = workout.getExercise(at: indexPath.section)
         let set = exercise.getExerciseSets()[indexPath.row]
         
-        let currentReps = set.reps >= 0 ? Int(set.reps) : Int(set.previousSet?.reps ?? 0)
+        let currentReps: Int
+        if set.reps >= 0 {
+            currentReps = Int(set.reps)
+        } else if let previousSet = set.previousSet {
+            currentReps = Int(previousSet.reps)
+        } else {
+            currentReps = Int(cell.repsTextField.placeholder ?? "0") ?? 0
+        }
+        
         let incrementedReps = currentReps + 1
         set.reps = min(Int16(incrementedReps), Int16.max)
         
@@ -153,7 +161,14 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         let exercise = workout.getExercise(at: indexPath.section)
         let set = exercise.getExerciseSets()[indexPath.row]
         
-        let currentReps = set.reps >= 0 ? Int(set.reps) : Int(set.previousSet?.reps ?? 0)
+        let currentReps: Int
+        if set.reps >= 0 {
+            currentReps = Int(set.reps)
+        } else if let previousSet = set.previousSet {
+            currentReps = Int(previousSet.reps)
+        } else {
+            currentReps = Int(cell.repsTextField.placeholder ?? "0") ?? 0
+        }
 
         let decrementedReps = max(currentReps - 1, 0)
         set.reps = Int16(decrementedReps)
@@ -167,12 +182,20 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         let exercise = workout.getExercise(at: indexPath.section)
         let set = exercise.getExerciseSets()[indexPath.row]
         
-        // Get set's weight (always stored as lbs)
-        let currentWeightInLbs = set.weight >= 0 ? set.weight : set.previousSet?.weight ?? 0
+        // Get set's weight (always stored as lbs). actual weight > previous weight > placeholder
+        let currentWeightInLbs: Double
+        if set.weight >= 0 {
+            currentWeightInLbs = set.weight
+        } else if let previousSet = set.previousSet {
+            currentWeightInLbs = previousSet.weight
+        } else {
+            currentWeightInLbs = Double(cell.weightTextField.placeholder ?? "0") ?? 0
+        }
+        
         // Convert weight to kg (if needed)
         let currentWeight = Settings.shared.weightUnit == .lbs ? currentWeightInLbs : currentWeightInLbs.lbsToKg
         // Apply increment
-        let incrementedWeight = currentWeight + Settings.shared.weightIncrement
+        let incrementedWeight = min(currentWeight + Settings.shared.weightIncrement, Double.greatestFiniteMagnitude)
         // Convert incremented weight back to lbs (if needed). note: Don't store kg weight value
         set.weight = Settings.shared.weightUnit == .lbs ? incrementedWeight : incrementedWeight.kgToLbs
         
@@ -185,9 +208,17 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
         let exercise = workout.getExercise(at: indexPath.section)
         let set = exercise.getExerciseSets()[indexPath.row]
         
-        let currentWeightInLbs = set.weight >= 0 ? set.weight : set.previousSet?.weight ?? 0
+        let currentWeightInLbs: Double
+        if set.weight >= 0 {
+            currentWeightInLbs = set.weight
+        } else if let previousSet = set.previousSet {
+            currentWeightInLbs = previousSet.weight
+        } else {
+            currentWeightInLbs = Double(cell.weightTextField.placeholder ?? "0") ?? 0
+        }
+        
         let currentWeight = Settings.shared.weightUnit == .lbs ? currentWeightInLbs : currentWeightInLbs.lbsToKg
-        let decrementedWeight = currentWeight - Settings.shared.weightIncrement
+        let decrementedWeight = max(currentWeight - Settings.shared.weightIncrement, 0)
         set.weight = Settings.shared.weightUnit == .lbs ? decrementedWeight : decrementedWeight.kgToLbs
         
         cell.weightTextField.text = Settings.shared.weightUnit == .lbs ? set.weight.lbsString : set.weight.kgString
