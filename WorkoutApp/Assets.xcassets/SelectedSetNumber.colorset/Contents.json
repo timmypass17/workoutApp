@@ -16,7 +16,7 @@
       ],
       "color" : {
         "platform" : "osx",
-        "reference" : "secondaryLabelColor"
+        "reference" : "tertiaryLabelColor"
       },
       "idiom" : "universal"
     },

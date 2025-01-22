@@ -157,14 +157,18 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     
     func updateSetButton(exerciseSet: ExerciseSet) {
         setButton.isSelected = exerciseSet.isComplete
+        let currentSetNumberColor: UIColor = traitCollection.userInterfaceStyle == .light ? Settings.shared.accentColor.color.withAlphaComponent(0.75) : .white
+        let currentSetBorderColor: UIColor = traitCollection.userInterfaceStyle == .light ? Settings.shared.accentColor.color.withAlphaComponent(0.75) : Settings.shared.accentColor.color
+        let currentSetcolors: [UIColor] = [currentSetNumberColor, currentSetBorderColor]
+        let unselectedColors: [UIColor] = [Color.ui.unselectedSetNumber, Color.ui.unselectedSetNumber]
+        let selectedColors: [UIColor] = [.white, Settings.shared.accentColor.color]
+        
         var config = UIImage.SymbolConfiguration(pointSize: 30)
-        let colors: [UIColor] = exerciseSet.isCurrentSet ? [Color.ui.cellNo, Settings.shared.accentColor.color] : [.systemGray, .systemGray]
-        config = config.applying(UIImage.SymbolConfiguration(paletteColors: colors))
+        config = config.applying(UIImage.SymbolConfiguration(paletteColors: exerciseSet.isCurrentSet ? currentSetcolors : unselectedColors))
         setButton.setImage(UIImage(systemName: "\(exerciseSet.index + 1).circle", withConfiguration: config), for: .normal)
 
-        // Selected
         var selectedConfig = UIImage.SymbolConfiguration(pointSize: 30)
-        selectedConfig = selectedConfig.applying(UIImage.SymbolConfiguration(paletteColors: [.white, Settings.shared.accentColor.color]))
+        selectedConfig = selectedConfig.applying(UIImage.SymbolConfiguration(paletteColors: selectedColors))
         setButton.setImage(UIImage(systemName: "\(exerciseSet.index + 1).circle.fill", withConfiguration: selectedConfig), for: .selected)
 
     }

@@ -118,7 +118,8 @@ extension Color {
     
     struct UI {
         // Asset colors
-        let cellNo = UIColor(named: "CellNo")!
+        let selectedSetNumber = UIColor(named: "SelectedSetNumber")!
+        let unselectedSetNumber = UIColor(named: "UnselectedSetNumber")!
     }
 }
 
