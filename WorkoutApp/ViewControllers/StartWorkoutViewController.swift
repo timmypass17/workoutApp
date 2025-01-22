@@ -28,7 +28,8 @@ class StartWorkoutViewController: WorkoutDetailViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Finish", primaryAction: didTapFinishButton())
+        let timeElapsedButton = TimeElapsedBarButton()
+        navigationItem.rightBarButtonItems = [UIBarButtonItem(title: "Finish", primaryAction: didTapFinishButton()), timeElapsedButton]
     }
 
     func didTapFinishButton() -> UIAction {

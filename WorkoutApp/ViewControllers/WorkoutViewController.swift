@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreData
 
 
 class WorkoutViewController: UIViewController {
@@ -35,6 +36,7 @@ class WorkoutViewController: UIViewController {
     private let workoutService: WorkoutService
     
     private var templates: [Template] = []
+    var fetchedResultsController: NSFetchedResultsController<Template>!
     
     init(workoutService: WorkoutService) {
         self.workoutService = workoutService

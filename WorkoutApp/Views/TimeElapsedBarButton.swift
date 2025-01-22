@@ -8,18 +8,18 @@
 import UIKit
 import SwiftUI
 
-class TimerBarButton: UIBarButtonItem, WorkoutTimerDelegate {
+class TimeElapsedBarButton: UIBarButtonItem, WorkoutTimerDelegate {
+    
     var timer = WorkoutTimer()
 
     override init() {
         super.init()
         style = .plain
         target = self
-        action = #selector(buttonTapped)
+        primaryAction = didTapButton()
         tintColor = .secondaryLabel
         timer.delegate = self
         timer.startTimer()
-        updateUI()
     }
     
     required init?(coder: NSCoder) {
@@ -32,13 +32,15 @@ class TimerBarButton: UIBarButtonItem, WorkoutTimerDelegate {
         title = timer.isRunning ? timeElapsedString : "Paused"
     }
     
-    @objc func buttonTapped() {
-        if timer.isRunning {
-            timer.stopTimer()
-        } else {
-            timer.startTimer()
+    func didTapButton() -> UIAction {
+        return UIAction { _ in
+            if self.timer.isRunning {
+                self.timer.stopTimer()
+            } else {
+                self.timer.startTimer()
+            }
+            self.updateUI()
         }
-        updateUI()
     }
     
     func workoutTimer(_ sender: WorkoutTimer, elapsedTimeDidChange: TimeInterval) {
@@ -57,11 +59,13 @@ class TimerBarButton: UIBarButtonItem, WorkoutTimerDelegate {
 class WorkoutTimer {
     private var timer: Timer?
     var elapsedTime: TimeInterval = 0
-    weak var delegate: WorkoutTimerDelegate?
+    
     var isRunning: Bool {
         guard let timer else { return false }
         return timer.isValid
     }
+    
+    weak var delegate: WorkoutTimerDelegate?
     
     func startTimer() {
         // Have to create new timer (can't stop and start again)

@@ -138,22 +138,15 @@ extension LogViewController: UITableViewDelegate {
             Task {
                 let monthYear = monthYears[indexPath.section]
                 let logToRemove = logs[monthYear, default: []][indexPath.row]
-                print("remove at: \(indexPath)")
                 self.logs = await workoutService.deleteLog(logs, at: indexPath)
-                logs.forEach {
-                    print($0.key, $0.value.count)
-                }
-                print("1")
+
                 tableView.deleteRows(at: [indexPath], with: .automatic)
-                print("2")
                 if logs[monthYear, default: []].isEmpty {
                     logs[monthYear] = nil
                     tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
-                    print("3")
                 } else {
                     // Reloadds section header
                     tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
-                    print("4")
                 }
                 
                 contentUnavailableView.isHidden = !logs.isEmpty
@@ -200,8 +193,6 @@ extension LogViewController: StartWorkoutViewControllerDelegate {
 
 
 extension LogViewController: LogDetailViewControllerDelegate {
-    // log date can change, so row/section can change as well (delete old, insert new)
-    // TODO: Crash 
     func logDetailViewController(_ viewController: LogDetailViewController, didSaveLog log: Workout) {
         // important: get log in main context (log that was save still has child context)
         do {
