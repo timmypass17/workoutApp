@@ -55,7 +55,7 @@ class AccentColorTableViewController: UITableViewController {
 }
 
 enum AccentColor: String, CaseIterable, Codable {
-    case blue, red, orange, yellow, green, purple, pink, mint, cyan, teal, indigo, brown
+    case blue, red, orange, yellow, green, purple, pink, mint, cyan, teal, indigo, brown, white
     static let valueChangedNotification = Notification.Name("AccentColor.valueChanged")
 
     var color: UIColor {
@@ -84,6 +84,8 @@ enum AccentColor: String, CaseIterable, Codable {
             return .systemIndigo
         case .brown:
             return .systemBrown
+        case .white:
+            return .white
         }
     }
 }

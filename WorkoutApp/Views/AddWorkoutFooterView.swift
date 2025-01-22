@@ -18,6 +18,7 @@ class AddExerciseFooterView: UIView {
         button.setImage(UIImage(systemName: "plus"), for: .normal)
         button.setTitle("Add Exercise", for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.tintColor = Settings.shared.accentColor.color
         return button
     }()
     

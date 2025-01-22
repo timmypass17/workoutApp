@@ -9,7 +9,13 @@ import UIKit
 import SafariServices
 import MessageUI
 
-class SettingsTableViewController: UITableViewController {
+class SettingsTableViewController: UIViewController {
+    
+    private let tableView: UITableView = {
+        let tableView = UITableView(frame: .zero, style: .grouped)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        return tableView
+    }()
     
     struct Section {
         var title: String
@@ -20,22 +26,23 @@ class SettingsTableViewController: UITableViewController {
         let image: UIImage?
         let text: String
         var secondary: String?
-        let backgroundColor: UIColor?
+        var backgroundColor: UIColor?
+        let isOn: Bool?
         
-        init(image: UIImage, text: String, secondary: String? = nil, backgroundColor: UIColor?) {
+        init(image: UIImage, text: String, secondary: String? = nil, backgroundColor: UIColor?, isOn: Bool? = nil) {
             self.image = image
             self.text = text
             self.secondary = secondary
             self.backgroundColor = backgroundColor
+            self.isOn = isOn
         }
     }
     
     var sections = [
         Section(title: "General",
-                data: [Model(image: UIImage(systemName: "dumbbell.fill")!, text: "Weight Units", secondary: Settings.shared.weightUnit.description, backgroundColor: .accentColor),
-                       Model(image: UIImage(systemName: "alarm.fill")!, text: "Show Timer", backgroundColor: .accentColor),
-                       //                Model(image: UIImage(systemName: "figure.run")!, text: "Show \"Add Exercise\"", backgroundColor: .accentColor),
-                       Model(image: UIImage(systemName: "iphone.radiowaves.left.and.right")!, text: "Haptic Feedback", backgroundColor: .accentColor),
+                data: [Model(image: UIImage(systemName: "dumbbell.fill")!, text: "Weight Units", secondary: Settings.shared.weightUnit.description, backgroundColor: Settings.shared.accentColor.color),
+                       Model(image: UIImage(systemName: "alarm.fill")!, text: "Show Timer", backgroundColor: Settings.shared.accentColor.color, isOn: Settings.shared.showTimer),
+                       Model(image: UIImage(systemName: "iphone.radiowaves.left.and.right")!, text: "Haptic Feedback", backgroundColor: Settings.shared.accentColor.color, isOn: Settings.shared.enableHaptic),
                       ]),
         Section(title: "Appearance",
                 data: [Model(image: UIImage(systemName: "moon.stars.fill")!, text: "Theme", secondary: Settings.shared.theme.description, backgroundColor: .systemIndigo),
@@ -49,7 +56,6 @@ class SettingsTableViewController: UITableViewController {
 
     static let weightIndexPath = IndexPath(row: 0, section: 0)
     static let showTimerIndexPath = IndexPath(row: 1, section: 0)
-//    static let showExerciseIndexPath = IndexPath(row: 2, section: 0)
     static let hapticIndexPath = IndexPath(row: 2, section: 0)
 
     static let themeIndexpath = IndexPath(row: 0, section: 1)
@@ -60,57 +66,86 @@ class SettingsTableViewController: UITableViewController {
     
     private let email = "timmysappstuff@gmail.com"
     
-    init() {
-        super.init(style: .grouped)
-    }
-    
-    required init?(coder: NSCoder) {
-        
-        fatalError("init(coder:) has not been implemented")
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "Settings"
         navigationController?.navigationBar.prefersLargeTitles = true
-        tableView.register(SettingsTableViewCell.self, forCellReuseIdentifier: SettingsTableViewCell.identifier)
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.register(SelectableSettingsTableViewCell.self, forCellReuseIdentifier: SelectableSettingsTableViewCell.reuseIdentifier)
+        tableView.register(ToggleableSettingsTableViewCell.self, forCellReuseIdentifier: ToggleableSettingsTableViewCell.reuseIdentifier)
+
+        view.addSubview(tableView)
+
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
     }
     
-    // MARK: - Table view data source
-    
-    override func numberOfSections(in tableView: UITableView) -> Int {
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if let selectedIndexPath = tableView.indexPathForSelectedRow {
+            tableView.deselectRow(at: selectedIndexPath, animated: true)
+        }
+    }
+}
+
+extension SettingsTableViewController: UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return sections.count
     }
     
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return sections[section].data.count
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "SettingsCell", for: indexPath) as! SettingsTableViewCell
-        let model = sections[indexPath.section].data[indexPath.row]
-        cell.update(with: model)
-        cell.selectionStyle = .default
-        cell.accessoryType = .disclosureIndicator
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath == SettingsTableViewController.showTimerIndexPath || indexPath == SettingsTableViewController.hapticIndexPath {
-            cell.addToggleView()
-            cell.selectionStyle = .none
-            cell.accessoryType = .none
-            if indexPath == SettingsTableViewController.showTimerIndexPath {
-                cell.toggleView.isOn = Settings.shared.showTimer
-            } else if indexPath == SettingsTableViewController.hapticIndexPath {
-                cell.toggleView.isOn = Settings.shared.enableHaptic
-            }
+            let cell = tableView.dequeueReusableCell(withIdentifier: ToggleableSettingsTableViewCell.reuseIdentifier, for: indexPath) as! ToggleableSettingsTableViewCell
+            cell.delegate = self
+            let model = sections[indexPath.section].data[indexPath.row]
+            cell.update(with: model)
+            cell.toggleView.isOn = model.isOn ?? false
+            return cell
+        } else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: SelectableSettingsTableViewCell.reuseIdentifier, for: indexPath) as! SelectableSettingsTableViewCell
+            let model = sections[indexPath.section].data[indexPath.row]
+            cell.update(with: model)
+            return cell
         }
-        cell.delegate = self
-        return cell
+//        let cell = tableView.dequeueReusableCell(withIdentifier: "SettingsCell", for: indexPath) as! SettingsTableViewCell
+//        let model = sections[indexPath.section].data[indexPath.row]
+//        cell.update(with: model)
+        
+        
+//        if indexPath == SettingsTableViewController.showTimerIndexPath || indexPath == SettingsTableViewController.hapticIndexPath {
+//            cell.addToggleView()
+//            cell.selectionStyle = .none
+//            cell.accessoryType = .none
+//            if indexPath == SettingsTableViewController.showTimerIndexPath {
+//                cell.toggleView.isOn = Settings.shared.showTimer
+//            } else if indexPath == SettingsTableViewController.hapticIndexPath {
+//                cell.toggleView.isOn = Settings.shared.enableHaptic
+//            }
+//        } else {
+//            cell.selectionStyle = .default
+//            cell.accessoryType = .disclosureIndicator
+//        }
+//        cell.delegate = self
+//        return cell
     }
+}
+
+extension SettingsTableViewController: UITableViewDelegate {
     
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return sections[section].title
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath == SettingsTableViewController.weightIndexPath {
             let weightTableViewController = WeightTableViewController(style: .grouped)
             weightTableViewController.delegate = self
@@ -174,7 +209,12 @@ extension SettingsTableViewController: ThemeTableViewControllerDelegate {
 extension SettingsTableViewController: AccentColorTableViewControllerDelegate {
     func accentColorTableViewController(_ controller: AccentColorTableViewController, didSelectAccentColor color: AccentColor) {
         let colorIndexPath = SettingsTableViewController.accentColorIndexpath
+        for j in 0..<sections[0].data.count {
+            sections[0].data[j].backgroundColor = color.color
+        }
         sections[colorIndexPath.section].data[colorIndexPath.row].secondary = color.rawValue.capitalized
+        
+        tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
         tableView.reloadRows(at: [colorIndexPath], with: .automatic)
     }
 }
@@ -198,8 +238,8 @@ extension SettingsTableViewController: MFMailComposeViewControllerDelegate {
     }
 }
 
-extension SettingsTableViewController: SettingsTableViewCellDelegate {
-    func settingsTableViewCell(_ sender: SettingsTableViewCell, toggleValueChanged: Bool) {
+extension SettingsTableViewController: ToggleableSettingsTableViewCellDelegate {
+    func toggleableSettingsTableViewCell(_ sender: ToggleableSettingsTableViewCell, toggleValueChanged: Bool) {
         guard let indexPath = tableView.indexPath(for: sender) else { return }
         if indexPath == SettingsTableViewController.showTimerIndexPath {
             Settings.shared.showTimer = toggleValueChanged
@@ -208,7 +248,6 @@ extension SettingsTableViewController: SettingsTableViewCellDelegate {
         }
     }
 }
-
 
 /**
  2 Ways to to pass messages between objects

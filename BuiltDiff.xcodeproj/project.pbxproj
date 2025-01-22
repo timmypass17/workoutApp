@@ -51,6 +51,8 @@
 		32BF97992D2204D50004FA47 /* EditExerciseDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF97982D2204D50004FA47 /* EditExerciseDetailViewController.swift */; };
 		32BF979B2D2205DD0004FA47 /* AddExerciseDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF979A2D2205DD0004FA47 /* AddExerciseDetailViewController.swift */; };
 		32D0A40B2D3B058900C9F803 /* exercises.txt in Resources */ = {isa = PBXBuildFile; fileRef = 32D0A40A2D3B058300C9F803 /* exercises.txt */; };
+		32D0A4112D41B4C600C9F803 /* SelectableSettingsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D0A4102D41B4C600C9F803 /* SelectableSettingsTableViewCell.swift */; };
+		32D0A4132D41B4FF00C9F803 /* ToggleableSettingsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D0A4122D41B4FF00C9F803 /* ToggleableSettingsTableViewCell.swift */; };
 		32D846232B5F06260046F0D2 /* Workout+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D8461D2B5F06260046F0D2 /* Workout+CoreDataClass.swift */; };
 		32D846242B5F06260046F0D2 /* Workout+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D8461E2B5F06260046F0D2 /* Workout+CoreDataProperties.swift */; };
 		32D846252B5F06260046F0D2 /* Exercise+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D8461F2B5F06260046F0D2 /* Exercise+CoreDataClass.swift */; };
@@ -123,6 +125,8 @@
 		32BF979A2D2205DD0004FA47 /* AddExerciseDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddExerciseDetailViewController.swift; sourceTree = "<group>"; };
 		32D0A3F92D384FEA00C9F803 /* BuiltDiffTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BuiltDiffTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		32D0A40A2D3B058300C9F803 /* exercises.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = exercises.txt; sourceTree = "<group>"; };
+		32D0A4102D41B4C600C9F803 /* SelectableSettingsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectableSettingsTableViewCell.swift; sourceTree = "<group>"; };
+		32D0A4122D41B4FF00C9F803 /* ToggleableSettingsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleableSettingsTableViewCell.swift; sourceTree = "<group>"; };
 		32D8461D2B5F06260046F0D2 /* Workout+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Workout+CoreDataClass.swift"; sourceTree = "<group>"; };
 		32D8461E2B5F06260046F0D2 /* Workout+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Workout+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		32D8461F2B5F06260046F0D2 /* Exercise+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Exercise+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -266,6 +270,8 @@
 				32BF978C2D20C8F20004FA47 /* TemplateTitleTableViewCell.swift */,
 				32BF97922D20D25C0004FA47 /* TemplateExerciseTableViewCell.swift */,
 				32BF97942D20DC460004FA47 /* AddTemplateExerciseTableViewCell.swift */,
+				32D0A4102D41B4C600C9F803 /* SelectableSettingsTableViewCell.swift */,
+				32D0A4122D41B4FF00C9F803 /* ToggleableSettingsTableViewCell.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -397,6 +403,7 @@
 				32BF976B2D1CC39B0004FA47 /* LogViewController.swift in Sources */,
 				323148BC2B50E4FB00F598A2 /* WorkoutDetailTableViewCell.swift in Sources */,
 				32D846272B5F06260046F0D2 /* ExerciseSet+CoreDataClass.swift in Sources */,
+				32D0A4112D41B4C600C9F803 /* SelectableSettingsTableViewCell.swift in Sources */,
 				32D8462C2B6305CF0046F0D2 /* WorkoutService.swift in Sources */,
 				32E3A1962B894FC3001FD86B /* AccentColorTableViewController.swift in Sources */,
 				327181EC2D2B1C4900DDA1F3 /* CreateTemplateViewController.swift in Sources */,
@@ -415,6 +422,7 @@
 				321F97052B740B5E00AB15B7 /* ProgressViewCell.swift in Sources */,
 				32BF97932D20D25C0004FA47 /* TemplateExerciseTableViewCell.swift in Sources */,
 				3253BD1C2D3731F4003F5A4A /* WorkoutDao.swift in Sources */,
+				32D0A4132D41B4FF00C9F803 /* ToggleableSettingsTableViewCell.swift in Sources */,
 				322040F72B83F03D004D7CB1 /* SettingsTableViewController.swift in Sources */,
 				32D8462A2B5F1EDB0046F0D2 /* ExercisesTableViewController.swift in Sources */,
 				32BF97992D2204D50004FA47 /* EditExerciseDetailViewController.swift in Sources */,

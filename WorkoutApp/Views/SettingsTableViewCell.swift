@@ -12,7 +12,6 @@ protocol SettingsTableViewCellDelegate: AnyObject {
 }
 
 class SettingsTableViewCell: UITableViewCell {
-    static let identifier = "SettingsCell"
     
     private let iconContainer: UIView = {
         let view = UIView()
@@ -41,19 +40,19 @@ class SettingsTableViewCell: UITableViewCell {
         return label
     }()
     
-    var secondaryLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .secondaryLabel
-        label.numberOfLines = 1
-        label.lineBreakMode = .byTruncatingTail
-        return label
-    }()
+//    var secondaryLabel: UILabel = {
+//        let label = UILabel()
+//        label.textColor = .secondaryLabel
+//        label.numberOfLines = 1
+//        label.lineBreakMode = .byTruncatingTail
+//        return label
+//    }()
     
-    var toggleView: UISwitch = {
-        let toggle = UISwitch()
-        toggle.addTarget(self, action: #selector(toggleValueChanged), for: .valueChanged)
-        return toggle
-    }()
+//    var toggleView: UISwitch = {
+//        let toggle = UISwitch()
+//        toggle.addTarget(self, action: #selector(toggleValueChanged), for: .valueChanged)
+//        return toggle
+//    }()
     
     var container: UIStackView = {
         let stackView = UIStackView()
@@ -63,7 +62,7 @@ class SettingsTableViewCell: UITableViewCell {
         return stackView
     }()
     
-    weak var delegate: SettingsTableViewCellDelegate?
+//    weak var delegate: SettingsTableViewCellDelegate?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -71,7 +70,7 @@ class SettingsTableViewCell: UITableViewCell {
         iconContainer.addSubview(iconImageView)
         container.addArrangedSubview(iconContainer)
         container.addArrangedSubview(label)
-        container.addArrangedSubview(secondaryLabel)
+//        container.addArrangedSubview(secondaryLabel)
         
         contentView.addSubview(container)
                 
@@ -99,15 +98,15 @@ class SettingsTableViewCell: UITableViewCell {
         iconImageView.image = model.image
         iconContainer.backgroundColor = model.backgroundColor
         label.text = model.text
-        secondaryLabel.text = model.secondary
-        accessoryType = .disclosureIndicator
+//        secondaryLabel.text = model.secondary
+//        accessoryType = .disclosureIndicator
     }
     
-    @objc func toggleValueChanged(sender: UISwitch) {
-        delegate?.settingsTableViewCell(self, toggleValueChanged: sender.isOn)
-    }
+//    @objc func toggleValueChanged(sender: UISwitch) {
+//        delegate?.settingsTableViewCell(self, toggleValueChanged: sender.isOn)
+//    }
     
     func addToggleView() {
-        container.addArrangedSubview(toggleView)
+//        container.addArrangedSubview(toggleView)
     }
 }
