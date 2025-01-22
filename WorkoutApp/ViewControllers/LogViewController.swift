@@ -34,7 +34,7 @@ class LogViewController: UIViewController {
     
     var logs: [Date: [Workout]] = [:]
     var monthYears: [Date] {
-        return logs.keys.sorted()
+        return logs.keys.sorted(by: >)
     }
 
     let workoutService: WorkoutService
@@ -102,34 +102,7 @@ class LogViewController: UIViewController {
     
     func updateUI() {
         contentUnavailableView.isHidden = !logs.isEmpty
-        
-        
-//        pastWorkouts.removeAll()
-//        let workouts: [Workout] = workoutService.fetchLoggedWorkouts()
-//        for workout in workouts {
-//            guard let createdAt = workout.createdAt else { continue }
-//            let monthYear = getMonthYear(from: createdAt)
-//            pastWorkouts[monthYear, default: []].append(workout)
-//        }
-//        tableView.reloadData()
     }
-
-//    private func deleteWorkout(forRowAt indexPath: IndexPath) {
-//        // Remove from core data
-//        let monthYear = sortedMonthYears[indexPath.section]
-//        let workoutToDelete = pastWorkouts[monthYear]![indexPath.row]
-//        // Object may have been created in detail view (has it's own seperate child context from main context). Use that specific context instead
-//        let context = workoutToDelete.managedObjectContext!
-//        context.delete(workoutToDelete)
-//        do {
-//            try context.save()
-//            delegate?.logViewController(self, didDeleteWorkout: workoutToDelete)
-//        } catch {
-//            print("Failed to delete workout: \(error)")
-//        }
-//        // Remove locally
-//        pastWorkouts[monthYear]?.remove(at: indexPath.row)
-//    }
 }
 
 extension LogViewController: UITableViewDataSource {
@@ -165,22 +138,27 @@ extension LogViewController: UITableViewDelegate {
             Task {
                 let monthYear = monthYears[indexPath.section]
                 let logToRemove = logs[monthYear, default: []][indexPath.row]
+                print("remove at: \(indexPath)")
                 self.logs = await workoutService.deleteLog(logs, at: indexPath)
-                
-                delegate?.logViewController(self, didDeleteLog: logToRemove)
-                
+                logs.forEach {
+                    print($0.key, $0.value.count)
+                }
+                print("1")
                 tableView.deleteRows(at: [indexPath], with: .automatic)
-                
+                print("2")
                 if logs[monthYear, default: []].isEmpty {
-                    // Delete section if necessary
                     logs[monthYear] = nil
                     tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
+                    print("3")
                 } else {
                     // Reloadds section header
                     tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
+                    print("4")
                 }
                 
                 contentUnavailableView.isHidden = !logs.isEmpty
+                
+                delegate?.logViewController(self, didDeleteLog: logToRemove)
             }
         }
     }
@@ -208,11 +186,10 @@ extension LogViewController: StartWorkoutViewControllerDelegate {
         // important: get workout in main context
         let mainContextWorkout = CoreDataStack.shared.mainContext.object(with: workout.objectID) as! Workout
         if let section = monthYears.firstIndex(where: { $0 == mainContextWorkout.monthKey }) {
-            // If section exists, reload it
-            logs[mainContextWorkout.monthKey, default: []].insert(mainContextWorkout, at: 0)
+            let rowToInsert = logs[workout.monthKey]?.firstIndex(where: { workout.createdAt > $0.createdAt }) ?? 0
+            logs[mainContextWorkout.monthKey, default: []].insert(mainContextWorkout, at: rowToInsert)
             tableView.reloadSections(IndexSet(integer: section), with: .automatic)
         } else {
-            // Else, insert section
             logs[mainContextWorkout.monthKey, default: []].insert(mainContextWorkout, at: 0)
             let section = monthYears.firstIndex(where: { $0 == mainContextWorkout.monthKey })!
             tableView.insertSections(IndexSet(integer: section), with: .automatic)
@@ -223,19 +200,52 @@ extension LogViewController: StartWorkoutViewControllerDelegate {
 
 
 extension LogViewController: LogDetailViewControllerDelegate {
+    // log date can change, so row/section can change as well (delete old, insert new)
+    // TODO: Crash 
     func logDetailViewController(_ viewController: LogDetailViewController, didSaveLog log: Workout) {
         // important: get log in main context (log that was save still has child context)
-        let mainContextWorkout = CoreDataStack.shared.mainContext.object(with: log.objectID) as! Workout
-        
-        guard let section = monthYears.firstIndex(where: { $0 == mainContextWorkout.monthKey }),
-           let row = logs[log.monthKey]?.firstIndex(where: { $0.objectID == mainContextWorkout.objectID })
-        else {
-            return
+        do {
+            let mainContextWorkout = try CoreDataStack.shared.mainContext.existingObject(with: log.objectID) as! Workout
+            
+            tableView.beginUpdates()
+            
+            // Delete original log
+            for (monthYear, _) in logs {
+                guard let section = monthYears.firstIndex(where: { $0 == monthYear }),
+                      let row = logs[monthYear]?.firstIndex(where: { $0.objectID == log.objectID })
+                else { continue }
+                
+                logs[monthYear]?.remove(at: row)
+                
+                if logs[monthYear, default: []].count == 0 {
+                    logs[monthYear] = nil
+                    tableView.deleteSections(IndexSet(integer: section), with: .automatic)
+                } else {
+                    tableView.deleteRows(at: [IndexPath(row: row, section: section)], with: .automatic)
+                }
+                
+                break
+            }
+            
+            if logs[log.monthKey] == nil {
+                logs[log.monthKey] = []
+            }
+            
+            guard let section = monthYears.firstIndex(where: { $0 == log.monthKey }) else { return }
+            
+            if logs[log.monthKey] == [] {
+                tableView.insertSections(IndexSet(integer: section), with: .automatic)
+            }
+
+            let rowToInsert = logs[log.monthKey]?.firstIndex(where: { log.createdAt < $0.createdAt }) ?? 0
+            logs[log.monthKey, default: []].insert(mainContextWorkout, at: rowToInsert)
+            tableView.insertRows(at: [IndexPath(row: rowToInsert, section: section)], with: .automatic)
+
+            tableView.endUpdates()
+            delegate?.logViewController(self, didSaveLog: mainContextWorkout)  // progress
+        } catch {
+            print("Error getting log: \(error)")
         }
-        
-        logs[log.monthKey]?[row] = mainContextWorkout
-        tableView.reloadRows(at: [IndexPath(row: row, section: section)], with: .automatic)
-        delegate?.logViewController(self, didSaveLog: mainContextWorkout)  // progress
     }
 }
 

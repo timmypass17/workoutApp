@@ -83,9 +83,9 @@ class WorkoutService {
     func deleteLog(_ logs: [Date: [Workout]], at indexPath: IndexPath) async -> [Date: [Workout]] {
         do {
             var updatedLogs = logs
-            let months = logs.keys.sorted()
-            let month = months[indexPath.section]
-            let logToRemove = updatedLogs[month, default: []].remove(at: indexPath.row)
+            let monthYears = logs.keys.sorted(by: >)
+            let monthYear = monthYears[indexPath.section]
+            let logToRemove = updatedLogs[monthYear, default: []].remove(at: indexPath.row)
             try await workoutDao.deleteLog(logToRemove)
             return updatedLogs
         } catch {
