@@ -7,6 +7,7 @@
 
 import UIKit
 import CoreData
+import AVFAudio
 
 class WorkoutDetailViewController: UIViewController {
     
@@ -258,6 +259,25 @@ extension WorkoutDetailViewController: WorkoutDetailTableViewCellDelegate {
 
     func workoutDetailTableViewCell(_ cell: WorkoutDetailTableViewCell, didTapSetButton: Bool) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
+        
+        AudioServicesPlaySystemSound(1104)
+        
+        if didTapSetButton {
+            UIView.animate(withDuration: 0.20,
+                           animations: {
+                cell.setButton.transform = CGAffineTransform(scaleX: 1.15, y: 1.15)
+//                cell.weightTextField.transform = CGAffineTransform(scaleX: 1.05, y: 1.10)
+//                cell.repsTextField.transform = CGAffineTransform(scaleX: 1.05, y: 1.10)
+
+            }, completion: { _ in
+                UIView.animate(withDuration: 0.20) {
+                    cell.setButton.transform = .identity
+//                    cell.weightTextField.transform = .identity
+//                    cell.repsTextField.transform = .identity
+                }
+            })
+        }
+        
         let exerciseSet = workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row)
         exerciseSet.isComplete = didTapSetButton
         
