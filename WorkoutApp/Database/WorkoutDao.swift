@@ -35,6 +35,7 @@ class WorkoutDao: WorkoutDaoProtocol {
             let exercise = Exercise(context: childContext)
             exercise.name = templateExercise.name
             exercise.workout = workout
+            exercise.index = templateExercise.index
             
             for i in 0..<templateExercise.sets {
                 let exerciseSet = ExerciseSet(context: childContext)
@@ -144,8 +145,6 @@ class WorkoutDao: WorkoutDaoProtocol {
     
     // existingObject vs object
     func deleteTemplate(_ template: Template) async throws {
-//        let backgroundContext = CoreDataStack.shared.newBackgroundContext()
-        
         try await backgroundContext.perform {
             // Fetch the object in the background context
             let objectInContext = try self.backgroundContext.existingObject(with: template.objectID)
@@ -156,8 +155,6 @@ class WorkoutDao: WorkoutDaoProtocol {
     }
     
     func deleteLog(_ log: Workout) async throws {
-//        let backgroundContext = CoreDataStack.shared.newBackgroundContext()
-
         try await backgroundContext.perform {
             let objectInContext = try self.backgroundContext.existingObject(with: log.objectID)
             self.backgroundContext.delete(objectInContext)
@@ -168,9 +165,10 @@ class WorkoutDao: WorkoutDaoProtocol {
     
     func updateTemplatesPositions(_ templates: [Template]) async throws {
         try await backgroundContext.perform {
-            for (index, template) in templates.enumerated() {
-                let objectInContext = try self.backgroundContext.existingObject(with: template.objectID) as! Template
-                objectInContext.index = Int16(index)
+            for i in 0..<templates.count {
+                let objectInContext = try self.backgroundContext.existingObject(with: templates[i].objectID) as! Template
+                objectInContext.index = Int16(i)
+                templates[i].index = Int16(i) // update locally
             }
             
             try self.backgroundContext.save()

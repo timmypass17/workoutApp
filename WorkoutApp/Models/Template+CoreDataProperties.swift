@@ -16,9 +16,9 @@ extension Template {
         return NSFetchRequest<Template>(entityName: "Template")
     }
 
-    @NSManaged public var title_: String?
     @NSManaged public var index: Int16
-    @NSManaged public var templateExercises_: NSOrderedSet?
+    @NSManaged public var title_: String?
+    @NSManaged public var templateExercises_: NSSet?
 
     var title: String {
         get {
@@ -30,30 +30,12 @@ extension Template {
     }
     
     var templateExercises: [TemplateExercise] {
-        return templateExercises_?.array as? [TemplateExercise] ?? []
+        return (templateExercises_?.allObjects as? [TemplateExercise] ?? []).sorted { $0.index < $1.index }
     }
 }
 
 // MARK: Generated accessors for templateExercises_
 extension Template {
-
-    @objc(insertObject:inTemplateExercises_AtIndex:)
-    @NSManaged public func insertIntoTemplateExercises_(_ value: TemplateExercise, at idx: Int)
-
-    @objc(removeObjectFromTemplateExercises_AtIndex:)
-    @NSManaged public func removeFromTemplateExercises_(at idx: Int)
-
-    @objc(insertTemplateExercises_:atIndexes:)
-    @NSManaged public func insertIntoTemplateExercises_(_ values: [TemplateExercise], at indexes: NSIndexSet)
-
-    @objc(removeTemplateExercises_AtIndexes:)
-    @NSManaged public func removeFromTemplateExercises_(at indexes: NSIndexSet)
-
-    @objc(replaceObjectInTemplateExercises_AtIndex:withObject:)
-    @NSManaged public func replaceTemplateExercises_(at idx: Int, with value: TemplateExercise)
-
-    @objc(replaceTemplateExercises_AtIndexes:withTemplateExercises_:)
-    @NSManaged public func replaceTemplateExercises_(at indexes: NSIndexSet, with values: [TemplateExercise])
 
     @objc(addTemplateExercises_Object:)
     @NSManaged public func addToTemplateExercises_(_ value: TemplateExercise)
@@ -62,10 +44,10 @@ extension Template {
     @NSManaged public func removeFromTemplateExercises_(_ value: TemplateExercise)
 
     @objc(addTemplateExercises_:)
-    @NSManaged public func addToTemplateExercises_(_ values: NSOrderedSet)
+    @NSManaged public func addToTemplateExercises_(_ values: NSSet)
 
     @objc(removeTemplateExercises_:)
-    @NSManaged public func removeFromTemplateExercises_(_ values: NSOrderedSet)
+    @NSManaged public func removeFromTemplateExercises_(_ values: NSSet)
 
 }
 

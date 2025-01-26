@@ -99,9 +99,10 @@ class WorkoutService {
         var updatedTemplates = templates
         let workoutToMove = updatedTemplates.remove(at: sourceIndexPath.row)
         updatedTemplates.insert(workoutToMove, at: destinationIndexPath.row)
-                
+            
         do {
             try await workoutDao.updateTemplatesPositions(updatedTemplates)
+
             return updatedTemplates
         } catch {
             print("Error reordering templates: \(error)")

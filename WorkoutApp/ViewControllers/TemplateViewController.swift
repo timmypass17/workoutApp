@@ -175,18 +175,67 @@ extension TemplateViewController: UITableViewDelegate {
         }
     }
     
+    // Holy fuck, have to use set cause cloudkit doesn't have any "ordering" so everything is stored as an unordered
+    // set but with an "index" field so i have to make sure items are still in sorted order after modifying them
+    // TODO: Make sure everything works properly, still bug when deleting log sometimes? Try using cloudkit
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
         guard destinationIndexPath.section != 0 else { return }
         
-        // Update the data source
+        // TODO: Cloudkit
         let exerciseToMove = template.templateExercises[sourceIndexPath.row]
-        template.removeFromTemplateExercises_(exerciseToMove)
-        template.insertIntoTemplateExercises_(exerciseToMove, at: destinationIndexPath.row)
-                
-        // Update the orderIndex for all items
+        // [A, B, C, D, E] B -> D
+        // [A, B, C, _, D, E] move everything after destin to right
+        // [A, _, C, B, D, E]   move B to destination
+        // [A, C, B, D, E]      reorganize
+        
+        // move forward
+        if sourceIndexPath.row < destinationIndexPath.row {
+            print("Original")
+            template.templateExercises.forEach { print($0.name, $0.index)}
+            print()
+            print("Shift to right")
+            for i in (destinationIndexPath.row + 1..<template.templateExercises.count).reversed() {
+                print(i)
+                template.templateExercises[i].index = Int16(i + 1)
+            }
+            print()
+            exerciseToMove.index = Int16(destinationIndexPath.row + 1)
+            print("After Insert-")
+            template.templateExercises.forEach { print($0.name, $0.index)}
+        } else {
+            //  B <- D
+            // [A, B, C, D, E]
+            // [A, _, B, C, D, E] move everything after source to right
+            // [A, D, B, C, _, E] update D's index to destination
+            // [A, D, B, C, E] reforganize
+            
+            
+            print("Original")
+            template.templateExercises.forEach { print($0.name, $0.index)}
+            print()
+            print("Shift to right")
+            for i in (destinationIndexPath.row..<template.templateExercises.count).reversed() {
+                print(i)
+                template.templateExercises[i].index = Int16(i + 1)
+            }
+            print()
+            print("After shift")
+            template.templateExercises.forEach { print($0.name, $0.index)}
+            print()
+            exerciseToMove.index = Int16(destinationIndexPath.row)
+            print("After Insert-")
+            template.templateExercises.forEach { print($0.name, $0.index)}
+        }
+        
+        print()
         for (index, exercise) in template.templateExercises.enumerated() {
             exercise.index = Int16(index)
         }
+        print("Reorganize")
+        print()
+        
+        template.templateExercises.forEach { print($0.name, $0.index)}
+
         
         // Save the context
         do {
@@ -213,11 +262,11 @@ extension TemplateViewController: UITableViewDelegate {
 
 extension TemplateViewController: AddExerciseDetailViewControllerDelegate {
     func addExerciseDetailViewControllerDelegate(_ viewController: AddExerciseDetailViewController, didAddExercise exercise: String, sets: Int, reps: Int) {
-        print("Added \(exercise) \(sets) x \(reps)")
         let sampleExercise = TemplateExercise(context: childContext)
         sampleExercise.name = exercise
         sampleExercise.sets = Int16(sets)
         sampleExercise.reps = Int16(reps)
+        sampleExercise.index = Int16(template.templateExercises.count)
         sampleExercise.template = template
         template.addToTemplateExercises_(sampleExercise)
         

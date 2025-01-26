@@ -18,7 +18,8 @@ extension Exercise {
     }
 
     @NSManaged private var name_: String?
-    @NSManaged public var exerciseSets: NSOrderedSet?
+    @NSManaged public var index: Int16
+    @NSManaged public var exerciseSets: NSSet?
     @NSManaged public var workout: Workout?
     
     var name: String {
@@ -54,54 +55,18 @@ extension Exercise {
     }
 
     func getExerciseSets() -> [ExerciseSet] {
-        return exerciseSets?.array as? [ExerciseSet] ?? []
+        return (exerciseSets?.allObjects as? [ExerciseSet] ?? []).sorted { $0.index < $1.index }
     }
     
     func getExerciseSet(at index: Int) -> ExerciseSet {
         return getExerciseSets()[index]
     }
     
-//    func getPreviousExerciseDone() -> Exercise? {
-//        let context = CoreDataStack.shared.mainContext
-//        let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
-//        let predicate = NSPredicate(format: "title_ == %@", name)
-//        let sortDescriptor = NSSortDescriptor(key: "workout.createdAt_", ascending: false)
-//        request.predicate = predicate
-//        request.sortDescriptors = [sortDescriptor]
-//        request.fetchLimit = 1
-//        request.includesPendingChanges = false // don't include unsaved changes
-//        
-//        do {
-//            let exercise: Exercise? = try context.fetch(request).first
-//            return exercise
-//        } catch {
-//            print("Error fetching previous exercise: \(error.localizedDescription)")
-//        }
-//        return nil
-//    }
 }
 
 // MARK: Generated accessors for exerciseSets
 extension Exercise {
-
-    @objc(insertObject:inExerciseSetsAtIndex:)
-    @NSManaged public func insertIntoExerciseSets(_ value: ExerciseSet, at idx: Int)
-
-    @objc(removeObjectFromExerciseSetsAtIndex:)
-    @NSManaged public func removeFromExerciseSets(at idx: Int)
-
-    @objc(insertExerciseSets:atIndexes:)
-    @NSManaged public func insertIntoExerciseSets(_ values: [ExerciseSet], at indexes: NSIndexSet)
-
-    @objc(removeExerciseSetsAtIndexes:)
-    @NSManaged public func removeFromExerciseSets(at indexes: NSIndexSet)
-
-    @objc(replaceObjectInExerciseSetsAtIndex:withObject:)
-    @NSManaged public func replaceExerciseSets(at idx: Int, with value: ExerciseSet)
-
-    @objc(replaceExerciseSetsAtIndexes:withExerciseSets:)
-    @NSManaged public func replaceExerciseSets(at indexes: NSIndexSet, with values: [ExerciseSet])
-
+    
     @objc(addExerciseSetsObject:)
     @NSManaged public func addToExerciseSets(_ value: ExerciseSet)
 
@@ -109,10 +74,10 @@ extension Exercise {
     @NSManaged public func removeFromExerciseSets(_ value: ExerciseSet)
 
     @objc(addExerciseSets:)
-    @NSManaged public func addToExerciseSets(_ values: NSOrderedSet)
+    @NSManaged public func addToExerciseSets(_ values: NSSet)
 
     @objc(removeExerciseSets:)
-    @NSManaged public func removeFromExerciseSets(_ values: NSOrderedSet)
+    @NSManaged public func removeFromExerciseSets(_ values: NSSet)
 
 }
 

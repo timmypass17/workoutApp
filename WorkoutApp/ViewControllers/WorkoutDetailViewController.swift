@@ -460,17 +460,10 @@ extension WorkoutDetailViewController: UITableViewDelegate {
         let exercises = workout.getExercises()
         
         if (editingStyle == .delete) {
-            exercises[indexPath.section].removeFromExerciseSets(at: indexPath.row)
-            tableView.beginUpdates()
+            let setToRemove = workout.getExercise(at: indexPath.section).getExerciseSet(at: indexPath.row)
+            workout.getExercise(at: indexPath.section).removeFromExerciseSets(setToRemove)
+
             tableView.deleteRows(at: [indexPath], with: .automatic)
-//            if exercises[indexPath.section].getExerciseSets().count == 0 {
-//                workout.removeFromExercises(exercises[indexPath.section])   // if set is empty, then remove exercise from workout
-//                tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
-//            } else {
-//                tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
-//            }
-            
-            tableView.endUpdates()
             
             // Reload indexpaths after the deleted rows
             var affectedIndexPaths: [IndexPath] = []
@@ -480,9 +473,6 @@ extension WorkoutDetailViewController: UITableViewDelegate {
             }
             
             tableView.reloadRows(at: affectedIndexPaths, with: .none)
-            
-            
-//            updateUI()
         }
     }
     

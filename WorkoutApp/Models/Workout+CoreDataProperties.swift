@@ -20,7 +20,7 @@ extension Workout {
     @NSManaged public var createdAt_: Date?
     @NSManaged private var title_: String?
     @NSManaged public var index: Int16  // used to sort a list of workout
-    @NSManaged public var exercises: NSOrderedSet? // ordered means the exercises are in the order u added them in.
+    @NSManaged public var exercises: NSSet? // Cloud Kit doesn't support ordered relationships
 
     var title: String {
         get {
@@ -46,7 +46,7 @@ extension Workout {
     }
 
     func getExercises() -> [Exercise] {
-        return exercises?.array as? [Exercise] ?? []
+        return (exercises?.allObjects as? [Exercise] ?? []).sorted { $0.index < $1.index }
     }
     
     func getExercise(at index: Int) -> Exercise {
@@ -71,24 +71,6 @@ extension Workout {
 // MARK: Generated accessors for exercises
 extension Workout {
 
-    @objc(insertObject:inExercisesAtIndex:)
-    @NSManaged public func insertIntoExercises(_ value: Exercise, at idx: Int)
-
-    @objc(removeObjectFromExercisesAtIndex:)
-    @NSManaged public func removeFromExercises(at idx: Int)
-
-    @objc(insertExercises:atIndexes:)
-    @NSManaged public func insertIntoExercises(_ values: [Exercise], at indexes: NSIndexSet)
-
-    @objc(removeExercisesAtIndexes:)
-    @NSManaged public func removeFromExercises(at indexes: NSIndexSet)
-
-    @objc(replaceObjectInExercisesAtIndex:withObject:)
-    @NSManaged public func replaceExercises(at idx: Int, with value: Exercise)
-
-    @objc(replaceExercisesAtIndexes:withExercises:)
-    @NSManaged public func replaceExercises(at indexes: NSIndexSet, with values: [Exercise])
-
     @objc(addExercisesObject:)
     @NSManaged public func addToExercises(_ value: Exercise)
 
@@ -96,10 +78,10 @@ extension Workout {
     @NSManaged public func removeFromExercises(_ value: Exercise)
 
     @objc(addExercises:)
-    @NSManaged public func addToExercises(_ values: NSOrderedSet)
+    @NSManaged public func addToExercises(_ values: NSSet)
 
     @objc(removeExercises:)
-    @NSManaged public func removeFromExercises(_ values: NSOrderedSet)
+    @NSManaged public func removeFromExercises(_ values: NSSet)
 
 }
 

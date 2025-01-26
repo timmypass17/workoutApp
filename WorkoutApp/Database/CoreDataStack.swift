@@ -16,13 +16,16 @@ class CoreDataStack {
         // Prevents direct initialization. To enforce a single instance of the class
     }
     
-    lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "BuiltDiff")
+    lazy var persistentContainer: NSPersistentCloudKitContainer = {
+        let container = NSPersistentCloudKitContainer(name: "BuiltDiff")
+        
         container.loadPersistentStores { storeDescription, error in
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         }
+//        container.viewContext.automaticallyMergesChangesFromParent = true
+//        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         return container
     }()
     
@@ -30,8 +33,9 @@ class CoreDataStack {
     lazy var mainContext: NSManagedObjectContext = {
         // To ensure that changes saved in a background or child context are automatically reflected in the main contex
         // - This reduces the need for manually merging changes after saving the child or background context.
-        //  context.automaticallyMergesChangesFromParent = true
-        return self.persistentContainer.viewContext // only use on main queue of your app
+        let context = persistentContainer.viewContext
+        context.automaticallyMergesChangesFromParent = true
+        return context // only use on main queue of your app
         // designed to be thread-safe for use on the main queue. It's primarily used for operations that interact with the UI, such as fetching data to display in views or updating UI-bound objects.
     }()
     

@@ -21,7 +21,7 @@ class WorkoutViewController: UIViewController {
         var configuration = UIContentUnavailableConfiguration.empty()
         configuration.text = "No Workouts Yet"
         configuration.secondaryText = "Your workouts will appear here once you add them."
-        configuration.image = UIImage(systemName: "dumbbell") // figure.strengthtraining.traditional
+        configuration.image = UIImage(systemName: "dumbbell")
 
         let view = UIContentUnavailableView(configuration: configuration)
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -31,13 +31,15 @@ class WorkoutViewController: UIViewController {
     
     private var addButton: UIBarButtonItem!
     
-//    private var workoutPlans: [Workout] = []
-    private let context = CoreDataStack.shared.mainContext
+//    private let context = CoreDataStack.shared.mainContext
     private let workoutService: WorkoutService
     
-    private var templates: [Template] = []
-    var fetchedResultsController: NSFetchedResultsController<Template>!
+//    private var templates: [Template] = []
     
+    // https://developer.apple.com/documentation/coredata/nsfetchedresultscontroller
+    var fetchedResultsController: NSFetchedResultsController<Template>! // source of truth
+    var changeIsUserDriven = false
+
     init(workoutService: WorkoutService) {
         self.workoutService = workoutService
         super.init(nibName: nil, bundle: nil)
@@ -76,10 +78,28 @@ class WorkoutViewController: UIViewController {
         NotificationCenter.default.addObserver(tableView,
                                                selector: #selector(UITableView.reloadData),
                                                name: AccentColor.valueChangedNotification, object: nil)
-                
-        Task {
-            templates = await workoutService.fetchTemplates()
-            updateUI()
+        
+        let fetchRequest: NSFetchRequest<Template> = Template.fetchRequest()
+        let sortDescriptor = NSSortDescriptor(key: "index", ascending: true)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        fetchedResultsController = NSFetchedResultsController(
+            fetchRequest: fetchRequest,
+            managedObjectContext: CoreDataStack.shared.mainContext,
+            sectionNameKeyPath: nil,    // to define sections
+            cacheName: nil)
+
+        fetchedResultsController.delegate = self
+        
+        // Perform a fetch.
+        do {
+            // actually fetches from cloudkit, when delete and reinstall app
+            try fetchedResultsController?.performFetch()
+            contentUnavailableView.isHidden = !(fetchedResultsController.fetchedObjects?.isEmpty ?? true)
+        } catch {
+            // Handle error appropriately. It's useful to use
+            // `fatalError(_:file:line:)` during development.
+            fatalError("Failed to perform fetch: \(error.localizedDescription)")
         }
     }
     
@@ -91,7 +111,7 @@ class WorkoutViewController: UIViewController {
     }
     
     func updateUI() {
-        contentUnavailableView.isHidden = !templates.isEmpty
+//        contentUnavailableView.isHidden = !templates.isEmpty
         tableView.reloadData()
     }
     
@@ -104,44 +124,28 @@ class WorkoutViewController: UIViewController {
         }
     }
     
-    private func showCreateWorkoutAlert() {
-//        let alert = UIAlertController(title: "Create Workout Template", message: "Enter name below", preferredStyle: .alert)
-//        
-//        alert.addTextField { textField in
-//            textField.placeholder = "Ex. Push Day"
-//            textField.autocapitalizationType = .sentences
-//            let textChangedAction = UIAction { _ in
-//                alert.actions[1].isEnabled = textField.text!.count > 0
-//            }
-//            textField.addAction(textChangedAction, for: .allEditingEvents)
-//        }
-//        
-//        let createAction = UIAlertAction(title: "Create", style: .default) { [weak self] _ in
-//            guard let self, let title = alert.textFields?[0].text else { return }
-//            let workoutDetailTableViewController = WorkoutDetailTableViewController(.createWorkout(title))
-//            workoutDetailTableViewController.delegate = self
-//            self.navigationController?.pushViewController(workoutDetailTableViewController, animated: true)
-//        }
-//        
-//        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-//        alert.addAction(createAction)
-//        
-//        self.present(alert, animated: true, completion: nil)
-    }
-    
-    
     func showDeleteAlert(indexPath: IndexPath) {
-        let template = templates[indexPath.row]
-        let alert = UIAlertController(title: "Delete Template?", message: "Are you sure you want to delete \"\(template.title)\"", preferredStyle: .alert)
+        let templateToRemove = fetchedResultsController.object(at: indexPath)
+        
+        let alert = UIAlertController(title: "Delete Template?", message: "Are you sure you want to delete \"\(templateToRemove.title)\"", preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Remove", style: .destructive) { [weak self] _ in
-            Task {
-                guard let self else { return }
-                self.templates = await self.workoutService.deleteTemplate(self.templates, at: indexPath)
-                self.tableView.deleteRows(at: [indexPath], with: .automatic)
-                self.contentUnavailableView.isHidden = !self.templates.isEmpty
+            guard let self else { return }
+            // Remove object
+            var templates = fetchedResultsController.fetchedObjects!
+            templates.remove(at: indexPath.row) // we deleting local copy to make sure we get updated index paths (fetchedResultsController.fetchedObjects is unchanged)
+
+            CoreDataStack.shared.mainContext.delete(templateToRemove)
+            CoreDataStack.shared.saveContext() // delegate removes tableview cells
+
+            // Update template positions
+            for (index, template) in templates.enumerated() {
+                template.index = Int16(index)
             }
+            
+            CoreDataStack.shared.saveContext() // delegate updates cells
+            // don't delete and update at same time, confuses delegate (so i split saveContext() it 2 parts)
         })
         
         self.present(alert, animated: true, completion: nil)
@@ -151,26 +155,36 @@ class WorkoutViewController: UIViewController {
 extension WorkoutViewController: UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return fetchedResultsController.sections?.count ?? 0
     }
     
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return templates.count
+        guard let sectionInfo = fetchedResultsController?.sections?[section] else {
+            return 0
+        }
+        
+        return sectionInfo.numberOfObjects
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutTableViewCell
-        let template = templates[indexPath.row]
+        let template = fetchedResultsController.object(at: indexPath)
         cell.update(template: template)
         return cell
+        
+//        let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutTableViewCell
+//        let template = templates[indexPath.row]
+//        cell.update(template: template)
+//        return cell
     }
 
 }
 
 extension WorkoutViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let template = templates[indexPath.row]
+        let template = fetchedResultsController.object(at: indexPath)
+        
         let startWorkoutViewController = StartWorkoutViewController(template: template, workoutService: workoutService)
         
         let logTableViewController = (tabBarController?.viewControllers?[1] as? UINavigationController)?.viewControllers[0] as! LogViewController
@@ -195,44 +209,69 @@ extension WorkoutViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
-            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "square.and.pencil")) { [self] _ in
-                let template = templates[indexPath.row]
-                let editTemplateViewController = EditTemplateViewController(template: template, workoutService: workoutService)
-                editTemplateViewController.delegate = self
-                let vc = UINavigationController(rootViewController: editTemplateViewController)
-                self.present(vc, animated: true)
-            }
-
-            let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-                self.showDeleteAlert(indexPath: indexPath)
-            }
-            return UIMenu(title: "", children: [editAction, deleteAction])
-        })
+        return nil
+//        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
+//            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "square.and.pencil")) { [self] _ in
+//                let template = templates[indexPath.row]
+//                let editTemplateViewController = EditTemplateViewController(template: template, workoutService: workoutService)
+//                editTemplateViewController.delegate = self
+//                let vc = UINavigationController(rootViewController: editTemplateViewController)
+//                self.present(vc, animated: true)
+//            }
+//
+//            let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+//                self.showDeleteAlert(indexPath: indexPath)
+//            }
+//            return UIMenu(title: "", children: [editAction, deleteAction])
+//        })
     }
 }
 
-//
+
 extension WorkoutViewController: UITableViewDragDelegate {
     func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
         let dragItem = UIDragItem(itemProvider: NSItemProvider())
-        dragItem.localObject = templates[indexPath.row]
+        let template = fetchedResultsController.object(at: indexPath)
+        dragItem.localObject = template
         return [dragItem]
-//        return []
     }
     
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
         guard sourceIndexPath != destinationIndexPath else { return  }
-        Task {
-            templates = await workoutService.reorderTemplates(templates, moveWorkoutAt: sourceIndexPath, to: destinationIndexPath)
+        changeIsUserDriven = true
+        defer { changeIsUserDriven = false }
+        
+        var templates = fetchedResultsController.fetchedObjects!
+        
+        // https://developer.apple.com/documentation/coredata/nsfetchedresultscontrollerdelegate#1661452
+        // moving row -> side effect of causing the fetched results controller to also notice the change and try to update (use flag to ignore update)
+        // why ignore update by nsfetchedresultcontroller? the table view is already in the appropriate state because of the user’s action.
+        let removedObject = templates.remove(at: sourceIndexPath.row)
+        templates.insert(removedObject, at: destinationIndexPath.row)
+        
+        for (index, template) in templates.enumerated() {
+            template.index = Int16(index)
         }
+        
+        CoreDataStack.shared.saveContext()
+        // controller delegates called here (ignored by changeIsUserDriven)
+        // changeIsUserDriven = false (by defer)
+        
+//        drag
+//        move
+//        changeIsUserDriven: true
+//        save to core data
+//        controller changeIsUserDriven: true
+//        controller changeIsUserDriven: true
+//        controller changeIsUserDriven: true
+//        changeIsUserDriven: true
     }
     
 }
 
 extension WorkoutViewController: CreateTemplateViewControllerDelegate {
     func createTemplateViewController(_ viewController: CreateTemplateViewController, didCreateTemplate template: Template) {
-        template.index = Int16(templates.count)
+        template.index = Int16(fetchedResultsController.fetchedObjects?.count ?? 0)
         
         // Important: Make sure u finish modifying child object before saving or else additional changes wont be persisted to core data when saving main context
         // Have to save here because needed to update index. Or maybe pass index ahead of time
@@ -244,30 +283,83 @@ extension WorkoutViewController: CreateTemplateViewControllerDelegate {
         
         CoreDataStack.shared.saveContext()
         
-        let templateInMainContext = context.object(with: template.objectID) as! Template
+        let templateInMainContext = CoreDataStack.shared.mainContext.object(with: template.objectID) as! Template
         
-        templates.append(templateInMainContext)
-        tableView.insertRows(at: [IndexPath(row: templates.count - 1, section: 0)], with: .automatic)
-        contentUnavailableView.isHidden = !templates.isEmpty
+//        templates.append(templateInMainContext)
+//        tableView.insertRows(at: [IndexPath(row: templates.count - 1, section: 0)], with: .automatic)
+//        contentUnavailableView.isHidden = !templates.isEmpty
     }
 }
 
 extension WorkoutViewController: EditTemplateViewControllerDelegate {
     func editTemplateViewController(_ viewController: EditTemplateViewController, didUpdateTemplate template: Template) {
-        do {
-            try viewController.childContext.save()
-        } catch {
-            print("Error updating template: \(error)")
+//        do {
+//            try viewController.childContext.save()
+//        } catch {
+//            print("Error updating template: \(error)")
+//        }
+//        
+//        CoreDataStack.shared.saveContext()
+//        
+//        let templateInMainContext = context.object(with: template.objectID) as! Template
+//        
+//        // note: templateInMainContext.objectID is same as template.objectID (unique across context)
+//        if let row = templates.firstIndex(where: { $0.objectID == template.objectID }) {
+//            templates[row] = templateInMainContext
+//            tableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .automatic)
+//        }
+    }
+}
+
+// do stuff when changes in context happen
+extension WorkoutViewController: NSFetchedResultsControllerDelegate {
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<any NSFetchRequestResult>) {
+        tableView.beginUpdates()
+    }
+    
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<any NSFetchRequestResult>) {
+        tableView.endUpdates()
+    }
+    
+    // Find out when the fetched results controller adds, removes, moves, or updates a fetched object.
+    func controller(_ controller: NSFetchedResultsController<any NSFetchRequestResult>,
+                    didChange anObject: Any,
+                    at indexPath: IndexPath?,
+                    for type: NSFetchedResultsChangeType,
+                    newIndexPath: IndexPath?) {
+        
+        guard changeIsUserDriven == false else { return }
+
+        switch type {
+        case .insert:
+            guard let newIndexPath else { return }
+            // Insert a new row with fade animation when the fetched results
+            // controller adds or moves an object to the specified index path.
+            print("Insert row: \(newIndexPath)")
+            tableView.insertRows(at: [newIndexPath], with: .fade)
+        case .delete:
+            guard let indexPath else { return }
+            // Delete the row with animation at the old index path when the fetched
+            // results controller deletes or moves the associated object.
+            print("Delete row: \(indexPath)")
+            tableView.deleteRows(at: [indexPath], with: .fade)
+        case .update:
+            guard let indexPath else { return }
+            // Update the cell as the specified indexPath.
+            print("Update row: \(indexPath)")
+            if let cell = tableView.cellForRow(at: indexPath) as? WorkoutTableViewCell {
+                let template = fetchedResultsController.object(at: indexPath)
+                cell.update(template: template)
+            }
+        case .move:
+            guard let indexPath, let newIndexPath else { return }
+            print("Move row: \(indexPath) to \(newIndexPath)")
+            // Move a row from the specified index path to the new index path.
+            tableView.moveRow(at: indexPath, to: newIndexPath)
+        @unknown default:
+            break
         }
         
-        CoreDataStack.shared.saveContext()
-        
-        let templateInMainContext = context.object(with: template.objectID) as! Template
-        
-        // note: templateInMainContext.objectID is same as template.objectID (unique across context)
-        if let row = templates.firstIndex(where: { $0.objectID == template.objectID }) {
-            templates[row] = templateInMainContext
-            tableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .automatic)
-        }
+        contentUnavailableView.isHidden = !(controller.fetchedObjects?.isEmpty ?? true)
     }
 }
