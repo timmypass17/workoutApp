@@ -14,13 +14,16 @@ protocol LogDetailViewControllerDelegate: AnyObject {
 class LogDetailViewController: WorkoutDetailViewController {
 
     weak var delegate: LogDetailViewControllerDelegate?    // log handles
-
+    
     init(log: Workout, workoutService: WorkoutService) {
         super.init(workoutService: workoutService)
         // Use the objectID to fetch the object in the child context
         // - Allows you to work with object in child context, and discard any changes if needed or save changes to main context
         let objectInNewContext = childContext.object(with: log.objectID) as! Workout
         self.workout = objectInNewContext
+        // note: using child-parent context with transient property doesn't really work well with sectionNameKeyPath: for some reason. it works normally if i just update using main context. need more investigation.
+        
+//        self.workout = log
     }
     
     @MainActor required init?(coder: NSCoder) {
@@ -44,9 +47,9 @@ class LogDetailViewController: WorkoutDetailViewController {
             } catch {
                 print("Error saving reordered items: \(error)")
             }
-
+            
             CoreDataStack.shared.saveContext()
-
+            
             self.delegate?.logDetailViewController(self, didSaveLog: workout)
             navigationController?.popViewController(animated: true)
         }
@@ -54,9 +57,11 @@ class LogDetailViewController: WorkoutDetailViewController {
     
     func didTapCalendarButton() -> UIAction {
         return UIAction { [weak self] _ in
-            guard let self = self else { return }
+            guard let self = self,
+                  let createdAt = workout.createdAt_
+            else { return }
 
-            let calendarViewController = CalendarViewController(date: workout.createdAt)
+            let calendarViewController = CalendarViewController(date: createdAt)
             calendarViewController.delegate = self
             let navigationController = UINavigationController(rootViewController: calendarViewController)
             if let sheet = navigationController.sheetPresentationController {
@@ -72,6 +77,6 @@ class LogDetailViewController: WorkoutDetailViewController {
 
 extension LogDetailViewController: CalendarViewControllerDelegate {
     func calendarViewControllerDelegate(_ viewController: CalendarViewController, didSelectDate date: Date) {
-        workout.createdAt = date
+        workout.createdAt_ = date
     }
 }

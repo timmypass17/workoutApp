@@ -34,7 +34,7 @@
 		32A2938A2B42073C00122166 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 32A293882B42073C00122166 /* LaunchScreen.storyboard */; };
 		32A293972B4213D100122166 /* WorkoutTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A293962B4213D100122166 /* WorkoutTableViewCell.swift */; };
 		32A81E3E2B45027800A5C8C2 /* AddWorkoutFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A81E3D2B45027800A5C8C2 /* AddWorkoutFooterView.swift */; };
-		32B9D74E2B589A440027DE30 /* LogTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32B9D74D2B589A440027DE30 /* LogTableViewCell.swift */; };
+		32B9D74E2B589A440027DE30 /* LogViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32B9D74D2B589A440027DE30 /* LogViewCell.swift */; };
 		32BF97692D1CB35B0004FA47 /* WorkoutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF97682D1CB35B0004FA47 /* WorkoutViewController.swift */; };
 		32BF976B2D1CC39B0004FA47 /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF976A2D1CC39B0004FA47 /* LogViewController.swift */; };
 		32BF976D2D1CC7070004FA47 /* ProgressViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF976C2D1CC7070004FA47 /* ProgressViewController.swift */; };
@@ -107,7 +107,7 @@
 		32A2938B2B42073C00122166 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		32A293962B4213D100122166 /* WorkoutTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTableViewCell.swift; sourceTree = "<group>"; };
 		32A81E3D2B45027800A5C8C2 /* AddWorkoutFooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddWorkoutFooterView.swift; sourceTree = "<group>"; };
-		32B9D74D2B589A440027DE30 /* LogTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTableViewCell.swift; sourceTree = "<group>"; };
+		32B9D74D2B589A440027DE30 /* LogViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewCell.swift; sourceTree = "<group>"; };
 		32BF97682D1CB35B0004FA47 /* WorkoutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutViewController.swift; sourceTree = "<group>"; };
 		32BF976A2D1CC39B0004FA47 /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
 		32BF976C2D1CC7070004FA47 /* ProgressViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressViewController.swift; sourceTree = "<group>"; };
@@ -261,7 +261,7 @@
 				32A81E3D2B45027800A5C8C2 /* AddWorkoutFooterView.swift */,
 				323148BB2B50E4FB00F598A2 /* WorkoutDetailTableViewCell.swift */,
 				323148BD2B51BF1A00F598A2 /* AddSetTableViewCell.swift */,
-				32B9D74D2B589A440027DE30 /* LogTableViewCell.swift */,
+				32B9D74D2B589A440027DE30 /* LogViewCell.swift */,
 				327268612B5A10D600FA6D04 /* LogSectionHeaderView.swift */,
 				321F97042B740B5E00AB15B7 /* ProgressViewCell.swift */,
 				325FC5D42B747E8C0023C02D /* EmptyLabel.swift */,
@@ -437,7 +437,7 @@
 				32A2937B2B42073B00122166 /* AppDelegate.swift in Sources */,
 				32BF97882D20C71C0004FA47 /* TemplateExercise+CoreDataClass.swift in Sources */,
 				32BF97892D20C71C0004FA47 /* TemplateExercise+CoreDataProperties.swift in Sources */,
-				32B9D74E2B589A440027DE30 /* LogTableViewCell.swift in Sources */,
+				32B9D74E2B589A440027DE30 /* LogViewCell.swift in Sources */,
 				32A2937D2B42073B00122166 /* SceneDelegate.swift in Sources */,
 				32E3A1982B8C0865001FD86B /* PrivacyTableViewController.swift in Sources */,
 				323148A62B50CAEA00F598A2 /* WorkoutDetailViewController.swift in Sources */,

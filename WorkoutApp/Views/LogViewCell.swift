@@ -7,7 +7,7 @@
 
 import UIKit
 
-class LogTableViewCell: UITableViewCell {
+class LogViewCell: UITableViewCell {
     static let reuseIdentifier = "LogTableViewCell"
     
     private let weekdayLabel: UILabel = {
@@ -98,12 +98,14 @@ class LogTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(with workout: Workout) {
+    func update(workout: Workout) {
 //        workout.printPrettyString()
+        print("Update: \(workout.title) \(workout.createdAt_!.formatted(date: .abbreviated, time: .omitted))")
+        guard let createdAt = workout.createdAt_ else { return }
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "EEE"
-        weekdayLabel.text = dateFormatter.string(from: workout.createdAt)
-        dayLabel.text = "\(Calendar.current.component(.day, from: workout.createdAt))"
+        weekdayLabel.text = dateFormatter.string(from: createdAt)
+        dayLabel.text = "\(Calendar.current.component(.day, from: createdAt))"
         workoutLabel.text = workout.title
         exercisesLabel.text = workout.getExercises()
             .compactMap { exercise in

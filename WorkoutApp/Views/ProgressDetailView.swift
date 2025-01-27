@@ -19,16 +19,16 @@ struct ProgressDetailView: View {
             return data.exerciseSets
         case .week:
             let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())!
-            return data.exerciseSets.filter { $0.exercise!.workout!.createdAt >= oneWeekAgo }
+            return data.exerciseSets.filter { $0.exercise!.workout!.createdAt_! >= oneWeekAgo }
         case .month:
             let oneMonthAgo = Calendar.current.date(byAdding: .month, value: -1, to: Date())!
-            return data.exerciseSets.filter { $0.exercise!.workout!.createdAt >= oneMonthAgo }
+            return data.exerciseSets.filter { $0.exercise!.workout!.createdAt_! >= oneMonthAgo }
         case .sixMonth:
             let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())!
-            return data.exerciseSets.filter { $0.exercise!.workout!.createdAt >= sixMonthsAgo }
+            return data.exerciseSets.filter { $0.exercise!.workout!.createdAt_! >= sixMonthsAgo }
         case .year:
             let oneYearAgo = Calendar.current.date(byAdding: .year, value: -1, to: Date())!
-            return data.exerciseSets.filter { $0.exercise!.workout!.createdAt >= oneYearAgo }
+            return data.exerciseSets.filter { $0.exercise!.workout!.createdAt_! >= oneYearAgo }
         }
     }
     
@@ -74,8 +74,8 @@ struct ProgressHeaderView: View {
     }
     
     var dateRangeString: String {
-        let startDate = filteredData.last?.exercise?.workout?.createdAt ?? Date()
-        let endDate = filteredData.first?.exercise?.workout?.createdAt ?? Date()
+        let startDate = filteredData.last?.exercise?.workout?.createdAt_ ?? Date()
+        let endDate = filteredData.first?.exercise?.workout?.createdAt_ ?? Date()
         return "\(formatDateMonthDayYear(startDate)) - \(formatDateMonthDayYear(endDate))"
     }
     
@@ -154,7 +154,7 @@ struct ProgressDetailViewCell: View {
                         .font(.headline)
                     
                     //"60lbs 3x5 Sep 20, 2023"
-                    Text("\(filteredData[i].exercise!.getExerciseSets().count)x\(filteredData[i].reps) \(filteredData[i].exercise!.name) at \(formatDateMonthDayYear(filteredData[i].exercise!.workout!.createdAt))")
+                    Text("\(filteredData[i].exercise!.getExerciseSets().count)x\(filteredData[i].reps) \(filteredData[i].exercise!.name) at \(formatDateMonthDayYear(filteredData[i].exercise!.workout!.createdAt_!))")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .lineLimit(1)
@@ -212,7 +212,7 @@ struct ProgressChartView: View {
     var body: some View {
         Chart(filteredData) { exercise in
             LineMark(
-                x: .value("Date", exercise.exercise?.workout?.createdAt ?? Date(), unit: .day),
+                x: .value("Date", exercise.exercise?.workout?.createdAt_ ?? Date(), unit: .day),
                 y: .value("Weight", exercise.weight)
             )
             .symbol(Circle().strokeBorder(lineWidth: 2))

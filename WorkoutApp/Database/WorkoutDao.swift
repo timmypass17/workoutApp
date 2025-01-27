@@ -29,7 +29,7 @@ class WorkoutDao: WorkoutDaoProtocol {
     func createWorkout(template: Template, childContext: NSManagedObjectContext) -> Workout {
         let workout = Workout(context: childContext)
         workout.title = template.title
-        workout.createdAt = .now
+        workout.createdAt_ = .now
         
         for templateExercise in template.templateExercises {
             let exercise = Exercise(context: childContext)

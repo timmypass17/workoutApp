@@ -12,7 +12,7 @@ import UIKit
 
 
 extension Workout {
-
+    
     @nonobjc public class func fetchRequest() -> NSFetchRequest<Workout> {
         return NSFetchRequest<Workout>(entityName: "Workout")
     }
@@ -21,7 +21,12 @@ extension Workout {
     @NSManaged private var title_: String?
     @NSManaged public var index: Int16  // used to sort a list of workout
     @NSManaged public var exercises: NSSet? // Cloud Kit doesn't support ordered relationships
-
+    
+    @objc var createdMonthID : String? {
+        guard let createdAt_ else { return nil }
+        return Workout.monthID(from: createdAt_)
+    }
+    
     var title: String {
         get {
             return title_ ?? ""
@@ -29,20 +34,6 @@ extension Workout {
         set {
             title_ = newValue
         }
-    }
-    
-    var createdAt: Date {
-        get {
-            return createdAt_ ?? .now
-        }
-        set {
-            createdAt_ = newValue
-        }
-    }
-    
-    var monthKey:  Date {
-        let components = Calendar.current.dateComponents([.year, .month], from: createdAt)
-        return Calendar.current.date(from: components)!
     }
 
     func getExercises() -> [Exercise] {
@@ -65,6 +56,34 @@ extension Workout {
         }
         
         return true
+    }
+    
+    // Convert a publishMonthString, or the section name of the main table view, to a date.
+    // Use the same calendar and time zone to decode the transient value.
+    //
+    class func date(from publishMonthString: String) -> Date? {
+    
+        guard let numericSection = Int(publishMonthString) else {
+            return nil
+        }
+        var dateComponents = DateComponents()
+        dateComponents.calendar = Calendar(identifier: .gregorian)
+
+        let year = numericSection / 1000
+        let month = numericSection - year * 1000
+        dateComponents.year = year
+        dateComponents.month = month
+        
+        return dateComponents.calendar?.date(from: dateComponents)
+    }
+    
+    class func monthID(from date: Date) -> String? {
+        let calendar = Calendar(identifier: .gregorian)
+        let components = calendar.dateComponents([.year, .month], from: date)
+        if let year = components.year, let month = components.month {
+            return "\(year * 1000 + month)"
+        }
+        return nil
     }
 }
 
@@ -101,13 +120,14 @@ extension Workout : Identifiable {
     }
     
     func getPrettyString() -> String {
-        return "Workout(title: \"\(title)\", createdAt: \(createdAt.formatted(date: .abbreviated, time: .omitted)))"
+        return ""
+//        return "Workout(title: \"\(title)\", createdAt: \(createdAt_.formatted(date: .abbreviated, time: .omitted)))"
     }
 
     class func copy(workout: Workout, with context: NSManagedObjectContext) -> Workout {
         let workoutCopy = Workout(context: context)
         workoutCopy.title = workout.title
-        workoutCopy.createdAt = workout.createdAt
+        workoutCopy.createdAt_ = workout.createdAt_
         workoutCopy.index = workout.index
         
         for exercise in workout.getExercises() {

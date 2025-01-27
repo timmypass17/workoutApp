@@ -136,9 +136,9 @@ class WorkoutViewController: UIViewController {
             var templates = fetchedResultsController.fetchedObjects!
             templates.remove(at: indexPath.row) // we deleting local copy to make sure we get updated index paths (fetchedResultsController.fetchedObjects is unchanged)
 
-            CoreDataStack.shared.mainContext.delete(templateToRemove)
+            CoreDataStack.shared.mainContext.delete(templateToRemove)   // actually affects fetchedResultsController.fetchedObjects
             CoreDataStack.shared.saveContext() // delegate removes tableview cells
-
+            
             // Update template positions
             for (index, template) in templates.enumerated() {
                 template.index = Int16(index)
@@ -149,6 +149,16 @@ class WorkoutViewController: UIViewController {
         })
         
         self.present(alert, animated: true, completion: nil)
+    }
+    
+    func didTapEditWorkoutButton(at indexPath: IndexPath) -> UIAction {
+        return UIAction(title: "Edit Workout", image: UIImage(systemName: "square.and.pencil")) { _ in
+            let template = self.fetchedResultsController.object(at: indexPath)
+            let editTemplateViewController = EditTemplateViewController(template: template, workoutService: self.workoutService)
+            editTemplateViewController.delegate = self
+            let vc = UINavigationController(rootViewController: editTemplateViewController)
+            self.present(vc, animated: true)
+        }
     }
 }
 
@@ -172,11 +182,6 @@ extension WorkoutViewController: UITableViewDataSource {
         let template = fetchedResultsController.object(at: indexPath)
         cell.update(template: template)
         return cell
-        
-//        let cell = tableView.dequeueReusableCell(withIdentifier: WorkoutTableViewCell.reuseIdentifier, for: indexPath) as! WorkoutTableViewCell
-//        let template = templates[indexPath.row]
-//        cell.update(template: template)
-//        return cell
     }
 
 }
@@ -209,22 +214,14 @@ extension WorkoutViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        return nil
-//        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
-//            let editAction =  UIAction(title: "Edit Workout", image: UIImage(systemName: "square.and.pencil")) { [self] _ in
-//                let template = templates[indexPath.row]
-//                let editTemplateViewController = EditTemplateViewController(template: template, workoutService: workoutService)
-//                editTemplateViewController.delegate = self
-//                let vc = UINavigationController(rootViewController: editTemplateViewController)
-//                self.present(vc, animated: true)
-//            }
-//
-//            let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-//                self.showDeleteAlert(indexPath: indexPath)
-//            }
-//            return UIMenu(title: "", children: [editAction, deleteAction])
-//        })
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
+            let deleteAction = UIAction(title: "Delete Workout", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                self.showDeleteAlert(indexPath: indexPath)
+            }
+            return UIMenu(title: "", children: [self.didTapEditWorkoutButton(at: indexPath), deleteAction])
+        })
     }
+    
 }
 
 
@@ -282,32 +279,24 @@ extension WorkoutViewController: CreateTemplateViewControllerDelegate {
         }
         
         CoreDataStack.shared.saveContext()
-        
-        let templateInMainContext = CoreDataStack.shared.mainContext.object(with: template.objectID) as! Template
-        
-//        templates.append(templateInMainContext)
-//        tableView.insertRows(at: [IndexPath(row: templates.count - 1, section: 0)], with: .automatic)
-//        contentUnavailableView.isHidden = !templates.isEmpty
     }
 }
 
 extension WorkoutViewController: EditTemplateViewControllerDelegate {
     func editTemplateViewController(_ viewController: EditTemplateViewController, didUpdateTemplate template: Template) {
-//        do {
-//            try viewController.childContext.save()
-//        } catch {
-//            print("Error updating template: \(error)")
-//        }
-//        
-//        CoreDataStack.shared.saveContext()
-//        
-//        let templateInMainContext = context.object(with: template.objectID) as! Template
-//        
-//        // note: templateInMainContext.objectID is same as template.objectID (unique across context)
-//        if let row = templates.firstIndex(where: { $0.objectID == template.objectID }) {
-//            templates[row] = templateInMainContext
-//            tableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .automatic)
-//        }
+        
+        for (index, templateExercise) in template.templateExercises.enumerated() {
+            templateExercise.index = Int16(index)
+            print("\(templateExercise.name) \(templateExercise.index)")
+        }
+        
+        do {
+            try viewController.childContext.save()
+        } catch {
+            print("Error updating template: \(error)")
+        }
+        
+        CoreDataStack.shared.saveContext()
     }
 }
 

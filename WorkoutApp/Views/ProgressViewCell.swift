@@ -98,10 +98,10 @@ struct HighestWeightView: View {
     
     var latestSet: ExerciseSet {
         // Get latest sets from same date
-        let latestDate = sets.last?.exercise?.workout?.createdAt
+        let latestDate = sets.last?.exercise?.workout?.createdAt_
         var latestSets: [ExerciseSet] = []
         var i = sets.count - 1;
-        while i >= 0 && sets[i].exercise?.workout?.createdAt == latestDate {
+        while i >= 0 && sets[i].exercise?.workout?.createdAt_ == latestDate {
             latestSets.append(sets[i])
             i -= 1
         }
@@ -127,7 +127,7 @@ struct HighestWeightView: View {
                     .font(.caption)
             }
             
-            Text("Updated: \(latestSet.exercise?.workout?.createdAt.formatted(date: .abbreviated, time: .omitted) ?? Date().formatted(date: .abbreviated, time: .omitted))")
+            Text("Updated: \(latestSet.exercise?.workout?.createdAt_?.formatted(date: .abbreviated, time: .omitted) ?? Date().formatted(date: .abbreviated, time: .omitted))")
                 .foregroundColor(.secondary)
                 .font(.caption2)
 
