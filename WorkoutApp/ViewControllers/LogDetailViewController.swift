@@ -42,6 +42,18 @@ class LogDetailViewController: WorkoutDetailViewController {
         return UIAction { [weak self] _ in
             guard let self else { return }
             
+            for exercise in workout.getExercises() {
+                for set in exercise.getExerciseSets() {
+                    if set.weight < 0 {
+                        set.weight = 0
+                    }
+                    if set.reps < 0 {
+                        set.reps = 0
+                    }
+                    set.isComplete = true
+                }
+            }
+            
             do {
                 try childContext.save()
             } catch {
