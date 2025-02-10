@@ -30,9 +30,14 @@ class LogSectionHeaderView: UIView {
         return hstack
     }()
 
-    init(title: String, workoutCount: Int) {
+    init(dateMonth: Date, workoutCount: Int) {
         super.init(frame: .zero)
-        monthYearLabel.text = title.uppercased()
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMMM yyyy"
+        let dateMonthString = dateFormatter.string(from: dateMonth)
+        
+        monthYearLabel.text = dateMonthString.uppercased()
         workoutCountLabel.text = workoutCount > 1 ? "\(workoutCount) Workouts" : "\(workoutCount) Workout"
         
         container.addArrangedSubview(monthYearLabel)

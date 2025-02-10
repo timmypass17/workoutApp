@@ -13,7 +13,6 @@ protocol StartWorkoutViewControllerDelegate: AnyObject {
 
 class StartWorkoutViewController: WorkoutDetailViewController {
 
-    weak var delegate: StartWorkoutViewControllerDelegate?          // log handles
     weak var progressDelegate: StartWorkoutViewControllerDelegate?  // progress handles
 
     init(template: Template, workoutService: WorkoutService) {
@@ -79,7 +78,6 @@ class StartWorkoutViewController: WorkoutDetailViewController {
 
         CoreDataStack.shared.saveContext()
 
-        delegate?.startWorkoutViewController(self, didFinishWorkout: workout)
         progressDelegate?.startWorkoutViewController(self, didFinishWorkout: workout)
         Settings.shared.logBadgeValue += 1
         NotificationCenter.default.post(name: Settings.logBadgeValueChangedNotification, object: nil)

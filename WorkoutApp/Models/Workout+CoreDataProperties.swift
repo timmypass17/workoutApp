@@ -22,6 +22,7 @@ extension Workout {
     @NSManaged public var index: Int16  // used to sort a list of workout
     @NSManaged public var exercises: NSSet? // Cloud Kit doesn't support ordered relationships
     
+    // computed property (transient property works wierd with child-parent)
     @objc var createdMonthID : String? {
         guard let createdAt_ else { return nil }
         return Workout.monthID(from: createdAt_)

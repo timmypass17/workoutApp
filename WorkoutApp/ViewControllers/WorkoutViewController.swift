@@ -193,7 +193,6 @@ extension WorkoutViewController: UITableViewDelegate {
         let startWorkoutViewController = StartWorkoutViewController(template: template, workoutService: workoutService)
         
         let logTableViewController = (tabBarController?.viewControllers?[1] as? UINavigationController)?.viewControllers[0] as! LogViewController
-        startWorkoutViewController.delegate = logTableViewController
 
         let progressTableViewController = (tabBarController?.viewControllers?[2] as? UINavigationController)?.viewControllers[0] as! ProgressViewController
         startWorkoutViewController.progressDelegate = progressTableViewController

@@ -38,6 +38,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let progressViewController = ProgressViewController(workoutService: workoutService)
         let settingsViewController = SettingsTableViewController()
         logViewController.delegate = progressViewController
+        logViewController.progressDelegate = progressViewController
         
         workoutViewController.tabBarItem = UITabBarItem(title: "Workout", image: UIImage(systemName: "dumbbell.fill"), tag: 0)
         logViewController.tabBarItem = UITabBarItem(title: "Log", image: UIImage(systemName: "calendar"), tag: 0)

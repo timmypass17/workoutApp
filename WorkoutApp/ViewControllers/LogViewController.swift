@@ -40,6 +40,7 @@ class LogViewController: UIViewController {
 
     let workoutService: WorkoutService
     weak var delegate: LogViewControllerDelegate?
+    weak var progressDelegate: LogViewControllerDelegate?
     
     var fetchedResultsController: NSFetchedResultsController<Workout>!
 
@@ -53,11 +54,6 @@ class LogViewController: UIViewController {
         self.workoutService = workoutService
         super.init(nibName: nil, bundle: nil)
     }
-    
-//    func getMonthYearKey(workout: Workout) -> Date {
-//        let components = Calendar.current.dateComponents([.year, .month], from: workout.createdAt)
-//        return Calendar.current.date(from: components)!
-//    }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -94,7 +90,7 @@ class LogViewController: UIViewController {
 
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                               managedObjectContext: CoreDataStack.shared.mainContext,
-                                                              sectionNameKeyPath: #keyPath(Workout.createdMonthID), // computed property (transient property works wierd with child-parent)
+                                                              sectionNameKeyPath: #keyPath(Workout.createdMonthID),
                                                               cacheName: nil)
                 
         fetchedResultsController.delegate = self
@@ -139,6 +135,7 @@ class LogViewController: UIViewController {
         let logToRemove = fetchedResultsController.object(at: indexPath)
         CoreDataStack.shared.mainContext.delete(logToRemove)
         CoreDataStack.shared.saveContext()
+        progressDelegate?.logViewController(self, didDeleteLog: logToRemove)
     }
 }
 
@@ -173,32 +170,16 @@ extension LogViewController: UITableViewDelegate {
         }
     }
     
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         guard let sections = fetchedResultsController.sections, !sections.isEmpty,
             let date = Workout.date(from: sections[section].name) else {
             return nil
         }
-        return dateFormatterForSectionHeader.string(from: date)
+        
+        return LogSectionHeaderView(dateMonth: date, workoutCount: fetchedResultsController.sections?[section].numberOfObjects ?? 0)
     }
-    
-    
-    private var dateFormatterForSectionHeader: DateFormatter {
-        dateFormatter.setLocalizedDateFormatFromTemplate("MMMM yyyy")
-        return dateFormatter
-    }
-    
-//    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-//        guard let sections = fetchedResultsController.sections, !sections.isEmpty,
-//            let date = Workout.date(from: sections[section].name) else {
-//            return nil
-//        }
-//        
-//        return LogSectionHeaderView(title: getMonthYearString(from: date), workoutCount: fetchedResultsController.sections?[section].numberOfObjects ?? 0)
-//    }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        let month = monthYears[indexPath.section]
-//        guard let log = logs[month]?[indexPath.row] else { return }
         let log = fetchedResultsController.object(at: indexPath)
         let logWorkoutViewController = LogDetailViewController(log: log, workoutService: workoutService)
         logWorkoutViewController.delegate = self
@@ -210,76 +191,11 @@ extension LogViewController: UITableViewDelegate {
     
 }
 
-extension LogViewController: StartWorkoutViewControllerDelegate {
-    func startWorkoutViewController(_ viewController: StartWorkoutViewController, didFinishWorkout workout: Workout) {
-//        // important: get workout in main context
-//        let mainContextWorkout = CoreDataStack.shared.mainContext.object(with: workout.objectID) as! Workout
-//        if let section = monthYears.firstIndex(where: { $0 == mainContextWorkout.monthKey }) {
-//            let rowToInsert = logs[workout.monthKey]?.firstIndex(where: { workout.createdAt > $0.createdAt }) ?? 0
-//            logs[mainContextWorkout.monthKey, default: []].insert(mainContextWorkout, at: rowToInsert)
-//            tableView.reloadSections(IndexSet(integer: section), with: .automatic)
-//        } else {
-//            logs[mainContextWorkout.monthKey, default: []].insert(mainContextWorkout, at: 0)
-//            let section = monthYears.firstIndex(where: { $0 == mainContextWorkout.monthKey })!
-//            tableView.insertSections(IndexSet(integer: section), with: .automatic)
-//        }
-//        contentUnavailableView.isHidden = !logs.isEmpty
-    }
-}
-
-
 extension LogViewController: LogDetailViewControllerDelegate {
     func logDetailViewController(_ viewController: LogDetailViewController, didSaveLog log: Workout) {
-        
-//        print("Current dates after update")
-//        fetchedResultsController.fetchedObjects?.forEach {
-//            print("\($0.title) \($0.createdAt_!.formatted(date: .abbreviated, time: .omitted))")
-//        }
-
-//        print("didSaveLog after: \(log.createdAt_!.formatted(date: .abbreviated, time: .omitted))")
-//        // important: get log in main context (log that was save still has child context)
-//        do {
-//            let mainContextWorkout = try CoreDataStack.shared.mainContext.existingObject(with: log.objectID) as! Workout
-//            
-//            tableView.beginUpdates()
-//            
-//            // Delete original log
-//            for (monthYear, _) in logs {
-//                guard let section = monthYears.firstIndex(where: { $0 == monthYear }),
-//                      let row = logs[monthYear]?.firstIndex(where: { $0.objectID == log.objectID })
-//                else { continue }
-//                
-//                logs[monthYear]?.remove(at: row)
-//                
-//                if logs[monthYear, default: []].count == 0 {
-//                    logs[monthYear] = nil
-//                    tableView.deleteSections(IndexSet(integer: section), with: .automatic)
-//                } else {
-//                    tableView.deleteRows(at: [IndexPath(row: row, section: section)], with: .automatic)
-//                }
-//                
-//                break
-//            }
-//            
-//            if logs[log.monthKey] == nil {
-//                logs[log.monthKey] = []
-//            }
-//            
-//            guard let section = monthYears.firstIndex(where: { $0 == log.monthKey }) else { return }
-//            
-//            if logs[log.monthKey] == [] {
-//                tableView.insertSections(IndexSet(integer: section), with: .automatic)
-//            }
-//
-//            let rowToInsert = logs[log.monthKey]?.firstIndex(where: { log.createdAt < $0.createdAt }) ?? 0
-//            logs[log.monthKey, default: []].insert(mainContextWorkout, at: rowToInsert)
-//            tableView.insertRows(at: [IndexPath(row: rowToInsert, section: section)], with: .automatic)
-//
-//            tableView.endUpdates()
-//            delegate?.logViewController(self, didSaveLog: mainContextWorkout)  // progress
-//        } catch {
-//            print("Error getting log: \(error)")
-//        }
+        // note: Updating relationships doesn't work with nsfetchresultcontroller, so reload data explicity
+        tableView.reloadData()
+        progressDelegate?.logViewController(self, didSaveLog: log)  // update progress aswell, isn't using nsfetchedresultcontroller
     }
 }
 
@@ -313,6 +229,7 @@ extension LogViewController: NSFetchedResultsControllerDelegate {
                     for type: NSFetchedResultsChangeType,
                     newIndexPath: IndexPath?) {
         
+        print("should update ui")
 //        guard changeIsUserDriven == false else { return }
 
         switch type {
@@ -320,56 +237,35 @@ extension LogViewController: NSFetchedResultsControllerDelegate {
             guard let newIndexPath else { return }
             // Insert a new row with fade animation when the fetched results
             // controller adds or moves an object to the specified index path.
-            print("Insert row: \(newIndexPath)")
             tableView.insertRows(at: [newIndexPath], with: .fade)
         case .delete:
             guard let indexPath else { return }
             // Delete the row with animation at the old index path when the fetched
             // results controller deletes or moves the associated object.
-            print("Delete row: \(indexPath)")
             tableView.deleteRows(at: [indexPath], with: .fade)
         case .update:
             guard let indexPath else { return }
             // Update the cell as the specified indexPath.
-            print("Update row: \(indexPath)")
             if let cell = tableView.cellForRow(at: indexPath) as? LogViewCell {
                 let log = fetchedResultsController.object(at: indexPath)
                 cell.update(workout: log)
             }
-            print("current items after")
-            print((controller.fetchedObjects as! [Workout]).forEach {
-                print($0.self.createdAt_?.formatted(date: .abbreviated, time: .omitted))
-            })
             
         case .move:
             guard let indexPath, let newIndexPath else { return }
-            print("Move row: \(indexPath) to \(newIndexPath)")
             
             if let cell = tableView.cellForRow(at: indexPath) as? LogViewCell {
                 // updates sometimes count as moving into its own position? (ex. move (0, 0) to (0, 0). Update explicity
                 let log = fetchedResultsController.object(at: newIndexPath)
-                print("updating: \(newIndexPath)")
                 cell.update(workout: log)
             }
             
             // Move a row from the specified index path to the new index path.
             tableView.moveRow(at: indexPath, to: newIndexPath)
-//            
-//            print("current items after move")
-//            print((controller.fetchedObjects as! [Workout]).forEach {
-//                print($0.self.createdAt_?.formatted(date: .abbreviated, time: .omitted))
-//            })
         @unknown default:
             break
         }
         
         contentUnavailableView.isHidden = !(controller.fetchedObjects?.isEmpty ?? true)
     }
-}
-
-
-func getMonthYearString(from date: Date) -> String {
-    let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "MMMM yyyy"
-    return dateFormatter.string(from: date)
 }

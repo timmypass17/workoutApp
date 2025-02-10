@@ -36,7 +36,6 @@ class ProgressViewController: UIViewController {
     init(workoutService: WorkoutService) {
         self.workoutService = workoutService
         super.init(nibName: nil, bundle: nil)
-//        updateData()
     }
     
     required init?(coder: NSCoder) {
@@ -80,13 +79,14 @@ class ProgressViewController: UIViewController {
         }
     }
     
+    // note: only fetches exerciseCount * 7 at most, cheap
     func updateData() {
         Task {
             exerciseData.removeAll()
             
             let exerciseNames: [String] = await workoutService.fetchExerciseNames()
             for exerciseName in exerciseNames {
-                let exerciseSets: [ExerciseSet] = await workoutService.fetchExerciseSets(exerciseName: exerciseName)
+                let exerciseSets: [ExerciseSet] = await workoutService.fetchExerciseSets(exerciseName: exerciseName, limit: 7)
                 let bestLift: Double = await workoutService.fetchPR(exerciseName: exerciseName)
                 
                 exerciseData.append(ExerciseData(name: exerciseName, exerciseSets: exerciseSets, bestLift: bestLift, lastUpdated: .now, latestLift: exerciseSets.last?.weight ?? 0))
