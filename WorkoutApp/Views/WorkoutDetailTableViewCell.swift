@@ -150,7 +150,7 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         } else {
             previousLabel.text = "-"
             weightTextField.placeholder = weightUnit == .lbs ? "45" : "20"
-            repsTextField.placeholder = templateExercise?.reps.description ?? ""
+            repsTextField.placeholder = templateExercise?.reps.description ?? ""    // should never be empty
         }
     }
     
