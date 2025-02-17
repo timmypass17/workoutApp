@@ -1,40 +1,94 @@
-Squat
 Bench Press
-Pull Ups
+Squat
 Deadlift
-Barbell Row
 Shoulder Press
-Overhead Press
-Pulldowns
-Face Pull
-Hammer Curl
-Dumbell Curl
-Triceps Pushdowns
-Overhead Triceps Extensions
-Romanian Deadlift
-Leg Press
-Leg Curl
-Calf Raises
-Lunges
+Dumbbell Bench Press
+Pull Ups
+Dumbbell Curl
+Barbell Curl
 Push Ups
-Chin Ups
-Tricep Dips
+Sled Leg Press
+Bent Over Row
+Dumbbell Shoulder Press
+Incline Dumbbell Bench Press
 Incline Bench Press
-Dumbbell Flys
-Dumbbell Rows
-Cable Rows
 Lat Pulldown
-Dumbbell Lateral Raise
+Dips
 Front Squat
-Bulgarian Split Squat
-Hip Thrusts
-Skull Crushers
-Hanging Leg Raises
-Dumbbell Shrugs
-Arnold Press
-Sumo Deadlift
-Pendlay Row
-Chest Press
-Seated Cable Row
-Preacher Curl
+Hex Bar Deadlift
+Dumbbell Lateral Raise
+Power Clean
+Hip Thrust
 Leg Extension
+Romanian Deadlift
+Chin Ups
+Military Press
+Horizontal Leg Press
+Dumbbell Row
+Sumo Deadlift
+Chest Press
+Tricep Pushdown
+Hammer Curl
+Seated Cable Row
+Seated Dumbbell Shoulder Press
+Hack Squat
+Clean and Jerk
+Snatch
+Seated Leg Curl
+Machine Chest Fly
+Dumbbell Bulgarian Split Squat
+EZ Bar Curl
+Close Grip Bench Press
+Seated Shoulder Press
+Machine Shoulder Press
+Lying Tricep Extension
+Clean
+Barbell Shrug
+Push Press
+Goblet Squat
+Preacher Curl
+Lying Leg Curl
+Dumbbell Fly
+T Bar Row
+Decline Bench Press
+Machine Calf Raise
+Dumbbell Shrug
+Tricep Rope Pushdown
+Dumbbell Lunge
+Smith Machine Bench Press
+Dumbbell Tricep Extension
+Clean and Press
+Cable Bicep Curl
+Rack Pull
+Machine Row
+Bodyweight Squat
+Pendlay Row
+Incline Dumbbell Curl
+Dumbbell Romanian Deadlift
+Bulgarian Split Squat
+Box Squat
+Smith Machine Squat
+Dumbbell Concentration Curl
+Cable Lateral Raise
+Sit Ups
+Seated Calf Raise
+Upright Row
+Dumbbell Front Raise
+Vertical Leg Press
+Tricep Extension
+Cable Fly
+Arnold Press
+Hip Abduction
+Hang Clean
+Stiff Leg Deadlift
+Muscle Ups
+Zercher Squat
+Face Pull
+Floor Press
+Good Morning
+Wrist Curl
+Dumbbell Pullover
+Seated Dip Machine
+Lying Dumbbell Tricep Extension
+Incline Dumbbell Fly
+Barbell Lunge
