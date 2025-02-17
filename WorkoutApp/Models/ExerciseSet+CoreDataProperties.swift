@@ -18,7 +18,7 @@ extension ExerciseSet {
     }
 
     @NSManaged public var isComplete: Bool  // Bool have default value, no need for extra setters/getters
-    @NSManaged public var reps: Int16   // set to private cause we don't want to expose field to outside
+    @NSManaged public var reps: Int16
     @NSManaged public var weight: Double // always in lbs (real weight)
     @NSManaged public var exercise: Exercise?
     @NSManaged public var index: Int16  // used to sort a list of workout

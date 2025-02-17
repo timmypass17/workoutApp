@@ -90,8 +90,8 @@ struct HighestWeightView: View {
     
     var highestWeight: String {
         return sets.max { set, otherSet in
-            let weight = Float(set.weight) ?? 0.0
-            let otherWeight = Float(otherSet.weight) ?? 0.0
+            let weight = Float(set.weight)
+            let otherWeight = Float(otherSet.weight)
             return weight < otherWeight
         }!.weightString
     }
@@ -106,8 +106,8 @@ struct HighestWeightView: View {
             i -= 1
         }
         return latestSets.max { set, otherSet in
-            let weight = Float(set.weight) ?? 0.0
-            let otherWeight = Float(otherSet.weight) ?? 0.0
+            let weight = Float(set.weight)
+            let otherWeight = Float(otherSet.weight)
             return weight < otherWeight
         }!
     }

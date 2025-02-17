@@ -18,6 +18,7 @@ class WorkoutDetailViewController: UIViewController {
     }()
             
     var workout: Workout!
+    var template: Template? // for inital placeholder values
     let childContext = CoreDataStack.shared.newChildContext()
     let workoutService: WorkoutService
     
@@ -107,10 +108,7 @@ extension WorkoutDetailViewController: UITableViewDataSource {
             let exerciseSet = sets[indexPath.row]
             cell.delegate = self
             
-            cell.update(exerciseSet: exerciseSet)
-            
-//            let previousWeights = previousExercises[exercise.name, default: []]
-//            cell.update(with: workout, for: indexPath, previousWeights: previousWeights)
+            cell.update(exerciseSet: exerciseSet, templateExercise: template?.templateExercises[indexPath.section])
             return cell
         }
     }

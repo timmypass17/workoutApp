@@ -133,25 +133,24 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         repsTextField.inputAccessoryView = toolbar
     }
     
-    func update(exerciseSet: ExerciseSet) {
+    func update(exerciseSet: ExerciseSet, templateExercise: TemplateExercise? = nil) {
         updateSetButton(exerciseSet: exerciseSet)
         
-        if exerciseSet.weight >= 0 {
-            weightTextField.text = Settings.shared.weightUnit == .lbs ? exerciseSet.weight.lbsString : exerciseSet.weight.kgString
-        } else {
-            weightTextField.text = ""
-        }
+        let weightUnit = Settings.shared.weightUnit
+        let weightString = weightUnit == .lbs ? exerciseSet.weight.lbsString : exerciseSet.weight.kgString
+        weightTextField.text = exerciseSet.weight >= 0 ? weightString : ""
+        repsTextField.text = exerciseSet.reps >= 0 ? exerciseSet.reps.description : ""
         
-        repsTextField.text = exerciseSet.reps >= 0 ? exerciseSet.repsString : ""
-        
+        // Use previous set (or template) for placeholders
         if let previousSet = exerciseSet.previousSet {
-            weightTextField.placeholder = Settings.shared.weightUnit == .lbs ? previousSet.weight.lbsString : previousSet.weight.kgString
-            repsTextField.placeholder = previousSet.repsString
-            previousLabel.text = Settings.shared.weightUnit == .lbs ? previousSet.weight.lbsString : previousSet.weight.kgString
+            let previousWeightString = weightUnit == .lbs ? previousSet.weight.lbsString : previousSet.weight.kgString
+            previousLabel.text = previousWeightString
+            weightTextField.placeholder = previousWeightString
+            repsTextField.placeholder = templateExercise?.reps.description ?? previousSet.reps.description
         } else {
-            weightTextField.placeholder = Settings.shared.weightUnit == .lbs ? "45" : "20"
-            repsTextField.placeholder = "5"
             previousLabel.text = "-"
+            weightTextField.placeholder = weightUnit == .lbs ? "45" : "20"
+            repsTextField.placeholder = templateExercise?.reps.description ?? ""
         }
     }
     

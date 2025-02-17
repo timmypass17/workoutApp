@@ -8,6 +8,7 @@
 import UIKit
 import CoreData
 
+// TODO: Ensure localization works
 
 class WorkoutViewController: UIViewController {
     

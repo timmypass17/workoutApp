@@ -25,7 +25,7 @@ class WorkoutTableViewCell: UITableViewCell {
     }
     
     func update(template: Template) {
-        titleLabel.text = /*template.title*/  "\(template.title) \(template.index)"
+        titleLabel.text = template.title  // "\(template.title) \(template.index)"
         let firstLetter =  template.title.first?.lowercased() ?? "a"
         var config = UIImage.SymbolConfiguration(pointSize: 35)
         config = config.applying(UIImage.SymbolConfiguration(paletteColors: [.white, Settings.shared.accentColor.color]))

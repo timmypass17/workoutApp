@@ -18,6 +18,7 @@ class StartWorkoutViewController: WorkoutDetailViewController {
     init(template: Template, workoutService: WorkoutService) {
         super.init(workoutService: workoutService)
         workout = workoutService.createWorkout(template: template, childContext: childContext)
+        self.template = template
     }
     
     @MainActor required init?(coder: NSCoder) {

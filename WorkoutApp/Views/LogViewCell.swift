@@ -40,7 +40,7 @@ class LogViewCell: UITableViewCell {
         label.font = .preferredFont(forTextStyle: .subheadline)
         label.textColor = .secondaryLabel
         label.lineBreakMode = .byTruncatingTail
-        label.numberOfLines = 3
+        label.numberOfLines = 4
         return label
     }()
     
@@ -109,15 +109,7 @@ class LogViewCell: UITableViewCell {
         workoutLabel.text = workout.title
         exercisesLabel.text = workout.getExercises()
             .compactMap { exercise in
-                guard let minReps = exercise.minReps,
-                      let maxReps = exercise.maxReps
-                else { return nil }
-                                
-                if minReps != maxReps {
-                    return "\(exercise.getExerciseSets().count)x\(minReps)-\(maxReps) \(exercise.name)"
-                } else {
-                    return "\(exercise.getExerciseSets().count)x\(maxReps) \(exercise.name)"
-                }
+                return "\(exercise.getExerciseSets().count)x\(exercise.maxReps ?? 0) \(exercise.name) - \(formatWeight(exercise.maxWeight ?? 0)) \(Settings.shared.weightUnit.rawValue)"
             }
             .joined(separator: "\n")
     }

@@ -40,8 +40,8 @@ class WorkoutDao: WorkoutDaoProtocol {
             for i in 0..<templateExercise.sets {
                 let exerciseSet = ExerciseSet(context: childContext)
                 exerciseSet.isComplete = false
-                exerciseSet.reps = -1
-                exerciseSet.weight = -1
+                exerciseSet.reps = -templateExercise.reps // negative to use as placeholder
+                exerciseSet.weight = -1 // use previous weight
                 exerciseSet.index = Int16(i)
                 exerciseSet.exercise = exercise
                 exercise.addToExerciseSets(exerciseSet)

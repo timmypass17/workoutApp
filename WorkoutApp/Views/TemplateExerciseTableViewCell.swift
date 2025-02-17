@@ -50,7 +50,7 @@ class TemplateExerciseTableViewCell: UITableViewCell {
     }
     
     func update(templateExercise: TemplateExercise) {
-        nameLabel.text = "\(templateExercise.name) \(templateExercise.index)"
+        nameLabel.text = templateExercise.name // "\(templateExercise.name) \(templateExercise.index)"
         frequencyLabel.text = "\(templateExercise.sets) x \(templateExercise.reps) reps"
     }
     
