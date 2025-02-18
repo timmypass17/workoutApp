@@ -64,7 +64,8 @@ class LogViewController: UIViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.title = "Log"
         tableView.register(LogViewCell.self, forCellReuseIdentifier: LogViewCell.reuseIdentifier)
-        
+        tableView.register(LogSectionHeaderView.self, forHeaderFooterViewReuseIdentifier: LogSectionHeaderView.reuseIdentifier)
+
         NotificationCenter.default.addObserver(tableView,
             selector: #selector(UITableView.reloadData),
             name: WeightType.valueChangedNotification, object: nil)
@@ -172,11 +173,13 @@ extension LogViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         guard let sections = fetchedResultsController.sections, !sections.isEmpty,
-            let date = Workout.date(from: sections[section].name) else {
+              let date = Workout.date(from: sections[section].name) else {
             return nil
         }
         
-        return LogSectionHeaderView(dateMonth: date, workoutCount: fetchedResultsController.sections?[section].numberOfObjects ?? 0)
+        let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: LogSectionHeaderView.reuseIdentifier) as! LogSectionHeaderView
+        headerView.update(dateMonth: date, workoutCount: fetchedResultsController.sections?[section].numberOfObjects ?? 0)
+        return headerView
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -206,6 +209,7 @@ extension LogViewController: NSFetchedResultsControllerDelegate {
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<any NSFetchRequestResult>) {
         tableView.endUpdates()
+        updateSectionHeaders()
     }
     
     func controller(_ controller: NSFetchedResultsController<any NSFetchRequestResult>,
@@ -221,7 +225,7 @@ extension LogViewController: NSFetchedResultsControllerDelegate {
             break
         }
     }
-    
+        
     // Find out when the fetched results controller adds, removes, moves, or updates a fetched object.
     func controller(_ controller: NSFetchedResultsController<any NSFetchRequestResult>,
                     didChange anObject: Any,
@@ -229,23 +233,15 @@ extension LogViewController: NSFetchedResultsControllerDelegate {
                     for type: NSFetchedResultsChangeType,
                     newIndexPath: IndexPath?) {
         
-        print("should update ui")
-//        guard changeIsUserDriven == false else { return }
-
         switch type {
         case .insert:
             guard let newIndexPath else { return }
-            // Insert a new row with fade animation when the fetched results
-            // controller adds or moves an object to the specified index path.
             tableView.insertRows(at: [newIndexPath], with: .fade)
         case .delete:
             guard let indexPath else { return }
-            // Delete the row with animation at the old index path when the fetched
-            // results controller deletes or moves the associated object.
             tableView.deleteRows(at: [indexPath], with: .fade)
         case .update:
             guard let indexPath else { return }
-            // Update the cell as the specified indexPath.
             if let cell = tableView.cellForRow(at: indexPath) as? LogViewCell {
                 let log = fetchedResultsController.object(at: indexPath)
                 cell.update(workout: log)
@@ -253,19 +249,21 @@ extension LogViewController: NSFetchedResultsControllerDelegate {
             
         case .move:
             guard let indexPath, let newIndexPath else { return }
-            
-            if let cell = tableView.cellForRow(at: indexPath) as? LogViewCell {
-                // updates sometimes count as moving into its own position? (ex. move (0, 0) to (0, 0). Update explicity
-                let log = fetchedResultsController.object(at: newIndexPath)
-                cell.update(workout: log)
-            }
-            
-            // Move a row from the specified index path to the new index path.
             tableView.moveRow(at: indexPath, to: newIndexPath)
         @unknown default:
             break
         }
         
         contentUnavailableView.isHidden = !(controller.fetchedObjects?.isEmpty ?? true)
+    }
+    
+    private func updateSectionHeaders() {
+        guard let sections = fetchedResultsController.sections else { return }
+        for section in 0..<sections.count {
+            if let headerView = tableView.headerView(forSection: section) as? LogSectionHeaderView,
+               let date = Workout.date(from: sections[section].name) {
+                headerView.update(dateMonth: date, workoutCount: sections[section].numberOfObjects)
+            }
+        }
     }
 }
