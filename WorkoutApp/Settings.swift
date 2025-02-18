@@ -24,8 +24,8 @@ struct Settings {
               let data = string.data(using: .utf8) else {
             return nil
         }
-        
-        return try! JSONDecoder().decode(T.self, from: data)
+
+        return try? JSONDecoder().decode(T.self, from: data)
     }
     
     var weightUnit: WeightType {
@@ -61,12 +61,25 @@ struct Settings {
         }
     }
     
-    var accentColor: AccentColor {
+    var selectedAccentColor: UIColor {
+        return accentColor?.color ?? customAccentColor?.toUIColor() ?? .systemBlue
+    }
+    
+    var accentColor: AccentColor? {
         get {
-            return unarchiveJSON(key: "accentColor") ?? .blue
+            return unarchiveJSON(key: "accentColor")
         }
         set {
             archiveJSON(value: newValue, key: "accentColor")
+        }
+    }
+    
+    var customAccentColor: CodableUIColor? {
+        get {
+            return unarchiveJSON(key: "customAccentColor")
+        }
+        set {
+            archiveJSON(value: newValue, key: "customAccentColor")
         }
     }
     
@@ -123,3 +136,26 @@ extension Color {
     }
 }
 
+struct CodableUIColor: Codable {
+    let red: CGFloat
+    let green: CGFloat
+    let blue: CGFloat
+    let alpha: CGFloat
+
+    init(color: UIColor) {
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
+        color.getRed(&r, green: &g, blue: &b, alpha: &a)
+        
+        self.red = r
+        self.green = g
+        self.blue = b
+        self.alpha = a
+    }
+
+    func toUIColor() -> UIColor {
+        return UIColor(red: red, green: green, blue: blue, alpha: alpha)
+    }
+}

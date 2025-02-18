@@ -13,7 +13,7 @@ class AddTemplateExerciseTableViewCell: UITableViewCell {
     var titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Add Exercise"
-        label.textColor = Settings.shared.accentColor.color
+        label.textColor = Settings.shared.selectedAccentColor
         return label
     }()
     

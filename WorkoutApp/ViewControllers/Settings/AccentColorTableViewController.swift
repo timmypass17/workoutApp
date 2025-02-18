@@ -8,7 +8,7 @@
 import UIKit
 
 protocol AccentColorTableViewControllerDelegate: AnyObject {
-    func accentColorTableViewController(_ controller: AccentColorTableViewController, didSelectAccentColor color: AccentColor)
+    func accentColorTableViewController(_ controller: AccentColorTableViewController, didSelectAccentColor color: UIColor, colorName: String?)
 }
 
 class AccentColorTableViewController: UITableViewController {
@@ -19,6 +19,8 @@ class AccentColorTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "ColorCell")
+        tableView.register(CustomColorTableViewCell.self, forCellReuseIdentifier: CustomColorTableViewCell.reuseIdentifier)
+
         navigationItem.title = "Accent Color"
         navigationItem.largeTitleDisplayMode = .never
     }
@@ -26,14 +28,25 @@ class AccentColorTableViewController: UITableViewController {
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return 2
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if section == 0 {
+            return 1
+        }
         return colors.count
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if indexPath.row == 0 && indexPath.section == 0 {
+            let cell = tableView.dequeueReusableCell(withIdentifier: CustomColorTableViewCell.reuseIdentifier, for: indexPath) as! CustomColorTableViewCell
+            cell.delegate = self
+            cell.update(selectedColor: Settings.shared.selectedAccentColor)
+            cell.selectionStyle = .none
+            return cell
+        }
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: "ColorCell", for: indexPath)
         let color = colors[indexPath.row]
         
@@ -48,9 +61,14 @@ class AccentColorTableViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
         let selectedColor = colors[indexPath.row]
         Settings.shared.accentColor = selectedColor
+        Settings.shared.customAccentColor = nil
         NotificationCenter.default.post(name: AccentColor.valueChangedNotification, object: nil)
-        delegate?.accentColorTableViewController(self, didSelectAccentColor: selectedColor)
+        delegate?.accentColorTableViewController(self, didSelectAccentColor: selectedColor.color, colorName: selectedColor.rawValue.capitalized)
         tableView.reloadData()
+    }
+    
+    override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
+        return indexPath.section == 0 ? nil : indexPath
     }
 }
 
@@ -87,6 +105,17 @@ enum AccentColor: String, CaseIterable, Codable {
         case .white:
             return .white
         }
+    }
+}
+
+extension AccentColorTableViewController: CustomColorTableViewCellDelegate {
+    func customColorTableViewCell(_ cell: CustomColorTableViewCell, didSelectCustomColor color: UIColor) {
+        cell.update(selectedColor: color)
+        Settings.shared.accentColor = nil
+        Settings.shared.customAccentColor = CodableUIColor(color: color)
+        NotificationCenter.default.post(name: AccentColor.valueChangedNotification, object: nil)
+        delegate?.accentColorTableViewController(self, didSelectAccentColor: color, colorName: nil)
+        tableView.reloadSections(IndexSet(integer: 1), with: .automatic)
     }
 }
 

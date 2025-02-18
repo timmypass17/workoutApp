@@ -50,6 +50,7 @@
 		32BF97972D21D36E0004FA47 /* ExerciseDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF97962D21D36E0004FA47 /* ExerciseDetailViewController.swift */; };
 		32BF97992D2204D50004FA47 /* EditExerciseDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF97982D2204D50004FA47 /* EditExerciseDetailViewController.swift */; };
 		32BF979B2D2205DD0004FA47 /* AddExerciseDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BF979A2D2205DD0004FA47 /* AddExerciseDetailViewController.swift */; };
+		32C53AB82D641F5300BF1A41 /* CustomColorTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32C53AB72D641F5300BF1A41 /* CustomColorTableViewCell.swift */; };
 		32D0A40B2D3B058900C9F803 /* exercises.txt in Resources */ = {isa = PBXBuildFile; fileRef = 32D0A40A2D3B058300C9F803 /* exercises.txt */; };
 		32D0A4112D41B4C600C9F803 /* SelectableSettingsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D0A4102D41B4C600C9F803 /* SelectableSettingsTableViewCell.swift */; };
 		32D0A4132D41B4FF00C9F803 /* ToggleableSettingsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D0A4122D41B4FF00C9F803 /* ToggleableSettingsTableViewCell.swift */; };
@@ -123,6 +124,7 @@
 		32BF97962D21D36E0004FA47 /* ExerciseDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailViewController.swift; sourceTree = "<group>"; };
 		32BF97982D2204D50004FA47 /* EditExerciseDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditExerciseDetailViewController.swift; sourceTree = "<group>"; };
 		32BF979A2D2205DD0004FA47 /* AddExerciseDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddExerciseDetailViewController.swift; sourceTree = "<group>"; };
+		32C53AB72D641F5300BF1A41 /* CustomColorTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomColorTableViewCell.swift; sourceTree = "<group>"; };
 		32D0A3F92D384FEA00C9F803 /* BuiltDiffTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BuiltDiffTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		32D0A40A2D3B058300C9F803 /* exercises.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = exercises.txt; sourceTree = "<group>"; };
 		32D0A4102D41B4C600C9F803 /* SelectableSettingsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectableSettingsTableViewCell.swift; sourceTree = "<group>"; };
@@ -274,6 +276,7 @@
 				32BF97942D20DC460004FA47 /* AddTemplateExerciseTableViewCell.swift */,
 				32D0A4102D41B4C600C9F803 /* SelectableSettingsTableViewCell.swift */,
 				32D0A4122D41B4FF00C9F803 /* ToggleableSettingsTableViewCell.swift */,
+				32C53AB72D641F5300BF1A41 /* CustomColorTableViewCell.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -441,6 +444,7 @@
 				32A2937D2B42073B00122166 /* SceneDelegate.swift in Sources */,
 				32E3A1982B8C0865001FD86B /* PrivacyTableViewController.swift in Sources */,
 				323148A62B50CAEA00F598A2 /* WorkoutDetailViewController.swift in Sources */,
+				32C53AB82D641F5300BF1A41 /* CustomColorTableViewCell.swift in Sources */,
 				32E051D92B7ED1FA0093EE4B /* ExerciseHeaderView.swift in Sources */,
 				32BF979B2D2205DD0004FA47 /* AddExerciseDetailViewController.swift in Sources */,
 				323015D32D2708520055A040 /* LogDetailViewController.swift in Sources */,

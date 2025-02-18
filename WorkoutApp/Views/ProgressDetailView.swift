@@ -178,7 +178,7 @@ struct ProgressDetailViewCell: View {
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 2)
-                                .background(Color(Settings.shared.accentColor.color), in: RoundedRectangle(cornerRadius: 4))
+                                .background(Color(Settings.shared.selectedAccentColor), in: RoundedRectangle(cornerRadius: 4))
                         } else if difference < 0 {
                             // Less weight
                             Text("\(formatWeight(difference)) \(weightUnit.rawValue)")

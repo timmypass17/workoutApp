@@ -40,13 +40,13 @@ class SettingsTableViewController: UIViewController {
     
     var sections = [
         Section(title: "General",
-                data: [Model(image: UIImage(systemName: "dumbbell.fill")!, text: "Weight Units", secondary: Settings.shared.weightUnit.description, backgroundColor: Settings.shared.accentColor.color),
-                       Model(image: UIImage(systemName: "alarm.fill")!, text: "Show Timer", backgroundColor: Settings.shared.accentColor.color, isOn: Settings.shared.showTimer),
-                       Model(image: UIImage(systemName: "iphone.radiowaves.left.and.right")!, text: "Haptic Feedback", backgroundColor: Settings.shared.accentColor.color, isOn: Settings.shared.enableHaptic),
+                data: [Model(image: UIImage(systemName: "dumbbell.fill")!, text: "Weight Units", secondary: Settings.shared.weightUnit.description, backgroundColor: Settings.shared.selectedAccentColor),
+                       Model(image: UIImage(systemName: "alarm.fill")!, text: "Show Timer", backgroundColor: Settings.shared.selectedAccentColor, isOn: Settings.shared.showTimer),
+                       Model(image: UIImage(systemName: "iphone.radiowaves.left.and.right")!, text: "Haptic Feedback", backgroundColor: Settings.shared.selectedAccentColor, isOn: Settings.shared.enableHaptic),
                       ]),
         Section(title: "Appearance",
                 data: [Model(image: UIImage(systemName: "moon.stars.fill")!, text: "Theme", secondary: Settings.shared.theme.description, backgroundColor: .systemIndigo),
-                       Model(image: UIImage(systemName: "paintpalette.fill")!, text: "Accent Color", secondary: Settings.shared.accentColor.rawValue.capitalized, backgroundColor: .systemOrange)]),
+                       Model(image: UIImage(systemName: "paintpalette.fill")!, text: "Accent Color", secondary: Settings.shared.accentColor?.rawValue.capitalized ?? "Custom", backgroundColor: .systemOrange)]),
         Section(title: "Help & Support",
                 data: [Model(image: UIImage(systemName: "mail.fill")!, text: "Contact Us", backgroundColor: .systemGreen),
                        Model(image: UIImage(systemName: "ladybug.fill")!, text: "Bug Report", backgroundColor: .systemRed)]),
@@ -207,12 +207,12 @@ extension SettingsTableViewController: ThemeTableViewControllerDelegate {
 }
 
 extension SettingsTableViewController: AccentColorTableViewControllerDelegate {
-    func accentColorTableViewController(_ controller: AccentColorTableViewController, didSelectAccentColor color: AccentColor) {
+    func accentColorTableViewController(_ controller: AccentColorTableViewController, didSelectAccentColor color: UIColor, colorName: String?) {
         let colorIndexPath = SettingsTableViewController.accentColorIndexpath
         for j in 0..<sections[0].data.count {
-            sections[0].data[j].backgroundColor = color.color
+            sections[0].data[j].backgroundColor = color
         }
-        sections[colorIndexPath.section].data[colorIndexPath.row].secondary = color.rawValue.capitalized
+        sections[colorIndexPath.section].data[colorIndexPath.row].secondary = colorName ?? "Custom"
         
         tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
         tableView.reloadRows(at: [colorIndexPath], with: .automatic)

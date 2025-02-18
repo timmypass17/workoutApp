@@ -15,6 +15,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
+        if Settings.shared.accentColor == nil && Settings.shared.customAccentColor == nil {
+            Settings.shared.accentColor = .blue
+        }
+        
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(updateTheme),
                                                name: UIUserInterfaceStyle.valueChangedNotification,
@@ -64,7 +68,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
     @objc func updateAccentColor() {
-        window?.tintColor = Settings.shared.accentColor.color
+        window?.tintColor = Settings.shared.selectedAccentColor
     }
     
     

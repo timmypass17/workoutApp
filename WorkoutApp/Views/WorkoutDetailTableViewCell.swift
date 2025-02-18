@@ -115,7 +115,7 @@ class WorkoutDetailTableViewCell: UITableViewCell {
         let incrementButton = UIBarButtonItem(image: UIImage(systemName: "plus"), primaryAction: didTapIncrementButton())
 
         let buttons = [previousButton, nextButton, decrementButton, incrementButton]
-        buttons.forEach { $0.tintColor = Settings.shared.accentColor.color }
+        buttons.forEach { $0.tintColor = Settings.shared.selectedAccentColor }
 
         toolbar.items = [
             previousButton,
@@ -156,11 +156,11 @@ class WorkoutDetailTableViewCell: UITableViewCell {
     
     func updateSetButton(exerciseSet: ExerciseSet) {
         setButton.isSelected = exerciseSet.isComplete
-        let currentSetNumberColor: UIColor = traitCollection.userInterfaceStyle == .light ? Settings.shared.accentColor.color.withAlphaComponent(0.75) : .white
-        let currentSetBorderColor: UIColor = traitCollection.userInterfaceStyle == .light ? Settings.shared.accentColor.color.withAlphaComponent(0.75) : Settings.shared.accentColor.color
+        let currentSetNumberColor: UIColor = traitCollection.userInterfaceStyle == .light ? (Settings.shared.selectedAccentColor).withAlphaComponent(0.75) : .white
+        let currentSetBorderColor: UIColor = traitCollection.userInterfaceStyle == .light ? Settings.shared.selectedAccentColor.withAlphaComponent(0.75) : Settings.shared.selectedAccentColor
         let currentSetcolors: [UIColor] = [currentSetNumberColor, currentSetBorderColor]
         let unselectedColors: [UIColor] = [Color.ui.unselectedSetNumber, Color.ui.unselectedSetNumber]
-        let selectedColors: [UIColor] = [.white, Settings.shared.accentColor.color]
+        let selectedColors: [UIColor] = [.white, Settings.shared.selectedAccentColor]
         
         var config = UIImage.SymbolConfiguration(pointSize: 30)
         config = config.applying(UIImage.SymbolConfiguration(paletteColors: exerciseSet.isCurrentSet ? currentSetcolors : unselectedColors))
