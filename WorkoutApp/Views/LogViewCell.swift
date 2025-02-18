@@ -99,8 +99,6 @@ class LogViewCell: UITableViewCell {
     }
     
     func update(workout: Workout) {
-//        workout.printPrettyString()
-        print("Update: \(workout.title) \(workout.createdAt_!.formatted(date: .abbreviated, time: .omitted))")
         guard let createdAt = workout.createdAt_ else { return }
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "EEE"
@@ -109,7 +107,15 @@ class LogViewCell: UITableViewCell {
         workoutLabel.text = workout.title
         exercisesLabel.text = workout.getExercises()
             .compactMap { exercise in
-                return "\(exercise.getExerciseSets().count)x\(exercise.maxReps ?? 0) \(exercise.name) - \(formatWeight(exercise.maxWeight ?? 0)) \(Settings.shared.weightUnit.rawValue)"
+                guard let bestSet = exercise.bestSet else { return nil }
+                let weightString: String
+                if Settings.shared.weightUnit == .lbs {
+                    weightString = bestSet.weight.lbsString
+                } else {
+                    weightString = bestSet.weight.kgString
+                }                
+                
+                return "\(exercise.getExerciseSets().count)x\(exercise.maxReps ?? 0) \(exercise.name) - \(weightString) \(Settings.shared.weightUnit.rawValue)"
             }
             .joined(separator: "\n")
     }

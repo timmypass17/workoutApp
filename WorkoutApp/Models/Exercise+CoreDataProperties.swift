@@ -43,13 +43,6 @@ extension Exercise {
         return reps.max() ?? 0
     }
     
-    // returns best lift for that exercise session (not all)
-    var maxWeight: Double? {
-        let reps = getExerciseSets()
-            .compactMap { $0.weight }
-        return reps.max() ?? 0
-    }
-    
     var bestSet: ExerciseSet? {
         return getExerciseSets().max { $0.weight < $1.weight }
     }
