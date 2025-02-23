@@ -210,6 +210,7 @@ extension LogViewController: NSFetchedResultsControllerDelegate {
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<any NSFetchRequestResult>) {
         tableView.endUpdates()
         updateSectionHeaders()
+        contentUnavailableView.isHidden = !(controller.fetchedObjects?.isEmpty ?? true)
     }
     
     func controller(_ controller: NSFetchedResultsController<any NSFetchRequestResult>,
@@ -253,8 +254,6 @@ extension LogViewController: NSFetchedResultsControllerDelegate {
         @unknown default:
             break
         }
-        
-        contentUnavailableView.isHidden = !(controller.fetchedObjects?.isEmpty ?? true)
     }
     
     private func updateSectionHeaders() {

@@ -112,7 +112,6 @@ class WorkoutViewController: UIViewController {
     }
     
     func updateUI() {
-//        contentUnavailableView.isHidden = !templates.isEmpty
         tableView.reloadData()
     }
     
@@ -308,6 +307,7 @@ extension WorkoutViewController: NSFetchedResultsControllerDelegate {
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<any NSFetchRequestResult>) {
         tableView.endUpdates()
+        contentUnavailableView.isHidden = !(controller.fetchedObjects?.isEmpty ?? true)
     }
     
     // Find out when the fetched results controller adds, removes, moves, or updates a fetched object.
@@ -348,7 +348,5 @@ extension WorkoutViewController: NSFetchedResultsControllerDelegate {
         @unknown default:
             break
         }
-        
-        contentUnavailableView.isHidden = !(controller.fetchedObjects?.isEmpty ?? true)
     }
 }
